@@ -1,0 +1,390 @@
+<div class="profile-page">
+
+  <!-- ── Hero ──────────────────────────────────────────────────────────────── -->
+  <header class="page-header">
+    <div class="profile-hero">
+      <div class="profile-hero__avatar">
+        @if (cu.user()?.avatarUrl) {
+          <img [src]="cu.user()?.avatarUrl" [alt]="cu.userName()"/>
+        } @else {
+          <span class="profile-hero__initials">{{ cu.userName() | slice:0:1 }}</span>
+        }
+      </div>
+      <div class="profile-hero__info">
+        <h2 class="page-header__title">{{ cu.userName() }}</h2>
+        <p class="page-header__subtitle">{{ cu.user()?.email }}</p>
+        <span class="profile-hero__badge">{{ typeEmoji }} {{ typeLabel }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Secciones ─────────────────────────────────────────────────────────── -->
+  <mat-accordion class="profile-accordion" multi>
+
+    <!-- Cuenta -->
+    <mat-expansion-panel [expanded]="true">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>person</mat-icon>
+          <span>Cuenta</span>
+        </mat-panel-title>
+        <mat-panel-description>Datos personales y perfil</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      @if (!editMode()) {
+        <ul class="info-list">
+          <li class="info-item">
+            <span class="info-item__icon-wrap"><mat-icon class="info-item__icon">badge</mat-icon></span>
+            <div class="info-item__text">
+              <span class="info-item__label">Nombre</span>
+              <span class="info-item__value">{{ cu.userName() }}</span>
+            </div>
+          </li>
+          <li class="info-item">
+            <span class="info-item__icon-wrap"><mat-icon class="info-item__icon">email</mat-icon></span>
+            <div class="info-item__text">
+              <span class="info-item__label">Email</span>
+              <span class="info-item__value">{{ cu.user()?.email }}</span>
+            </div>
+          </li>
+          <li class="info-item">
+            <span class="info-item__icon-wrap"><mat-icon class="info-item__icon">manage_accounts</mat-icon></span>
+            <div class="info-item__text">
+              <span class="info-item__label">Tipo de cuenta</span>
+              <span class="info-item__value">{{ typeEmoji }} {{ typeLabel }}</span>
+            </div>
+          </li>
+          @if (cu.user()?.phone) {
+            <li class="info-item">
+              <span class="info-item__icon-wrap"><mat-icon class="info-item__icon">phone</mat-icon></span>
+              <div class="info-item__text">
+                <span class="info-item__label">Teléfono</span>
+                <span class="info-item__value">{{ cu.user()?.phone }}</span>
+              </div>
+            </li>
+          }
+          @if (cu.user()?.city || cu.user()?.province) {
+            <li class="info-item">
+              <span class="info-item__icon-wrap"><mat-icon class="info-item__icon">location_on</mat-icon></span>
+              <div class="info-item__text">
+                <span class="info-item__label">Ubicación</span>
+                <span
+                  class="info-item__value">{{ cu.user()?.city }}{{ cu.user()?.city && cu.user()?.province ? ', ' : '' }}{{ cu.user()?.province }}</span>
+              </div>
+            </li>
+          }
+          @if (cu.user()?.birthDate) {
+            <li class="info-item">
+              <span class="info-item__icon-wrap"><mat-icon class="info-item__icon">cake</mat-icon></span>
+              <div class="info-item__text">
+                <span class="info-item__label">Fecha de nacimiento</span>
+                <span class="info-item__value">{{ cu.user()?.birthDate | date:'longDate':'':'es' }}</span>
+              </div>
+            </li>
+          }
+          @if (cu.user()?.bio) {
+            <li class="info-item info-item--bio">
+              <span class="info-item__icon-wrap"><mat-icon class="info-item__icon">info</mat-icon></span>
+              <div class="info-item__text">
+                <span class="info-item__label">Bio</span>
+                <span class="info-item__value">{{ cu.user()?.bio }}</span>
+              </div>
+            </li>
+          }
+          @if (cu.user()?.createdAt) {
+            <li class="info-item">
+              <span class="info-item__icon-wrap"><mat-icon class="info-item__icon">calendar_today</mat-icon></span>
+              <div class="info-item__text">
+                <span class="info-item__label">Miembro desde</span>
+                <span class="info-item__value">{{ cu.user()?.createdAt | date:'mediumDate':'':'es' }}</span>
+              </div>
+            </li>
+          }
+          @if (cu.user()?.updatedAt) {
+            <li class="info-item">
+              <span class="info-item__icon-wrap"><mat-icon class="info-item__icon">update</mat-icon></span>
+              <div class="info-item__text">
+                <span class="info-item__label">Última actualización</span>
+                <span class="info-item__value">{{ cu.user()?.updatedAt | date:'medium':'':'es' }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+
+        <mat-divider/>
+
+        <div class="profile-section__actions">
+          <button mat-stroked-button (click)="openEdit()">
+            <mat-icon>edit</mat-icon>
+            Editar datos
+          </button>
+        </div>
+      } @else {
+        <form [formGroup]="editForm" class="edit-form" novalidate>
+          <mat-form-field appearance="outline" class="edit-form__field">
+            <mat-label>Nombre</mat-label>
+            <input matInput formControlName="name" type="text"/>
+            @if (editForm.controls['name'].hasError('required')) {
+              <mat-error>El nombre es obligatorio</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="edit-form__field">
+            <mat-label>URL del avatar</mat-label>
+            <input matInput formControlName="avatarUrl" type="url" placeholder="https://..."/>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="edit-form__field">
+            <mat-label>Teléfono</mat-label>
+            <input matInput formControlName="phone" type="tel"/>
+          </mat-form-field>
+
+          <div class="edit-form__row">
+            <mat-form-field appearance="outline" class="edit-form__field">
+              <mat-label>Ciudad</mat-label>
+              <input matInput formControlName="city" type="text"/>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="edit-form__field">
+              <mat-label>Provincia</mat-label>
+              <input matInput formControlName="province" type="text"/>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" class="edit-form__field">
+            <mat-label>Bio</mat-label>
+            <textarea matInput formControlName="bio" rows="3" maxlength="1000"></textarea>
+            <mat-hint align="end">{{ editForm.controls['bio'].value?.length ?? 0 }}/1000</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="edit-form__field">
+            <mat-label>Fecha de nacimiento</mat-label>
+            <input matInput formControlName="birthDate" type="date"/>
+          </mat-form-field>
+        </form>
+
+        @if (saveError()) {
+          <p class="edit-error">{{ saveError() }}</p>
+        }
+
+        <div class="edit-actions">
+          <button mat-stroked-button (click)="cancelEdit()" [disabled]="saving()">Cancelar</button>
+          <button mat-flat-button color="primary" (click)="saveEdit()" [disabled]="editForm.invalid || saving()">
+            @if (saving()) {
+              <mat-spinner diameter="18"/>
+            } @else {
+              Guardar
+            }
+          </button>
+        </div>
+      }
+    </mat-expansion-panel>
+
+    <!-- Favoritos -->
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>star</mat-icon>
+          <span>Favoritos del mapa</span>
+          @if (favoritesCount > 0) {
+            <span class="panel-badge">{{ favoritesCount }}</span>
+          }
+        </mat-panel-title>
+        <mat-panel-description>Tipos de lugares que ves primero</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <p class="profile-hint">Estos tipos de lugares se mostrarán primero al abrir el mapa.</p>
+      <ul class="fav-tree">
+        @for (cat of categories(); track cat.id) {
+          <li class="fav-tree__main">
+            <div class="fav-tree__main-row" [style.--cat-color]="cat.color">
+              <button type="button" class="fav-tree__check"
+                      [class.fav-tree__check--all]="mainSelectionState(cat) === 'all'"
+                      [class.fav-tree__check--some]="mainSelectionState(cat) === 'some'"
+                      [style.--cat-color]="cat.color"
+                      (click)="$event.stopPropagation(); toggleMainFavoritesIfAllowed(cat)">
+                <mat-icon>{{
+                    mainSelectionState(cat) === 'all' ? 'check_box' :
+                      mainSelectionState(cat) === 'some' ? 'indeterminate_check_box' :
+                        'check_box_outline_blank'
+                  }}
+                </mat-icon>
+              </button>
+              <button type="button" class="fav-tree__label" (click)="toggleMain(cat.id)">
+                <span class="fav-tree__icon">{{ cat.icon }}</span>
+                <span class="fav-tree__name">{{ cat.name }}</span>
+                <span class="fav-tree__arrow" [class.fav-tree__arrow--open]="expandedMain() === cat.id">›</span>
+              </button>
+            </div>
+            @if (expandedMain() === cat.id) {
+              <ul class="fav-tree__subs">
+                @for (sub of cat.subcategories; track sub.id) {
+                  <li class="fav-tree__sub">
+                    <div class="fav-tree__sub-row" [style.--cat-color]="cat.color">
+                      <button type="button" class="fav-tree__check"
+                              [class.fav-tree__check--all]="subSelectionState(sub) === 'all'"
+                              [class.fav-tree__check--some]="subSelectionState(sub) === 'some'"
+                              [style.--cat-color]="cat.color"
+                              (click)="$event.stopPropagation(); toggleSubFavoritesIfAllowed(sub)">
+                        <mat-icon>{{
+                            subSelectionState(sub) === 'all' ? 'check_box' :
+                              subSelectionState(sub) === 'some' ? 'indeterminate_check_box' :
+                                'check_box_outline_blank'
+                          }}
+                        </mat-icon>
+                      </button>
+                      <button type="button" class="fav-tree__label" (click)="toggleSub(sub.id)">
+                        <span class="fav-tree__icon">{{ sub.icon }}</span>
+                        <span class="fav-tree__name">{{ sub.name }}</span>
+                        <span class="fav-tree__arrow"
+                              [class.fav-tree__arrow--open]="expandedSub() === sub.id">›</span>
+                      </button>
+                    </div>
+                    @if (expandedSub() === sub.id) {
+                      <ul class="fav-tree__types">
+                        @for (type of sub.locationTypes; track type.id) {
+                          <li class="fav-tree__type" [class.fav-tree__type--locked]="!canToggleFavorite(type.id)">
+                            <button type="button" class="fav-tree__check"
+                                    [class.fav-tree__check--all]="isFavorite(type.id)"
+                                    [class.fav-tree__check--locked]="!canToggleFavorite(type.id)"
+                                    [style.--cat-color]="cat.color"
+                                    [disabled]="!canToggleFavorite(type.id)"
+                                    (click)="toggleFavoriteIfAllowed(type.id)">
+                              @if (!canToggleFavorite(type.id)) {
+                                <mat-icon class="fav-tree__lock-icon">lock</mat-icon>
+                              } @else {
+                                <mat-icon>{{ isFavorite(type.id) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+                              }
+                            </button>
+                            <div class="fav-tree__type-info">
+                                <span class="fav-tree__name"
+                                      [class.fav-tree__name--locked]="!canToggleFavorite(type.id)">
+                                  {{ type.name }}
+                                </span>
+                              <span class="fav-tree__desc">{{ type.description }}</span>
+                              @if (!canToggleFavorite(type.id)) {
+                                <span class="fav-tree__lock-hint">Requiere nivel 10</span>
+                              }
+                            </div>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </li>
+                }
+              </ul>
+            }
+          </li>
+        }
+      </ul>
+    </mat-expansion-panel>
+
+    <!--  Nivel y progreso -->
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>trending_up</mat-icon>
+          <span>Nivel y progreso</span>
+        </mat-panel-title>
+        <mat-panel-description>XP acumulada y nivel actual</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="level-card">
+        <div class="level-card__header">
+          <div class="level-card__badge">
+            <span class="level-card__number">{{ cu.userLevel() }}</span>
+            <span class="level-card__label">Nivel</span>
+          </div>
+          <div class="level-card__xp-info">
+            @if (!isMaxLevel) {
+              <span class="level-card__xp-current">{{ cu.userXp() }} XP</span>
+              <span class="level-card__xp-target">/ {{ xpForNextLevel }}
+                XP para nivel {{ (cu.userLevel() ?? 0) + 1 }}</span>
+            } @else {
+              <span class="level-card__xp-current">Nivel máximo alcanzado 🎉</span>
+            }
+          </div>
+        </div>
+        @if (!isMaxLevel) {
+          <div class="level-card__progress-bar">
+            <div class="level-card__progress-fill" [style.width.%]="levelProgress"></div>
+          </div>
+          <p class="level-card__progress-label">{{ levelProgress }}% completado</p>
+        }
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Capacidades -->
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>bolt</mat-icon>
+          <span>Capacidades desbloqueadas</span>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      @if (cu.user()?.unlockedCapabilities?.length) {
+        <ul class="info-list">
+          @for (cap of cu.user()?.unlockedCapabilities; track cap) {
+            <li class="info-item">
+              <span class="info-item__icon-wrap"><mat-icon class="info-item__icon">check_circle</mat-icon></span>
+              <div class="info-item__text">
+                <span class="info-item__value">{{ cap }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="profile-empty">Aún no has desbloqueado ninguna capacidad.</p>
+      }
+      <p class="profile-hint">Completa hitos o adquiere capacidades para ampliar tu acceso.</p>
+    </mat-expansion-panel>
+
+
+    <!-- Profesional -->
+    @if (cu.isProfessional()) {
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>store</mat-icon>
+            <span>Mi negocio</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <p class="profile-empty">Aún no has registrado tu sede. Podrás hacerlo desde el mapa.</p>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>local_offer</mat-icon>
+            <span>Promociones activas</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <p class="profile-empty">No tienes promociones activas.</p>
+      </mat-expansion-panel>
+    }
+
+    <!-- Entidad -->
+    @if (cu.isEntity()) {
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>account_balance</mat-icon>
+            <span>Mi entidad</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <p class="profile-empty">Aún no has registrado tu sede. Podrás hacerlo desde el mapa.</p>
+      </mat-expansion-panel>
+
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>event</mat-icon>
+            <span>Eventos activos</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <p class="profile-empty">No tienes eventos activos.</p>
+      </mat-expansion-panel>
+    }
+
+  </mat-accordion>
+</div>

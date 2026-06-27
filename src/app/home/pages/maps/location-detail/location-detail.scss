@@ -1,0 +1,152 @@
+@use 'styles/variables' as v;
+
+.detail {
+  font-family: sans-serif;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-md;
+
+  &__header { display: flex; align-items: flex-start; gap: 10px; }
+  &__emoji  { font-size: 28px; line-height: 1; flex-shrink: 0; }
+  &__titles { flex: 1; min-width: 0; }
+
+  &__name {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--c-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__breadcrumb {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: var(--c-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__status {
+    flex-shrink: 0;
+    align-self: flex-start;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--c-border);
+    color: var(--c-text-secondary);
+
+    &--active {
+      background: color-mix(in srgb, var(--accent, #10b981) 20%, transparent);
+      color: var(--accent, #10b981);
+    }
+  }
+
+  &__description {
+    margin: 0;
+    font-size: v.$font-body;
+    color: var(--c-text-secondary);
+    line-height: 1.5;
+  }
+
+  &__dates {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px;
+    background: var(--c-surface-alt);
+    border-radius: v.$radius-sm;
+    border-left: 3px solid var(--accent, #3b82f6);
+  }
+
+  &__date-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: v.$space-sm;
+  }
+
+  &__date-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--c-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__date-value {
+    font-size: 12.5px;
+    color: var(--c-text-primary);
+    font-weight: 500;
+  }
+
+  &__level {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: #fef3c7;
+    border-radius: v.$radius-sm;
+    border-left: 3px solid #f59e0b;
+  }
+
+  &__level-icon { font-size: 13px; }
+
+  &__level-text { font-size: 11.5px; color: #92400e; font-weight: 500; }
+
+  &__fields {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  &__field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-md;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--c-border-light);
+    &:last-child { border-bottom: none; }
+  }
+
+  &__field-label {
+    font-size: v.$font-sm;
+    color: var(--c-text-secondary);
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  &__field-value {
+    font-size: 12.5px;
+    color: var(--c-text-primary);
+    text-align: right;
+
+    &--link {
+      color: var(--accent, #3b82f6);
+      text-decoration: none;
+      &:hover { text-decoration: underline; }
+    }
+
+    &--code {
+      font-family: 'Courier New', monospace;
+      background: var(--c-surface-alt);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: v.$font-sm;
+      font-weight: 700;
+      color: var(--accent, #3b82f6);
+      letter-spacing: 0.06em;
+    }
+  }
+
+  &__unit  { margin-left: 3px; font-size: 10px; color: var(--c-text-muted); }
+  &__badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; color: #fff; }
+}

@@ -1,0 +1,127 @@
+<div class="detail" [style.--accent]="accentColor">
+
+  <!-- ── Cabecera ─────────────────────────────────────────────────────── -->
+  <div class="detail__header">
+    <span class="detail__emoji">{{ breadcrumb.subCategory.icon }}</span>
+    <div class="detail__titles">
+      <h3 class="detail__name">{{ item.name }}</h3>
+      <p class="detail__breadcrumb">
+        {{ breadcrumb.mainCategory.name }}
+        &rsaquo; {{ breadcrumb.subCategory.name }}
+        &rsaquo; {{ breadcrumb.locationType.name }}
+      </p>
+    </div>
+
+    <!-- Badge activa/caducada solo en publications -->
+    @if (hasDateRange) {
+      <span class="detail__status" [class.detail__status--active]="isActive">
+        {{ isActive ? 'Activo' : 'Finalizado' }}
+      </span>
+    }
+  </div>
+
+  <!-- ── Descripción universal ─────────────────────────────────────────── -->
+  @if (item.description) {
+    <p class="detail__description">{{ item.description }}</p>
+  }
+
+  <!-- ── Rango de fechas (solo Publications) ───────────────────────────── -->
+  @if (hasDateRange) {
+    <div class="detail__dates">
+      <div class="detail__date-row">
+        <span class="detail__date-label">Inicio</span>
+        <span class="detail__date-value">{{ formatDate(item.startDate) }}</span>
+      </div>
+      @if (item.endDate) {
+        <div class="detail__date-row">
+          <span class="detail__date-label">Fin</span>
+          <span class="detail__date-value">{{ formatDate(item.endDate) }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── Nivel requerido (solo Publications con requiredLevel > 0) ──────── -->
+  @if (hasLevelRequirement) {
+    <div class="detail__level">
+      <span class="detail__level-icon">🔒</span>
+      <span class="detail__level-text">
+        Requiere nivel {{ item.requiredLevel }} o superior
+      </span>
+    </div>
+  }
+
+  <!-- ── Campos dinámicos de metadata ─────────────────────────────────── -->
+  @if (fields.length) {
+    <ul class="detail__fields">
+      @for (field of fields; track field.key) {
+        @if (hasValue(field.key) || field.showIfEmpty) {
+          <li class="detail__field">
+
+            <span class="detail__field-label">{{ field.label }}</span>
+
+            @switch (field.type) {
+
+              @case ('badge') {
+                <span class="detail__badge"
+                  [style.background]="field.badgeColors?.[getValue(field.key) + ''] ?? accentColor">
+                  {{ getValue(field.key) }}
+                </span>
+              }
+
+              @case ('url') {
+                <a class="detail__field-value detail__field-value--link"
+                   [href]="getValue(field.key)"
+                   target="_blank" rel="noopener noreferrer">
+                  {{ getValue(field.key) }}
+                </a>
+              }
+
+              @case ('phone') {
+                <a class="detail__field-value detail__field-value--link"
+                   [href]="'tel:' + getValue(field.key)">
+                  {{ getValue(field.key) }}
+                </a>
+              }
+
+              @case ('code') {
+                <span class="detail__field-value detail__field-value--code">
+                  {{ getValue(field.key) }}
+                </span>
+              }
+
+              @case ('datetime') {
+                <span class="detail__field-value">{{ formatDate(getValue(field.key)) }}</span>
+              }
+
+              @case ('date') {
+                <span class="detail__field-value">{{ formatDateOnly(getValue(field.key)) }}</span>
+              }
+
+              @case ('boolean') {
+                <span class="detail__field-value">
+                  {{ getValue(field.key) ? 'Sí' : 'No' }}
+                </span>
+              }
+
+              @case ('number') {
+                <span class="detail__field-value">
+                  {{ getValue(field.key) }}
+                  @if (field.unit) {
+                    <small class="detail__unit">{{ field.unit }}</small>
+                  }
+                </span>
+              }
+
+              @default {
+                <span class="detail__field-value">{{ getValue(field.key) }}</span>
+              }
+
+            }
+          </li>
+        }
+      }
+    </ul>
+  }
+
+</div>

@@ -1,0 +1,140 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+@use 'styles/themes';  // ← carga :root y [data-theme="dark"]
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+body {
+  background-color: var(--c-bg);
+  color: var(--c-text-primary);
+  font: var(--mat-sys-body-medium);
+  margin: 0;
+  height: 100%;
+}
+//body {
+//  // Default the application to a light color theme. This can be changed to
+//  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+//  // user's system settings.
+//  color-scheme: light;
+//
+//  // Set a default background, font and text colors for the application using
+//  // Angular Material's system-level CSS variables. Learn more about these
+//  // variables at https://material.angular.dev/guide/system-variables
+//  background-color: var(--mat-sys-surface);
+//  color: var(--mat-sys-on-surface);
+//  font: var(--mat-sys-body-medium);
+//
+//  // Reset the user agent margin.
+//  margin: 0;
+//  height: 100%;
+//}
+/* You can add global styles to this file, and also import other style files */
+
+//// ── Global page header (shared by profile, settings, etc.) ───────────────────
+//.page-header {
+//  &__title {
+//    margin: 0;
+//    font-size: 20px;
+//    font-weight: 800;
+//    color: #1e293b;
+//  }
+//
+//  &__subtitle {
+//    margin: 4px 0 0;
+//    font-size: 13px;
+//    color: #64748b;
+//  }
+//}
+
+
+// ── Global page header ────────────────────────────────────────────────────────
+.page-header {
+  &__title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--c-text-primary);
+  }
+
+  &__subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--c-text-secondary);
+  }
+}
+
+// ── Backdrop difuminado (dialogs) ─────────────────────────────────────────────
+.blurred-backdrop {
+  backdrop-filter: blur(6px);
+  background: rgba(15, 23, 42, 0.45) !important;
+}
+
+.welcome-panel .mat-mdc-dialog-container {
+  border-radius: 20px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18) !important;
+}
+
+// ── Google Maps InfoWindow – tema oscuro ──────────────────────────────────────
+[data-theme="dark"] {
+  // Contenedor y todos sus divs directos
+  .gm-style .gm-style-iw-c,
+  .gm-style .gm-style-iw-c > div,
+  .gm-style .gm-style-iw-ch,
+  .gm-style .gm-style-iw-d,
+  .gm-style .gm-style-iw-d > div,
+  .gm-style .gm-style-iw-d > div > div,
+  .gm-style .gm-style-iw-d > div > div > div {
+    background: #1e293b !important;
+    background-color: #1e293b !important;
+  }
+
+  // Flecha inferior
+  .gm-style .gm-style-iw-tc::after,
+  .gm-style .gm-style-iw-t::after {
+    background: #1e293b !important;
+  }
+
+  // Textos
+  .gm-style .gm-style-iw-d span,
+  .gm-style .gm-style-iw-d p,
+  .gm-style .gm-style-iw-d div,
+  .gm-style .gm-style-iw-d h2,
+  .gm-style .gm-style-iw-d h3 {
+    color: #f1f5f9 !important;
+  }
+
+  // Links (ej. "Ver en Google Maps")
+  .gm-style .gm-style-iw-d a {
+    color: #818cf8 !important;
+  }
+
+  // Botón cerrar
+  .gm-style .gm-ui-hover-effect {
+    background: transparent !important;
+  }
+  .gm-style .gm-ui-hover-effect img,
+  .gm-style .gm-ui-hover-effect span {
+    filter: invert(1) brightness(0.85) !important;
+  }
+
+  // Scrollbar interna
+  .gm-style .gm-style-iw-d::-webkit-scrollbar-thumb {
+    background: #475569 !important;
+  }
+}

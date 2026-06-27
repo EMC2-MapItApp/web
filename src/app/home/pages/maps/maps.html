@@ -1,0 +1,94 @@
+<section class="maps-page">
+
+  <!-- ── Cabecera ─────────────────────────────────────────────────────── -->
+  <header class="maps-header">
+    <h2>Maps</h2>
+    <p>Visualización con Google Maps API</p>
+  </header>
+
+  <!-- ── Contenido principal ──────────────────────────────────────────── -->
+  <div class="maps-body">
+
+    <!-- Panel de filtros -->
+    <aside class="filter-panel" [class.filter-panel--collapsed]="!panelVisible()">
+
+      <!-- Cabecera siempre visible -->
+      <div class="filter-panel__header">
+        <button class="filter-panel__toggle" (click)="togglePanel()" aria-label="Toggle categorías">
+          <mat-icon>menu</mat-icon>
+        </button>
+        <span class="filter-panel__title">Categorías</span>
+        @if (selectedMain() && panelVisible()) {
+          <button class="filter-panel__clear" (click)="clearFilters()">Limpiar</button>
+        }
+      </div>
+
+      <!-- Cuerpo colapsable -->
+      <div class="filter-panel__body">
+        <ul class="filter-list">
+
+          @for (cat of categories(); track cat.id) {
+
+            <!-- ── Nivel 1: Categoría principal ──────────────────────── -->
+            <li
+              class="filter-list__item"
+              [class.filter-list__item--active]="selectedMain()?.id === cat.id"
+              [style.--cat-color]="cat.color"
+              (click)="selectMain(cat)">
+              <span class="filter-list__icon">{{ cat.icon }}</span>
+              <span class="filter-list__name">{{ cat.name }}</span>
+            </li>
+
+            <!-- ── Nivel 2: Subcategorías (inline, solo si esta cat está activa) -->
+            @if (selectedMain()?.id === cat.id) {
+              @for (sub of cat.subcategories; track sub.id) {
+
+                <li
+                  class="filter-list__item filter-list__item--sub"
+                  [class.filter-list__item--active]="selectedSub()?.id === sub.id"
+                  [style.--cat-color]="cat.color"
+                  (click)="$event.stopPropagation(); selectSub(sub)">
+                  <span class="filter-list__icon">{{ sub.icon }}</span>
+                  <span class="filter-list__name">{{ sub.name }}</span>
+                </li>
+
+                <!-- ── Nivel 3: Tipos (inline, solo si esta sub está activa) -->
+                @if (selectedSub()?.id === sub.id) {
+                  @for (type of sub.locationTypes; track type.id) {
+                    <li
+                      class="filter-list__item filter-list__item--type"
+                      [class.filter-list__item--active]="selectedTypeId() === type.id"
+                      [style.--cat-color]="cat.color"
+                      (click)="$event.stopPropagation(); selectType(type.id)">
+                      <span class="filter-list__name">{{ type.name }}</span>
+                      <span class="filter-list__desc">{{ type.description }}</span>
+                    </li>
+                  }
+                }
+
+              }
+            }
+
+          }
+        </ul>
+      </div><!-- /filter-panel__body -->
+    </aside>
+
+    <!-- Mapa -->
+    <div #mapContainer class="map-canvas"></div>
+
+    <!-- Panel de detalle – aparece al hacer click en un marker -->
+    @if (selectedDetail() && selectedBreadcrumb()) {
+      <div class="detail-panel">
+        <button class="detail-panel__close" (click)="closeDetail()" aria-label="Cerrar detalle">
+          ✕
+        </button>
+        <app-location-detail
+          [item]="selectedDetail()!"
+          [breadcrumb]="selectedBreadcrumb()!"
+          [context]="selectedContext()"/>
+      </div>
+    }
+
+  </div>
+</section>

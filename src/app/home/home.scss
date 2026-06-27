@@ -1,0 +1,150 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+:host {
+  display: block;
+  height: 100dvh;
+}
+
+.shell {
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: 64px 1fr 48px;
+  background: var(--c-bg);
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  background: var(--c-header-bg);
+  color: var(--c-header-text);
+
+  .spacer { flex: 1; }
+}
+
+.app-footer {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-top: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text-secondary);
+}
+
+.app-body {//compatilbe con Firefox
+  display: flex;
+  min-height: 0;
+}
+
+.app-sidenav {
+  width: 260px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--c-sidenav-border);
+  background: var(--c-sidenav-bg);
+  overflow: hidden;
+  transition: width 180ms ease;
+
+  .collapsed & { width: 72px; }
+
+  .brand {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--c-border-light);
+    font-weight: 700;
+    color: var(--c-text-primary);
+  }
+  .menu {
+    display: grid;
+    gap: 4px;
+    padding: 12px 8px;
+
+    a {
+      height: 42px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px;
+      border-radius: v.$radius-md;
+      color: var(--c-text-primary);
+      text-decoration: none;
+    }
+
+    a.active-link {
+      background: var(--c-primary-hover-bg);
+      color: var(--c-text-primary);
+    }
+  }
+}
+.app-main {
+  flex: 1;              // ← ocupa todo el ancho restante tras el sidebar
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.header-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  overflow: hidden;
+  text-decoration: none;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  transition: border-color v.$transition-base;
+  flex-shrink: 0;
+
+  &:hover { border-color: rgba(255, 255, 255, 0.9); }
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+
+  &__initials {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    font-size: v.$font-md;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+}
+
+.login-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff !important;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.menu-item {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border-radius: v.$radius-md;
+
+  &--disabled {
+    color: var(--c-close-btn);
+    cursor: not-allowed;
+    user-select: none;
+  }
+}
+
+@include m.sm {
+  .app-sidenav { width: 0; border-right: none; }
+  .app-body.collapsed .app-sidenav { width: 0; }
+}

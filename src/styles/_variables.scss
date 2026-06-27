@@ -1,0 +1,47 @@
+// ── Espaciado ─────────────────────────────────────────────────────────────────
+$space-xs:  4px;
+$space-sm:  8px;
+$space-md:  12px;
+$space-lg:  16px;
+$space-xl:  24px;
+$space-2xl: 32px;
+
+// ── Border radius ─────────────────────────────────────────────────────────────
+$radius-sm:   8px;
+$radius-md:   10px;
+$radius-lg:   14px;
+$radius-xl:   20px;
+$radius-full: 9999px;
+
+// ── Tipografía ────────────────────────────────────────────────────────────────
+$font-xs:   11px;
+$font-sm:   12px;
+$font-body: 13px;
+$font-md:   14px;
+$font-lg:   15px;
+$font-xl:   16px;
+$font-2xl:  20px;
+$font-3xl:  22px;
+$font-4xl:  24px;
+
+// ── Sombras ───────────────────────────────────────────────────────────────────
+$shadow-dialog:       0 20px 60px rgba(0, 0, 0, 0.18);
+$shadow-panel:        0 4px 24px rgba(0, 0, 0, 0.13), 0 1px 4px rgba(0, 0, 0, 0.08);
+$shadow-icon-primary: 0 4px 16px rgba(63, 81, 181, 0.35);
+$shadow-icon-auth:    0 4px 16px rgba(71, 85, 105, 0.3);
+
+// ── Gradientes (fijos, sin cambio con el tema) ────────────────────────────────
+$gradient-primary:   linear-gradient(135deg, #3f51b5, #5c6bc0);
+$gradient-level:     linear-gradient(135deg, #3f51b5, #7c3aed);
+$gradient-level-bar: linear-gradient(90deg,  #3f51b5, #7c3aed);
+$gradient-auth:      linear-gradient(135deg, #475569, #64748b);
+
+// ── Transiciones ──────────────────────────────────────────────────────────────
+$transition-fast: .12s ease;
+$transition-base: .2s  ease;
+$transition-slow: .25s ease;
+
+// ── Breakpoints ───────────────────────────────────────────────────────────────
+$bp-sm: 600px;
+$bp-md: 960px;
+$bp-lg: 1280px;

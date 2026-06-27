@@ -1,0 +1,518 @@
+<div class="create-activity-page">
+
+  <!-- ══ PANEL FORMULARIO (izquierda) ══════════════════════════════════════ -->
+  <div class="form-panel">
+
+    <!-- ── Zona scrollable (header + acordeón) ── -->
+    <div class="form-scroll-area">
+
+
+      <!-- ── Cabecera fija ─────────────────────────────────────────────────── -->
+      <header class="page-header">
+        <h2 class="page-header__title">
+          <mat-icon>add_location_alt</mat-icon>
+          Nueva actividad
+        </h2>
+        <p class="page-header__subtitle">
+          Crea un evento y fija su ubicación en el mapa.
+        </p>
+      </header>
+
+      <!-- ── Banner de éxito (si existe) ───────────────────────────────────── -->
+      @if (successMessage(); as msg) {
+        <div class="success-banner">
+          <mat-icon>check_circle</mat-icon>
+          {{ msg }}
+        </div>
+      }
+
+      <!-- ══════════════════════════════════════════════════════════════════════
+         ACORDEÓN: Agrupa las secciones en paneles colapsables
+      ══════════════════════════════════════════════════════════════════════ -->
+      <mat-accordion class="form-accordion" multi>
+
+        <!-- ══════════════════════════════════════════════════════════════════
+           PANEL 1: Información básica
+        ══════════════════════════════════════════════════════════════════ -->
+        <mat-expansion-panel
+          [expanded]="expandedPanels.info"
+          (opened)="expandedPanels.info = true"
+          (closed)="expandedPanels.info = false">
+
+          <!-- Cabecera del panel -->
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>edit_note</mat-icon>
+              Información básica
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <!-- Contenido del panel -->
+          <div class="panel-content">
+
+            <!-- Campo: Título -->
+            <div class="field">
+              <label class="field__label" for="act-title">
+                Título <span class="field__required">*</span>
+              </label>
+              <input
+                id="act-title"
+                class="field__input"
+                type="text"
+                placeholder="Ej: Ruta de senderismo por la Sierra Norte"
+                [(ngModel)]="title"
+                maxlength="100"
+              />
+            </div>
+
+            <!-- Campo: Descripción -->
+            <div class="field">
+              <label class="field__label" for="act-desc">
+                Descripción <span class="field__optional">(opcional)</span>
+              </label>
+              <textarea
+                id="act-desc"
+                class="field__input field__input--textarea"
+                placeholder="Punto de encuentro, qué llevar, nivel necesario…"
+                [(ngModel)]="description"
+                rows="3"
+              ></textarea>
+            </div>
+
+          </div>
+        </mat-expansion-panel>
+
+        <!-- ══════════════════════════════════════════════════════════════════
+           PANEL 2: Categoría
+        ══════════════════════════════════════════════════════════════════ -->
+        <mat-expansion-panel
+          [expanded]="expandedPanels.category"
+          (opened)="expandedPanels.category = true"
+          (closed)="expandedPanels.category = false">
+
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>category</mat-icon>
+              Categoría
+              <span class="required-badge">*</span>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="panel-content">
+
+            <!-- Nivel 1: Categoría principal -->
+            <div class="field-group">
+              <p class="field__label">Categoría principal</p>
+              <div class="cat-chips">
+                @for (cat of categories(); track cat.id) {
+                  <button
+                    class="cat-chip"
+                    type="button"
+                    [class.cat-chip--active]="selectedMain()?.id === cat.id"
+                    [style.--chip-color]="cat.color"
+                    (click)="selectMain(cat)"
+                  >
+                    {{ cat.icon }} {{ cat.name }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Nivel 2: Subcategoría (solo si hay categoría principal seleccionada) -->
+            @if (selectedMain()) {
+              <div class="field-group">
+                <p class="field__label">Subcategoría</p>
+                <div class="cat-chips">
+                  @for (sub of visibleSubs(); track sub.id) {
+                    <button
+                      class="cat-chip cat-chip--sm"
+                      type="button"
+                      [class.cat-chip--active]="selectedSub()?.id === sub.id"
+                      [style.--chip-color]="selectedMain()!.color"
+                      (click)="selectSub(sub)"
+                    >
+                      {{ sub.icon }} {{ sub.name }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Nivel 3: Tipo de actividad (solo si hay subcategoría seleccionada) -->
+            @if (selectedSub() && visibleTypes().length > 0) {
+              <div class="field-group">
+                <p class="field__label">Tipo de actividad</p>
+                <div class="type-list">
+                  @for (lt of visibleTypes(); track lt.id) {
+                    <button
+                      class="type-item"
+                      type="button"
+                      [class.type-item--active]="locationTypeId === lt.id"
+                      [style.--type-color]="selectedMain()!.color"
+                      (click)="selectLocationType(lt.id)"
+                    >
+                      <div class="type-item__check">
+                        @if (locationTypeId === lt.id) {
+                          ✓
+                        }
+                      </div>
+                      <div class="type-item__info">
+                        <span class="type-item__name">{{ lt.name }}</span>
+                        <span class="type-item__desc">{{ lt.description }}</span>
+                      </div>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+          </div>
+        </mat-expansion-panel>
+
+        <!-- ══════════════════════════════════════════════════════════════════
+           PANEL 3: Fechas
+        ══════════════════════════════════════════════════════════════════ -->
+        <mat-expansion-panel
+          [expanded]="expandedPanels.dates"
+          (opened)="expandedPanels.dates = true"
+          (closed)="expandedPanels.dates = false">
+
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>calendar_month</mat-icon>
+              Fechas
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="panel-content">
+
+            <!-- Campo: Fecha -->
+            <div class="field">
+              <label class="field__label" for="act-date">
+                Fecha <span class="field__required">*</span>
+              </label>
+              <input
+                id="act-date"
+                class="field__input"
+                type="date"
+                [(ngModel)]="activityDate"
+              />
+            </div>
+
+            <!-- Toggle: Todo el día / Rango de horas -->
+            <div class="field">
+              <p class="field__label">Horario</p>
+              <div class="schedule-toggle">
+                <button
+                  class="schedule-toggle__btn"
+                  type="button"
+                  [class.schedule-toggle__btn--active]="allDay"
+                  (click)="allDay = true"
+                >
+                  <mat-icon>wb_sunny</mat-icon>
+                  Todo el día
+                </button>
+                <button
+                  class="schedule-toggle__btn"
+                  type="button"
+                  [class.schedule-toggle__btn--active]="!allDay"
+                  (click)="allDay = false"
+                >
+                  <mat-icon>schedule</mat-icon>
+                  Rango de horas
+                </button>
+              </div>
+            </div>
+
+            <!-- Rango de horas (solo si no es todo el día) -->
+            @if (!allDay) {
+              <div class="time-range">
+                <div class="field field--half">
+                  <label class="field__label" for="act-start-time">Desde</label>
+                  <input
+                    id="act-start-time"
+                    class="field__input"
+                    type="time"
+                    [(ngModel)]="startTime"
+                  />
+                </div>
+                <div class="field field--half">
+                  <label class="field__label" for="act-end-time">Hasta</label>
+                  <input
+                    id="act-end-time"
+                    class="field__input"
+                    type="time"
+                    [(ngModel)]="endTime"
+                  />
+                </div>
+              </div>
+            }
+
+          </div>
+        </mat-expansion-panel>
+
+        <!-- ══════════════════════════════════════════════════════════════════
+         PANEL 4: Ubicación y ruta
+        ══════════════════════════════════════════════════════════════════ -->
+        <mat-expansion-panel
+          [expanded]="expandedPanels.location"
+          (opened)="expandedPanels.location = true"
+          (closed)="expandedPanels.location = false">
+
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>place</mat-icon>
+              Ubicación y ruta
+              <span class="required-badge">*</span>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="panel-content">
+
+            <!-- Estado de ubicación -->
+            @if (locationSelected) {
+              <div class="status-badge status-badge--success">
+                <mat-icon>check_circle</mat-icon>
+                <span>Ubicación fijada</span>
+                <button
+                  class="status-badge__action"
+                  (click)="clearLocation()"
+                  type="button"
+                  title="Cambiar ubicación"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </div>
+            } @else {
+              <div class="status-badge status-badge--warning">
+                <mat-icon>info</mat-icon>
+                <span>Haz click en el mapa para fijar el punto de encuentro</span>
+              </div>
+            }
+
+            <!-- Toggle: Ubicación exacta / aproximada -->
+            <div class="location-privacy">
+              <div class="location-privacy__info">
+                <mat-icon>{{ exactLocation ? 'gps_fixed' : 'gps_not_fixed' }}</mat-icon>
+                <div>
+                <span class="location-privacy__title">
+                  {{ exactLocation ? 'Ubicación exacta' : 'Ubicación aproximada' }}
+                </span>
+                  <span class="location-privacy__desc">
+                  {{
+                      exactLocation
+                        ? 'Los participantes verán el punto exacto en el mapa'
+                        : 'Se mostrará una zona aproximada, no el punto exacto'
+                    }}
+                </span>
+                </div>
+              </div>
+              <button
+                class="toggle-switch"
+                type="button"
+                [class.toggle-switch--on]="exactLocation"
+                (click)="exactLocation = !exactLocation"
+                [title]="exactLocation ? 'Cambiar a aproximada' : 'Cambiar a exacta'"
+              >
+                <span class="toggle-switch__thumb"></span>
+              </button>
+            </div>
+
+            <!-- Campo: Indicaciones para llegar -->
+            <div class="field">
+              <label class="field__label" for="act-directions">
+                Indicaciones para llegar
+                <span class="field__optional">(opcional)</span>
+              </label>
+              <textarea
+                id="act-directions"
+                class="field__input field__input--textarea"
+                placeholder="Ej: Quedamos en la entrada del parking norte, junto a la fuente"
+                [(ngModel)]="directions"
+                rows="2"
+              ></textarea>
+              <span class="field-helper">
+        Ayuda a los participantes a encontrar el punto exacto
+      </span>
+            </div>
+
+            <!-- Divisor -->
+            <div class="panel-divider"></div>
+
+            <!-- Sección de ruta -->
+            <div class="route-section">
+              <div class="route-section__header">
+                <div>
+                  <p class="field__label">Ruta o recorrido <span class="field__optional">(opcional)</span></p>
+                  <span class="field-helper">
+            Marca puntos en el mapa para dibujar el itinerario
+          </span>
+                </div>
+              </div>
+
+              <!-- Botones de control de ruta -->
+              <div class="route-controls">
+
+                <!-- Botón principal: Dibujar/Finalizar ruta -->
+                <button
+                  class="btn-route"
+                  [class.btn-route--active]="isAddingRoute"
+                  (click)="toggleRouteMode()"
+                  type="button"
+                >
+                  <mat-icon>{{ isAddingRoute ? 'check_circle' : 'route' }}</mat-icon>
+                  <span>{{ isAddingRoute ? 'Finalizar ruta' : 'Dibujar ruta' }}</span>
+                  @if (hasRoute() && !isAddingRoute) {
+                    <span class="route-points-badge">{{ routePointsCount() }} puntos</span>
+                  }
+                </button>
+
+                <!-- Botones de edición (solo visibles en modo dibujo) -->
+                @if (isAddingRoute && hasRoute()) {
+                  <div class="route-edit-actions">
+                    <button
+                      class="btn-route-edit"
+                      (click)="undoLastRoutePoint()"
+                      type="button"
+                      title="Deshacer último punto"
+                    >
+                      <mat-icon>undo</mat-icon>
+                      <span>Deshacer</span>
+                    </button>
+                    <button
+                      class="btn-route-edit btn-route-edit--danger"
+                      (click)="clearRoute()"
+                      type="button"
+                      title="Borrar toda la ruta"
+                    >
+                      <mat-icon>delete_outline</mat-icon>
+                      <span>Borrar ruta</span>
+                    </button>
+                  </div>
+                }
+              </div>
+
+              <!-- Indicador de estado de ruta -->
+              @if (isAddingRoute) {
+                <div class="route-status">
+                  <mat-icon>touch_app</mat-icon>
+                  <span>
+      @if (routePointsCount() === 0) {
+        Haz click en el mapa para empezar la ruta
+      } @else {
+        {{ routePointsCount() }} punto{{ routePointsCount() > 1 ? 's' : '' }} añadido{{ routePointsCount() > 1 ? 's' : '' }}. Puedes arrastrarlos para ajustar.
+      }
+    </span>
+                </div>
+              } @else if (hasRoute()) {
+                <div class="route-status route-status--complete">
+                  <mat-icon>check_circle</mat-icon>
+                  <span>Ruta guardada con {{ routePointsCount() }} puntos. Puedes editarla para ajustar.</span>
+                </div>
+              }
+
+            </div>
+
+          </div>
+        </mat-expansion-panel>
+
+        <!-- ══════════════════════════════════════════════════════════════════
+           PANEL 5: Detalles
+        ══════════════════════════════════════════════════════════════════ -->
+
+        <mat-expansion-panel
+          [expanded]="expandedPanels.details"
+          (opened)="expandedPanels.details = true"
+          (closed)="expandedPanels.details = false">
+
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>info
+              </mat-icon>
+          Detalles
+              <span class="required-badge">*</span>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="panel-content">
+
+            <!-- Campo: Plazas (ocupa todo el ancho ahora) -->
+            <div class="field">
+              <label class="field__label" for="act-slots">
+                Plazas <span class="field__optional">(opcional)</span>
+              </label>
+              <input
+                id="act-slots"
+                class="field__input"
+                type="number"
+                min="1"
+                max="9999"
+                placeholder="Sin límite"
+                [(ngModel)]="slots"
+              />
+            </div>
+
+            <!-- Campo: Nivel mínimo (5 niveles predefinidos) -->
+            <div class="field">
+              <label class="field__label">
+                Nivel mínimo
+                <span class="level-badge">{{ levelLabel }}</span>
+              </label>
+              <div class="level-chips">
+                @for (level of ACTIVITY_LEVELS; track level.value) {
+                  <button
+                    class="level-chip"
+                    type="button"
+                    [class.level-chip--active]="requiredLevel === level.value"
+                    (click)="requiredLevel = level.value"
+                    [title]="level.description"
+                  >
+                    <span class="level-chip__label">{{ level.label }}</span>
+                    <span class="level-chip__desc">{{ level.description }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+          </div>
+
+
+        </mat-expansion-panel>
+      </mat-accordion>
+
+    </div>
+    <!-- ══════════════════════════════════════════════════════════════════════
+       BOTONES DE ACCIÓN (fijos al final)
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="form-actions">
+      <!-- Botón: Limpiar formulario -->
+      <button class="btn btn--ghost" (click)="resetForm()" type="button">
+        <mat-icon>refresh</mat-icon>
+        Limpiar
+      </button>
+      <!-- Botón: Crear actividad (disabled si faltan datos obligatorios) -->
+      <button class="btn btn--primary" (click)="submitForm()" [disabled]="!canSubmit" type="button">
+        <mat-icon>add_location_alt</mat-icon>
+        Crear actividad
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ══ PANEL MAPA (derecha) ══════════════════════════════════════════════ -->
+  <div class="map-panel">
+
+    <!-- Hint flotante: solo visible si no hay ubicación seleccionada -->
+    @if (!locationSelected) {
+      <div class="map-hint-overlay">
+        <mat-icon>touch_app</mat-icon>
+        <span>Click para fijar ubicación</span>
+      </div>
+    }
+
+    <!-- Contenedor del mapa de Google Maps -->
+    <div #mapContainer class="map-container"></div>
+
+  </div>
+
+</div>

@@ -1,0 +1,30 @@
+<div class="auth-dialog" (click)="$event.stopPropagation()">
+
+  <button class="close-btn" mat-icon-button (click)="dialogRef.close()" aria-label="Cerrar">
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <div class="auth-dialog__icon">
+    <mat-icon>lock</mat-icon>
+  </div>
+
+  <h2 class="auth-dialog__title">Acceso restringido</h2>
+
+  <p class="auth-dialog__subtitle">
+    Necesitas una cuenta para acceder a esta sección.<br />
+    Es gratis y solo tarda un momento.
+  </p>
+
+  <div class="auth-dialog__actions">
+    <button mat-flat-button class="btn-register" (click)="goToRegister()">
+      <mat-icon>person_add</mat-icon>
+      Crear cuenta
+    </button>
+    <button mat-stroked-button class="btn-login" (click)="goToLogin()">
+      <mat-icon>login</mat-icon>
+      Iniciar sesión
+    </button>
+  </div>
+
+  <p class="auth-dialog__hint">Pulsa fuera para volver al mapa</p>
+</div>

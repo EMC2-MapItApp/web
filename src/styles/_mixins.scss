@@ -1,0 +1,127 @@
+@use './variables' as v;
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@mixin sm { @media (max-width: #{v.$bp-sm}) { @content; } }
+@mixin md { @media (max-width: #{v.$bp-md}) { @content; } }
+
+// ── Glassmorphism panel ───────────────────────────────────────────────────────
+@mixin glass-panel {
+  background: var(--c-panel-glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--c-panel-glass-border);
+  border-radius: v.$radius-lg;
+  box-shadow: v.$shadow-panel;
+}
+
+// ── Dialog base ───────────────────────────────────────────────────────────────
+@mixin dialog-base {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: v.$space-2xl 28px v.$space-xl;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// ── Botón cerrar ──────────────────────────────────────────────────────────────
+@mixin close-btn {
+  position: absolute;
+  top: v.$space-sm;
+  right: v.$space-sm;
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--c-close-btn);
+  transition: color v.$transition-base;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &:hover { color: var(--c-close-btn-hover); }
+}
+
+// ── Círculo de icono ──────────────────────────────────────────────────────────
+@mixin icon-circle($gradient: v.$gradient-primary, $size: 72px, $icon-size: 36px, $shadow: v.$shadow-icon-primary) {
+  width: $size;
+  height: $size;
+  border-radius: 50%;
+  background: $gradient;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: v.$space-xl;
+  box-shadow: $shadow;
+
+  mat-icon {
+    font-size: $icon-size;
+    width: $icon-size;
+    height: $icon-size;
+    color: #fff;
+  }
+}
+
+// ── Título de panel accordion ─────────────────────────────────────────────────
+@mixin accordion-panel-title {
+  mat-expansion-panel-header mat-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: v.$font-lg;
+
+    mat-icon {
+      color: var(--c-primary);
+      flex-shrink: 0;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+      font-weight: normal;
+      font-family: 'Material Icons', sans-serif;
+    }
+  }
+}
+
+// ── Botón primario ────────────────────────────────────────────────────────────
+@mixin btn-primary {
+  background: var(--c-primary) !important;
+  color: #fff !important;
+}
+
+// ── Caja de error ─────────────────────────────────────────────────────────────
+@mixin error-box {
+  padding: 10px 14px;
+  background: var(--c-error-bg);
+  border: 1px solid var(--c-error-border);
+  border-radius: v.$radius-md;
+  color: var(--c-error);
+  font-size: v.$font-body;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// ── Icon wrap (listas de datos) ───────────────────────────────────────────────
+@mixin icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: v.$radius-md;
+  background: var(--c-surface-alt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}

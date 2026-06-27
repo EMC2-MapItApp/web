@@ -1,0 +1,95 @@
+<div class="settings-page">
+
+  <header class="settings-header">
+    <h2>Ajustes</h2>
+    <p>Configura la aplicación según tus preferencias.</p>
+  </header>
+
+  <!-- ── Sección APARIENCIA ────────────────────────────────────────────── -->
+  <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        <mat-icon>palette</mat-icon>
+        <span>Apariencia</span>
+      </mat-panel-title>
+      <mat-panel-description>Tema visual de la aplicación</mat-panel-description>
+    </mat-expansion-panel-header>
+
+    <section class="settings-section">
+      <div class="settings-section__header">
+        <div>
+          <h3 class="settings-section__title">Modo oscuro</h3>
+          <p class="settings-section__desc">
+            Cambia entre tema claro y oscuro. Se guarda automáticamente.
+          </p>
+        </div>
+        <mat-slide-toggle
+          [checked]="themeService.isDark()"
+          (change)="themeService.toggle()"
+          color="primary"
+          aria-label="Activar modo oscuro">
+        </mat-slide-toggle>
+      </div>
+    </section>
+  </mat-expansion-panel>
+
+  <!-- ── Sección MAPA ──────────────────────────────────────────────────── -->
+  <mat-accordion class="settings-accordion">
+    <mat-expansion-panel [expanded]="true">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>map</mat-icon>
+          <span>Mapa</span>
+        </mat-panel-title>
+        <mat-panel-description>Visualización y puntos de interés</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <!-- ── Subsección: Configurar POI ────────────────────────────────── -->
+      <section class="settings-section">
+        <div class="settings-section__header">
+          <div>
+            <h3 class="settings-section__title">Configurar POI</h3>
+            <p class="settings-section__desc">
+              Elige qué puntos de interés nativos de Google Maps se muestran.
+              Los marcadores de MapIt siempre son visibles.
+            </p>
+          </div>
+          <button
+            mat-stroked-button
+            class="settings-section__reset"
+            (click)="mapSettings.resetToDefaults()"
+            title="Restaurar valores por defecto">
+            <mat-icon>restart_alt</mat-icon>
+            Restablecer
+          </button>
+        </div>
+
+        <mat-divider />
+
+        <ul class="poi-list">
+          @for (poi of mapSettings.settings().poi; track poi.id) {
+            <li class="poi-item">
+              <span class="poi-item__icon-wrap">
+                <mat-icon class="poi-item__icon">{{ poi.icon }}</mat-icon>
+              </span>
+              <div class="poi-item__text">
+                <span class="poi-item__label">{{ poi.label }}</span>
+                <span class="poi-item__desc">{{ poi.description }}</span>
+              </div>
+              <mat-slide-toggle
+                class="poi-item__toggle"
+                [checked]="poi.visible"
+                (change)="mapSettings.togglePoi(poi.id)"
+                color="primary"
+                [attr.aria-label]="'Mostrar ' + poi.label">
+              </mat-slide-toggle>
+            </li>
+          }
+        </ul>
+      </section>
+
+    </mat-expansion-panel>
+  </mat-accordion>
+
+</div>

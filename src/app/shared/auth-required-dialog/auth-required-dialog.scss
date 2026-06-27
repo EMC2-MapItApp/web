@@ -1,0 +1,61 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.auth-dialog {
+  @include m.dialog-base;
+
+  &__icon {
+    @include m.icon-circle(v.$gradient-auth, 72px, 32px, v.$shadow-icon-auth);
+  }
+
+  &__title {
+    margin: 0 0 v.$space-md;
+    font-size: v.$font-3xl;
+    font-weight: 800;
+    color: var(--c-text-primary);
+    letter-spacing: -0.3px;
+  }
+
+  &__subtitle {
+    margin: 0 0 28px;
+    font-size: v.$font-md;
+    color: var(--c-text-secondary);
+    line-height: 1.6;
+  }
+
+  &__actions {
+    display: flex;
+    gap: v.$space-md;
+    width: 100%;
+
+    button {
+      flex: 1;
+      height: 44px;
+      font-size: v.$font-md;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+  }
+
+  &__hint {
+    margin: 20px 0 0;
+    font-size: v.$font-xs;
+    color: var(--c-text-muted);
+  }
+}
+
+.close-btn {
+  @include m.close-btn;
+}
+
+.btn-register {
+  @include m.btn-primary;
+}
+
+.btn-login {
+  border-color: var(--c-primary) !important;
+  color: var(--c-primary) !important;
+}

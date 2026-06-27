@@ -1,0 +1,231 @@
+<div class="register-dialog" (click)="$event.stopPropagation()">
+
+  <button class="close-btn" mat-icon-button (click)="dialogRef.close()" aria-label="Cerrar">
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <div class="register-dialog__icon">
+    <mat-icon>person_add</mat-icon>
+  </div>
+
+  <h2 class="register-dialog__title">Crear cuenta</h2>
+  <p class="register-dialog__subtitle">Únete a MapIt</p>
+
+  <mat-stepper [linear]="true" #stepper animationDuration="300ms" class="register-stepper">
+
+    <!-- ── PASO 1: Tipo de perfil ────────────────────────────────────────── -->
+    <mat-step [stepControl]="step1Form" label="Tu perfil">
+      <div class="step-content">
+        <p class="step-hint">¿Cómo quieres participar en MapIt?</p>
+
+        <div class="type-selector">
+
+          <button type="button" class="type-card"
+                  [class.type-card--active]="selectedType() === 'individual'"
+                  (click)="selectType('individual')">
+            <span class="type-card__emoji">🙋</span>
+            <span class="type-card__label">Particular</span>
+            <span class="type-card__desc">Organiza y descubre eventos en tu ciudad</span>
+          </button>
+
+          <button type="button" class="type-card type-card--disabled" disabled
+                  matTooltip="Próximamente disponible" matTooltipPosition="above">
+            <span class="type-card__emoji">🏪</span>
+            <span class="type-card__label">Profesional</span>
+            <span class="type-card__desc">Registra tu negocio y publica promociones</span>
+            <span class="type-card__soon">Próximamente</span>
+          </button>
+
+          <button type="button" class="type-card type-card--disabled" disabled
+                  matTooltip="Próximamente disponible" matTooltipPosition="above">
+            <span class="type-card__emoji">🏛️</span>
+            <span class="type-card__label">Entidad</span>
+            <span class="type-card__desc">Museo, asociación, ayuntamiento u organización</span>
+            <span class="type-card__soon">Próximamente</span>
+          </button>
+
+        </div>
+
+        <div class="step-actions">
+          <button mat-flat-button class="btn-primary" matStepperNext [disabled]="!selectedType()">
+            Continuar
+          </button>
+        </div>
+      </div>
+    </mat-step>
+
+    <!-- ── PASO 2: Datos comunes ─────────────────────────────────────────── -->
+    <mat-step [stepControl]="step2Form" label="Tus datos">
+      <div class="step-content">
+        <form [formGroup]="step2Form" novalidate>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre completo</mat-label>
+            <input matInput formControlName="name" autocomplete="name" />
+            @if (nameCtrl.hasError('required')) {
+              <mat-error>El nombre es obligatorio</mat-error>
+            }
+            @if (nameCtrl.hasError('minlength')) {
+              <mat-error>Mínimo 2 caracteres</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Correo electrónico</mat-label>
+            <input matInput type="email" formControlName="email" autocomplete="email" />
+            @if (emailCtrl.hasError('required')) {
+              <mat-error>El correo es obligatorio</mat-error>
+            }
+            @if (emailCtrl.hasError('email')) {
+              <mat-error>Formato de correo inválido</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Contraseña</mat-label>
+            <input matInput [type]="hidePassword ? 'password' : 'text'"
+                   formControlName="password" autocomplete="new-password" />
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            @if (passwordCtrl.hasError('required')) {
+              <mat-error>La contraseña es obligatoria</mat-error>
+            }
+            @if (passwordCtrl.hasError('minlength')) {
+              <mat-error>Mínimo 6 caracteres</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Confirmar contraseña</mat-label>
+            <input matInput [type]="hidePasswordConfirm ? 'password' : 'text'"
+                   formControlName="passwordConfirm" autocomplete="new-password" />
+            <button mat-icon-button matSuffix type="button"
+                    (click)="hidePasswordConfirm = !hidePasswordConfirm">
+              <mat-icon>{{ hidePasswordConfirm ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            @if (step2Form.hasError('passwordMismatch') && passwordConfirmCtrl.dirty) {
+              <mat-error>Las contraseñas no coinciden</mat-error>
+            }
+          </mat-form-field>
+
+        </form>
+
+        <div class="step-actions">
+          <button mat-stroked-button class="btn-back" matStepperPrevious>Atrás</button>
+          <button mat-flat-button class="btn-primary" matStepperNext [disabled]="step2Form.invalid">
+            Continuar
+          </button>
+        </div>
+      </div>
+    </mat-step>
+
+    <!-- ── PASO 3: Detalles ──────────────────────────────────────────────── -->
+    <mat-step label="Detalles">
+      <div class="step-content">
+
+        @if (selectedType() === 'individual') {
+          <div class="individual-ready">
+            <span class="individual-ready__emoji">🎉</span>
+            <p class="individual-ready__text">
+              ¡Todo listo! Tu cuenta de particular no requiere información adicional.
+              Podrás completar tu perfil más adelante.
+            </p>
+          </div>
+        }
+
+        @if (selectedType() === 'professional') {
+          <form [formGroup]="step3ProfessionalForm" novalidate>
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre del negocio</mat-label>
+              <input matInput formControlName="businessName" />
+              @if (businessNameCtrl.hasError('required')) {
+                <mat-error>El nombre del negocio es obligatorio</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>CIF</mat-label>
+              <input matInput formControlName="cif" placeholder="B12345678" />
+              @if (cifCtrl.hasError('required')) { <mat-error>El CIF es obligatorio</mat-error> }
+              @if (cifCtrl.hasError('pattern')) { <mat-error>Formato inválido (ej: B12345678)</mat-error> }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Teléfono de contacto</mat-label>
+              <input matInput formControlName="phone" type="tel" />
+              @if (proPhoneCtrl.hasError('required')) { <mat-error>El teléfono es obligatorio</mat-error> }
+              @if (proPhoneCtrl.hasError('pattern')) { <mat-error>Formato de teléfono inválido</mat-error> }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Sitio web (opcional)</mat-label>
+              <input matInput formControlName="web" placeholder="https://..." />
+              @if (step3ProfessionalForm.controls['web'].hasError('pattern')) {
+                <mat-error>La URL debe comenzar por https://</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Dirección</mat-label>
+              <input matInput formControlName="address" />
+              @if (proAddressCtrl.hasError('required')) { <mat-error>La dirección es obligatoria</mat-error> }
+            </mat-form-field>
+          </form>
+        }
+
+        @if (selectedType() === 'entity') {
+          <form [formGroup]="step3EntityForm" novalidate>
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre de la entidad</mat-label>
+              <input matInput formControlName="entityName" />
+              @if (entityNameCtrl.hasError('required')) { <mat-error>El nombre es obligatorio</mat-error> }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Tipo de entidad</mat-label>
+              <mat-select formControlName="entityType">
+                @for (type of entityTypes; track type.value) {
+                  <mat-option [value]="type.value">{{ type.label }}</mat-option>
+                }
+              </mat-select>
+              @if (entityTypeCtrl.hasError('required')) { <mat-error>Selecciona el tipo</mat-error> }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Teléfono de contacto</mat-label>
+              <input matInput formControlName="phone" type="tel" />
+              @if (entPhoneCtrl.hasError('required')) { <mat-error>El teléfono es obligatorio</mat-error> }
+              @if (entPhoneCtrl.hasError('pattern')) { <mat-error>Formato inválido</mat-error> }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Sitio web (opcional)</mat-label>
+              <input matInput formControlName="web" placeholder="https://..." />
+              @if (step3EntityForm.controls['web'].hasError('pattern')) {
+                <mat-error>La URL debe comenzar por https://</mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Dirección</mat-label>
+              <input matInput formControlName="address" />
+              @if (entAddressCtrl.hasError('required')) { <mat-error>La dirección es obligatoria</mat-error> }
+            </mat-form-field>
+          </form>
+        }
+
+        <div class="step-actions">
+          <button mat-stroked-button class="btn-back" matStepperPrevious>Atrás</button>
+          <button mat-flat-button class="btn-primary"
+                  [disabled]="!step3Valid || loading()" (click)="submit()">
+            @if (loading()) { <mat-spinner diameter="20" /> } @else { Crear cuenta }
+          </button>
+        </div>
+
+        @if (errorMsg()) {
+          <p class="error-msg">{{ errorMsg() }}</p>
+        }
+      </div>
+    </mat-step>
+
+  </mat-stepper>
+
+  <p class="register-dialog__hint">
+    ¿Ya tienes cuenta?
+    <a (click)="goToLogin()" role="button">Inicia sesión</a>
+  </p>
+
+</div>

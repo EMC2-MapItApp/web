@@ -1,0 +1,31 @@
+<div class="welcome-dialog" (click)="$event.stopPropagation()">
+
+  <!-- Botón cerrar -->
+  <button class="close-btn" mat-icon-button (click)="dialogRef.close()" aria-label="Cerrar">
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <div class="welcome-dialog__icon">
+    <mat-icon>map</mat-icon>
+  </div>
+
+  <h2 class="welcome-dialog__title">¡Bienvenido a MapIt!</h2>
+
+  <p class="welcome-dialog__subtitle">
+    Descubre actividades, lugares y eventos cerca de ti.<br />
+    Únete a la comunidad para crear y compartir tus propios mapas.
+  </p>
+
+  <div class="welcome-dialog__actions">
+    <button mat-flat-button class="btn-register" (click)="goToRegister()">
+      <mat-icon>person_add</mat-icon>
+      Crear cuenta
+    </button>
+    <button mat-stroked-button class="btn-login" (click)="goToLogin()">
+      <mat-icon>login</mat-icon>
+      Iniciar sesión
+    </button>
+  </div>
+
+  <p class="welcome-dialog__hint">Cierra esta ventana para explorar el mapa</p>
+</div>

@@ -25,6 +25,7 @@ import { MainCategory, SubCategory } from '../../../core/models/category.model';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MapSettingsService } from '../../../core/services/map-settings.service';
 import { ThemeService } from '../../../core/services/theme.service';
+import { GeoIpService } from '../../../core/services/geo-ip.service';
 
 /**
  * Componente de página para crear actividades (eventos) para usuarios particulares.
@@ -58,6 +59,8 @@ export class CreateActivityPageComponent implements AfterViewInit {
   private readonly mapSettingsService = inject(MapSettingsService);
 
   private readonly themeService = inject(ThemeService);
+
+  private readonly geoIpService = inject(GeoIpService);
 
   // ── Mapa ───────────────────────────────────────────────────────────────────
   /** Referencia al contenedor DOM del mapa */
@@ -239,27 +242,27 @@ export class CreateActivityPageComponent implements AfterViewInit {
    */
   async ngAfterViewInit(): Promise<void> {
     await this.mapsService.load();
-    this.map = new google.maps.Map(this.mapContainer.nativeElement, {
-      center: { lat: 40.4168, lng: -3.7038 },
-      zoom: 12,
-      disableDefaultUI: true,
-      zoomControl: true,
-      styles: this.mapSettingsService.mapStyles(),  // ← añadir
-    });
 
-    // Listener: click en el mapa establece la ubicación de la actividad o la ruta
-    this.map.addListener('click', (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng) return;
+    this.geoIpService.resolveCenter().subscribe(center => {
+      this.map = new google.maps.Map(this.mapContainer.nativeElement, {
+        center: { lat: center.lat, lng: center.lng },
+        zoom: 12,
+        disableDefaultUI: true,
+        zoomControl: true,
+        styles: this.mapSettingsService.mapStyles(),
+      });
 
-      if (this.isAddingRoute) {
-        // Modo ruta: añadir punto a la ruta
-        this.addRoutePoint(e.latLng);
-      } else {
-        // Modo normal: establecer ubicación del marcador
-        this.lat.set(e.latLng.lat());
-        this.lng.set(e.latLng.lng());
-        this.placeMarker(e.latLng);
-      }
+      // listener de click igual que antes
+      this.map.addListener('click', (e: google.maps.MapMouseEvent) => {
+        if (!e.latLng) return;
+        if (this.isAddingRoute) {
+          this.addRoutePoint(e.latLng);
+        } else {
+          this.lat.set(e.latLng.lat());
+          this.lng.set(e.latLng.lng());
+          this.placeMarker(e.latLng);
+        }
+      });
     });
   }
 

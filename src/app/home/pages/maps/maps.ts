@@ -14,6 +14,7 @@ import { CurrentUserService } from '../../../core/services/current-user.service'
 import { AuthRequiredDialogComponent } from '../../../shared/auth-required-dialog/auth-required-dialog';
 import { AUTH_REQUIRED_DIALOG_CONFIG } from '../../../core/constants/dialog.constants';
 import { ThemeService } from '../../../core/services/theme.service';
+import { GeoIpService } from '../../../core/services/geo-ip.service';
 
 
 /**
@@ -42,6 +43,7 @@ export class MapsPageComponent implements AfterViewInit {
   readonly categoryService = inject(CategoryService);
   private currentUser = inject(CurrentUserService);
   private dialog = inject(MatDialog);
+  private geoIpService = inject(GeoIpService);
 
   // ── Propiedades ──────────────────────────────────────────────────────────────
 
@@ -132,33 +134,29 @@ export class MapsPageComponent implements AfterViewInit {
   // ── Ciclo de vida ──────────────────────────────────────────────────────────
 
   async ngAfterViewInit(): Promise<void> {
-    // Cargar árbol de categorías
     this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
-
-    // Inicializar mapa
     await this.mapsService.load();
 
-    this.map = new google.maps.Map(this.mapContainer.nativeElement, {
-      center: { lat: 40.4168, lng: -3.7038 },
-      zoom: 12,
-      styles: this.mapSettingsService.mapStyles(),  // ← usar el servicio
-    });
-    this.infoWindow = new google.maps.InfoWindow({ headerDisabled: true });
+    // Resolver centro por IP antes de crear el mapa ──────────────
+    this.geoIpService.resolveCenter().subscribe(center => {
+      this.map = new google.maps.Map(this.mapContainer.nativeElement, {
+        center: { lat: center.lat, lng: center.lng },
+        zoom: 12,
+        styles: this.mapSettingsService.mapStyles(),
+      });
+      this.infoWindow = new google.maps.InfoWindow({ headerDisabled: true });
 
-    // Cargar localizaciones
-    this.locationService.getAll().subscribe(locations => {
-      this.allLocations = locations;
-
-      const favorites = this.currentUser.favoriteTypeIds();
-
-      if (favorites.length > 0) {
-        // Mostrar solo las favoritas inicialmente
-        const filtered = locations.filter(l => favorites.includes(l.locationTypeId));
-        this.renderMarkers(filtered.length > 0 ? filtered : locations);
-      } else {
-        // Sin favoritas → mostrar todas
-        this.renderMarkers(locations);
-      }
+      // Cargar localizaciones
+      this.locationService.getAll().subscribe(locations => {
+        this.allLocations = locations;
+        const favorites = this.currentUser.favoriteTypeIds();
+        if (favorites.length > 0) {
+          const filtered = locations.filter(l => favorites.includes(l.locationTypeId));
+          this.renderMarkers(filtered.length > 0 ? filtered : locations);
+        } else {
+          this.renderMarkers(locations);
+        }
+      });
     });
   }
 

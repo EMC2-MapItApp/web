@@ -1,0 +1,165 @@
+<div class="detail" [style.--accent]="accentColor">
+
+  <!-- ── Cabecera ─────────────────────────────────────────────────────── -->
+  <div class="detail__header">
+    <span class="detail__emoji">{{ breadcrumb.subCategory.icon }}</span>
+    <div class="detail__titles">
+      <h3 class="detail__name">{{ item.name }}</h3>
+      <p class="detail__breadcrumb">
+        {{ breadcrumb.mainCategory.name }}
+        &rsaquo; {{ breadcrumb.subCategory.name }}
+        &rsaquo; {{ breadcrumb.locationType.name }}
+      </p>
+    </div>
+
+    <!-- Badge activa/caducada solo en publications -->
+    @if (hasDateRange) {
+    <span class="detail__status" [class.detail__status--active]="isActive">
+      {{ isActive ? 'Activo' : 'Finalizado' }}
+    </span>
+    }
+  </div>
+
+  @if (item.publicationType) {
+  <div class="detail__publication-meta">
+    <span class="detail__publication-chip">
+      {{ item.publicationType === 'event' ? 'Evento' : 'Promoción' }}
+    </span>
+    <span class="detail__publication-state">
+      Estado: {{ isActive ? 'Activo' : 'Finalizado' }}
+    </span>
+  </div>
+  }
+
+  <!-- ── Descripción universal ─────────────────────────────────────────── -->
+  @if (item.description) {
+  <p class="detail__description">{{ item.description }}</p>
+  }
+
+  <!-- ── Rango de fechas (solo Publications) ───────────────────────────── -->
+  @if (hasDateRange) {
+  <div class="detail__dates">
+    <div class="detail__date-row">
+      <span class="detail__date-label">Inicio</span>
+      <span class="detail__date-value">{{ formatDate(item.startDate) }}</span>
+    </div>
+    @if (item.endDate) {
+    <div class="detail__date-row">
+      <span class="detail__date-label">Fin</span>
+      <span class="detail__date-value">{{ formatDate(item.endDate) }}</span>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- ── Nivel requerido (solo Publications con requiredLevel > 0) ──────── -->
+  @if (hasLevelRequirement) {
+  <div class="detail__level">
+    <span class="detail__level-icon">🔒</span>
+    <span class="detail__level-text">
+      Requiere nivel {{ item.requiredLevel }} o superior
+    </span>
+  </div>
+  }
+
+  <!-- ── Campos dinámicos de metadata ─────────────────────────────────── -->
+  @if (fields.length) {
+  <ul class="detail__fields">
+    @for (field of fields; track field.key) {
+    <li class="detail__field">
+
+      <span class="detail__field-label">{{ field.label }}</span>
+
+      @switch (field.type) {
+
+      @case ('badge') {
+      @if (hasValue(field.key)) {
+      <span class="detail__badge" [style.background]="field.badgeColors?.[getValue(field.key) + ''] ?? accentColor">
+        {{ getValue(field.key) }}
+      </span>
+      } @else {
+      <span class="detail__field-value">–</span>
+      }
+      }
+
+      @case ('url') {
+      @if (hasValue(field.key)) {
+      <a class="detail__field-value detail__field-value--link" [href]="getValue(field.key)" target="_blank"
+        rel="noopener noreferrer">
+        {{ getValue(field.key) }}
+      </a>
+      } @else {
+      <span class="detail__field-value">–</span>
+      }
+      }
+
+      @case ('phone') {
+      @if (hasValue(field.key)) {
+      <a class="detail__field-value detail__field-value--link" [href]="'tel:' + getValue(field.key)">
+        {{ getValue(field.key) }}
+      </a>
+      } @else {
+      <span class="detail__field-value">–</span>
+      }
+      }
+
+      @case ('code') {
+      @if (hasValue(field.key)) {
+      <span class="detail__field-value detail__field-value--code">
+        {{ getValue(field.key) }}
+      </span>
+      } @else {
+      <span class="detail__field-value">–</span>
+      }
+      }
+
+      @case ('datetime') {
+      <span class="detail__field-value">{{ formatDate(getValue(field.key)) }}</span>
+      }
+
+      @case ('date') {
+      <span class="detail__field-value">{{ formatDateOnly(getValue(field.key)) }}</span>
+      }
+
+      @case ('boolean') {
+      <span class="detail__field-value">
+        {{ getValue(field.key) ? 'Sí' : 'No' }}
+      </span>
+      }
+
+      @case ('number') {
+      <span class="detail__field-value">
+        {{ hasValue(field.key) ? getValue(field.key) : '–' }}
+        @if (field.unit) {
+        <small class="detail__unit">{{ field.unit }}</small>
+        }
+      </span>
+      }
+
+      @default {
+      <span class="detail__field-value">{{ hasValue(field.key) ? getValue(field.key) : '–' }}</span>
+      }
+
+      }
+    </li>
+    }
+  </ul>
+  }
+
+  <div class="detail__actions">
+    <button class="detail__join-btn" type="button" [disabled]="joinDisabled" (click)="onJoin()">
+      {{ joinButtonText }}
+    </button>
+
+    @if (hasCapacityLimit) {
+    <p class="detail__capacity-text">
+      {{ joinedCount }} / {{ maxSlots }} plazas ocupadas
+    </p>
+    } @else {
+    <p class="detail__capacity-text">
+      {{ joinedCount }} personas apuntadas
+    </p>
+    }
+  </div>
+
+</div>

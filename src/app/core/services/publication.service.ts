@@ -5,7 +5,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Publication, PublicationCreateRequest } from '../models/publication.model';
+import { Publication, PublicationCreateRequest, PublicationEnrollmentResponse } from '../models/publication.model';
 import { environment } from '../../../environments/environment';
 import { CurrentUserService } from './current-user.service';
 
@@ -52,5 +52,12 @@ export class PublicationService {
      */
     remove(id: number): Observable<void> {
         return this.http.delete<void>(`${this.baseUrl}/${id}`);
+    }
+
+    /**
+     * Apunta al usuario autenticado a una publicación.
+     */
+    enroll(id: number): Observable<PublicationEnrollmentResponse> {
+        return this.http.post<PublicationEnrollmentResponse>(`${this.baseUrl}/${id}/enroll`, {});
     }
 }

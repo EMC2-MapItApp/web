@@ -48,4 +48,22 @@ export interface MapLocation {
    * En BD: columna JSONB.
    */
   metadata?: Record<string, unknown>;
+
+  /** Tipo de publicación temporal (evento o promoción). */
+  publicationType?: 'event' | 'promotion';
+
+  /** Fecha/hora de inicio de la publicación (ISO). */
+  startDate?: string;
+
+  /** Fecha/hora de fin de la publicación (ISO), null si indefinida. */
+  endDate?: string | null;
+
+  /** Nivel mínimo requerido para visualizar/interactuar. */
+  requiredLevel?: number;
+
+  /** Estado de activación persistido en backend. */
+  active?: boolean;
+
+  /** Número de personas apuntadas actualmente. */
+  occupiedSlots?: number;
 }

@@ -60,7 +60,7 @@ export class ProfilePageComponent {
   private router = inject(Router);
   private fb = inject(FormBuilder);
 
-  /** Publicaciones del usuario para el panel "Mis actividades". */
+  /** Publicaciones del usuario para el panel "Mis publicaciones". */
   myPublications = signal<Publication[]>([]);
 
   /** Estado de carga de publicaciones del perfil. */
@@ -84,7 +84,7 @@ export class ProfilePageComponent {
   }
 
   /**
-   * Recarga la lista de actividades del usuario autenticado.
+  * Recarga la lista de publicaciones del usuario autenticado.
    */
   loadMyPublications(): void {
     this.loadingPublications.set(true);
@@ -99,13 +99,13 @@ export class ProfilePageComponent {
       },
       error: () => {
         this.loadingPublications.set(false);
-        this.publicationsError.set('No se pudieron cargar tus actividades.');
+        this.publicationsError.set('No se pudieron cargar tus publicaciones.');
       }
     });
   }
 
   /**
-   * Determina si una actividad está finalizada.
+  * Determina si una publicación está finalizada.
    *
    * Se considera finalizada si ya no está activa o si su fecha de fin ya venció.
    */
@@ -116,20 +116,20 @@ export class ProfilePageComponent {
   }
 
   /**
-   * Elimina de forma definitiva una actividad del usuario.
+  * Elimina de forma definitiva una publicación del usuario.
    */
   deletePublication(publication: Publication): void {
     this.publicationService.remove(publication.id).subscribe({
       next: () => {
         this.myPublications.update(list => list.filter(item => item.id !== publication.id));
-        this.snackBar.open('Actividad eliminada definitivamente', 'Cerrar', {
+        this.snackBar.open('Publicación eliminada definitivamente', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'center',
           verticalPosition: 'top',
         });
       },
       error: () => {
-        this.snackBar.open('No se pudo eliminar la actividad', 'Cerrar', {
+        this.snackBar.open('No se pudo eliminar la publicación', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'center',
           verticalPosition: 'top',
@@ -139,12 +139,12 @@ export class ProfilePageComponent {
   }
 
   /**
-   * Inicia el flujo de repetir actividad.
+  * Inicia el flujo de repetir publicación.
    *
-   * Navega a crear actividad indicando el id origen para precargar los datos.
+  * Navega a crear publicación indicando el id origen para precargar los datos.
    */
   repeatPublication(publication: Publication): void {
-    this.router.navigate(['/create-activity'], {
+    this.router.navigate(['/create-publication'], {
       queryParams: { repeatFrom: publication.id },
     });
   }

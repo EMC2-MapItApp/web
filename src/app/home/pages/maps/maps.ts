@@ -7,7 +7,7 @@ import { CategoryService } from '../../../core/services/category.service';
 import { MapLocation } from '../../../core/models/location.model';
 import { MainCategory, SubCategory } from '../../../core/models/category.model';
 import { MapSettingsService } from '../../../core/services/map-settings.service';
-import { DetailInput, LocationDetailComponent } from '../maps/location-detail/location-detail';
+import { PublicationDetailInput, PublicationDetailComponent } from '../maps/publication-detail/publication-detail';
 import { CategoryBreadcrumb } from '../../../core/models/category.model';
 import { FieldContext } from '../../../core/models/location-field.model';
 import { CurrentUserService } from '../../../core/services/current-user.service';
@@ -15,6 +15,8 @@ import { AuthRequiredDialogComponent } from '../../../shared/auth-required-dialo
 import { AUTH_REQUIRED_DIALOG_CONFIG } from '../../../core/constants/dialog.constants';
 import { ThemeService } from '../../../core/services/theme.service';
 import { GeoIpService } from '../../../core/services/geo-ip.service';
+import { PublicationService } from '../../../core/services/publication.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 
 /**
@@ -30,7 +32,7 @@ import { GeoIpService } from '../../../core/services/geo-ip.service';
 @Component({
   selector: 'app-maps-page',
   standalone: true,
-  imports: [MatIconModule, LocationDetailComponent],
+  imports: [MatIconModule, PublicationDetailComponent],
   templateUrl: './maps.html',
   styleUrl: './maps.scss'
 })
@@ -44,6 +46,7 @@ export class MapsPageComponent implements AfterViewInit {
   private currentUser = inject(CurrentUserService);
   private dialog = inject(MatDialog);
   private geoIpService = inject(GeoIpService);
+  private publicationService = inject(PublicationService);
 
   // ── Propiedades ──────────────────────────────────────────────────────────────
 
@@ -91,7 +94,7 @@ export class MapsPageComponent implements AfterViewInit {
 
   // ── Estado del panel de detalle ───────────────────────────────────────────
   /** Localización seleccionada al hacer click en un marker. null = panel cerrado. */
-  selectedDetail = signal<DetailInput | null>(null);
+  selectedDetail = signal<PublicationDetailInput | null>(null);
 
   /** Breadcrumb de la localización seleccionada. */
   selectedBreadcrumb = signal<CategoryBreadcrumb | null>(null);
@@ -99,9 +102,79 @@ export class MapsPageComponent implements AfterViewInit {
   /** Contexto del panel de detalle. */
   selectedContext = signal<FieldContext>('place');
 
+  /** Número de usuarios apuntados por localización (estado de sesión en cliente). */
+  joinedByLocation = signal<Record<number, number>>({});
+
+  /** Marca de apuntado por combinación usuario+localización (estado de sesión). */
+  joinedByUserAndLocation = signal<Record<string, true>>({});
+
   /** Cierra el panel de detalle. */
   closeDetail(): void {
     this.selectedDetail.set(null);
+  }
+
+  /** Devuelve cuántos usuarios están apuntados en la localización indicada. */
+  getJoinedCount(locationId: number): number {
+    const fromState = this.joinedByLocation()[locationId];
+    if (typeof fromState === 'number') return fromState;
+    const location = this.allLocations.find(l => l.id === locationId);
+    return location?.occupiedSlots ?? 0;
+  }
+
+  /** Indica si el usuario actual ya está apuntado a una localización. */
+  hasJoined(locationId: number): boolean {
+    return !!this.joinedByUserAndLocation()[this.buildJoinKey(locationId)];
+  }
+
+  /** Registra en backend el apuntado del detalle abierto respetando el máximo de plazas. */
+  joinSelectedLocation(): void {
+    if (!this.requireAuth()) return;
+
+    const detail = this.selectedDetail();
+    if (!detail) return;
+
+    if (this.hasJoined(detail.id)) return;
+
+    const current = this.getJoinedCount(detail.id);
+    const maxSlots = this.resolveMaxSlots(detail);
+
+    if (maxSlots !== null && current >= maxSlots) return;
+
+    this.publicationService.enroll(detail.id).subscribe({
+      next: response => {
+        this.joinedByLocation.update(prev => ({
+          ...prev,
+          [detail.id]: response.occupiedSlots,
+        }));
+
+        this.joinedByUserAndLocation.update(prev => ({
+          ...prev,
+          [this.buildJoinKey(detail.id)]: true,
+        }));
+      },
+      error: (error: HttpErrorResponse) => {
+        const message = error?.error?.error?.message ?? '';
+        if (typeof message === 'string' && message.toLowerCase().includes('ya estás apuntado')) {
+          this.joinedByUserAndLocation.update(prev => ({
+            ...prev,
+            [this.buildJoinKey(detail.id)]: true,
+          }));
+        }
+      },
+    });
+  }
+
+  /** Construye una clave estable de apuntado por usuario y localización. */
+  private buildJoinKey(locationId: number): string {
+    const userId = this.currentUser.user()?.id;
+    return `${userId ?? 'anon'}:${locationId}`;
+  }
+
+  /** Extrae el máximo de plazas desde metadata.slots cuando está disponible. */
+  private resolveMaxSlots(detail: PublicationDetailInput): number | null {
+    const raw = detail.metadata?.['slots'];
+    if (typeof raw !== 'number' || !Number.isFinite(raw) || raw <= 0) return null;
+    return Math.floor(raw);
   }
 
   // ── Constructor ──────────────────────────────────────────────────────────
@@ -149,6 +222,12 @@ export class MapsPageComponent implements AfterViewInit {
       // Cargar localizaciones
       this.locationService.getAll().subscribe(locations => {
         this.allLocations = locations;
+        const occupancy = locations.reduce<Record<number, number>>((acc, location) => {
+          acc[location.id] = location.occupiedSlots ?? 0;
+          return acc;
+        }, {});
+        this.joinedByLocation.set(occupancy);
+
         const favorites = this.currentUser.favoriteTypeIds();
         if (favorites.length > 0) {
           const filtered = locations.filter(l => favorites.includes(l.locationTypeId));
@@ -241,19 +320,23 @@ export class MapsPageComponent implements AfterViewInit {
       });
 
       marker.addListener('click', () => {
-
-        if (!this.requireAuth()) return;
-
         const bc = this.categoryService.resolveBreadcrumb(location.locationTypeId);
         if (!bc) return;
         this.selectedDetail.set({
+          id: location.id,
           name: location.name,
           description: location.description,
           locationTypeId: location.locationTypeId,
           metadata: location.metadata,
+          startDate: location.startDate,
+          endDate: location.endDate,
+          requiredLevel: location.requiredLevel,
+          publicationType: location.publicationType,
+          active: location.active,
+          occupiedSlots: location.occupiedSlots,
         });
         this.selectedBreadcrumb.set(bc);
-        this.selectedContext.set('place'); // fase 7: distinguirá place/event/promotion
+        this.selectedContext.set(location.publicationType ?? 'place');
       });
 
       marker.addListener('mouseover', () => {

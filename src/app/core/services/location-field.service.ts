@@ -9,7 +9,7 @@
  *   - No hay que tocar ningún componente.
  *
  * Campos universales (name, description, address, startDate, endDate…)
- * los renderiza directamente el componente location-detail sin pasar por aquí.
+ * los renderiza directamente el componente publication-detail sin pasar por aquí.
  * Este servicio solo gestiona los campos de `metadata`.
  */
 import { Injectable, inject } from '@angular/core';
@@ -27,8 +27,8 @@ interface LegacyLocationFieldSchema {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const DIFFICULTY_COLORS: Record<string, string> = {
-  'Fácil':   '#10b981',
-  'Medio':   '#f59e0b',
+  'Fácil': '#10b981',
+  'Medio': '#f59e0b',
   'Difícil': '#ef4444',
 };
 
@@ -44,32 +44,32 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'ciclismo-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección',  type: 'text' },
-      { key: 'schedule', label: 'Horario',    type: 'text' },
-      { key: 'phone',    label: 'Teléfono',   type: 'phone' },
-      { key: 'web',      label: 'Web',        type: 'url' },
-      { key: 'services', label: 'Servicios',  type: 'text' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
+      { key: 'services', label: 'Servicios', type: 'text' },
     ],
   },
   {
     locationTypeId: 'ciclismo-profesional',
     context: 'promotion',
     fields: [
-      { key: 'discountCode',    label: 'Código',     type: 'code' },
-      { key: 'discountPercent', label: 'Descuento',  type: 'number', unit: '%' },
-      { key: 'conditions',      label: 'Condiciones',type: 'text' },
-      { key: 'maxUses',         label: 'Usos máx.',  type: 'number', unit: 'usos' },
+      { key: 'discountCode', label: 'Código', type: 'code' },
+      { key: 'discountPercent', label: 'Descuento', type: 'number', unit: '%' },
+      { key: 'conditions', label: 'Condiciones', type: 'text' },
+      { key: 'maxUses', label: 'Usos máx.', type: 'number', unit: 'usos' },
     ],
   },
   {
     locationTypeId: 'ciclismo-quedadas',
     context: 'event',
     fields: [
-      { key: 'distance',  label: 'Distancia',     type: 'number', unit: 'km' },
-      { key: 'elevation', label: 'Desnivel',      type: 'number', unit: 'm' },
-      { key: 'level',     label: 'Nivel',         type: 'badge', badgeColors: DIFFICULTY_COLORS },
-      { key: 'slots',     label: 'Plazas libres', type: 'number', unit: 'plazas' },
-      { key: 'contact',   label: 'Contacto',      type: 'phone' },
+      { key: 'distance', label: 'Distancia', type: 'number', unit: 'km' },
+      { key: 'elevation', label: 'Desnivel', type: 'number', unit: 'm' },
+      { key: 'level', label: 'Nivel', type: 'badge', badgeColors: DIFFICULTY_COLORS },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -79,29 +79,29 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'running-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección', type: 'text' },
-      { key: 'schedule', label: 'Horario',   type: 'text' },
-      { key: 'phone',    label: 'Teléfono',  type: 'phone' },
-      { key: 'web',      label: 'Web',       type: 'url' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
     ],
   },
   {
     locationTypeId: 'running-profesional',
     context: 'promotion',
     fields: [
-      { key: 'discountCode',    label: 'Código',     type: 'code' },
-      { key: 'discountPercent', label: 'Descuento',  type: 'number', unit: '%' },
-      { key: 'conditions',      label: 'Condiciones',type: 'text' },
+      { key: 'discountCode', label: 'Código', type: 'code' },
+      { key: 'discountPercent', label: 'Descuento', type: 'number', unit: '%' },
+      { key: 'conditions', label: 'Condiciones', type: 'text' },
     ],
   },
   {
     locationTypeId: 'running-quedadas',
     context: 'event',
     fields: [
-      { key: 'distance', label: 'Distancia',     type: 'number', unit: 'km' },
-      { key: 'level',    label: 'Nivel',         type: 'badge', badgeColors: DIFFICULTY_COLORS },
-      { key: 'slots',    label: 'Plazas libres', type: 'number', unit: 'plazas' },
-      { key: 'contact',  label: 'Contacto',      type: 'phone' },
+      { key: 'distance', label: 'Distancia', type: 'number', unit: 'km' },
+      { key: 'level', label: 'Nivel', type: 'badge', badgeColors: DIFFICULTY_COLORS },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -111,8 +111,8 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'futbol-quedadas',
     context: 'event',
     fields: [
-      { key: 'slots',   label: 'Jugadores que faltan', type: 'number', unit: 'jugadores' },
-      { key: 'contact', label: 'Contacto',             type: 'phone' },
+      { key: 'slots', label: 'Jugadores que faltan', type: 'number', unit: 'jugadores' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -122,19 +122,19 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'natacion-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección', type: 'text' },
-      { key: 'schedule', label: 'Horario',   type: 'text' },
-      { key: 'phone',    label: 'Teléfono',  type: 'phone' },
-      { key: 'web',      label: 'Web',       type: 'url' },
-      { key: 'lanePrice',label: 'Precio/sesión', type: 'number', unit: '€' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
+      { key: 'lanePrice', label: 'Precio/sesión', type: 'number', unit: '€' },
     ],
   },
   {
     locationTypeId: 'natacion-quedadas',
     context: 'event',
     fields: [
-      { key: 'slots',   label: 'Plazas libres', type: 'number', unit: 'plazas' },
-      { key: 'contact', label: 'Contacto',      type: 'phone' },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -144,39 +144,39 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'museos-visita',
     context: 'place',
     fields: [
-      { key: 'address',      label: 'Dirección',        type: 'text' },
-      { key: 'schedule',     label: 'Horario',          type: 'text' },
-      { key: 'phone',        label: 'Teléfono',         type: 'phone' },
-      { key: 'web',          label: 'Web',              type: 'url' },
-      { key: 'admissionFee', label: 'Entrada',          type: 'number', unit: '€' },
-      { key: 'free',         label: 'Entrada gratuita', type: 'boolean' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
+      { key: 'admissionFee', label: 'Entrada', type: 'number', unit: '€' },
+      { key: 'free', label: 'Entrada gratuita', type: 'boolean' },
     ],
   },
   {
     locationTypeId: 'museos-visita',
     context: 'event',
     fields: [
-      { key: 'slots',           label: 'Plazas',        type: 'number', unit: 'plazas' },
-      { key: 'price',           label: 'Precio',        type: 'number', unit: '€' },
-      { key: 'registrationUrl', label: 'Inscripción',   type: 'url' },
+      { key: 'slots', label: 'Plazas', type: 'number', unit: 'plazas' },
+      { key: 'price', label: 'Precio', type: 'number', unit: '€' },
+      { key: 'registrationUrl', label: 'Inscripción', type: 'url' },
     ],
   },
   {
     locationTypeId: 'museos-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección', type: 'text' },
-      { key: 'schedule', label: 'Horario',   type: 'text' },
-      { key: 'phone',    label: 'Teléfono',  type: 'phone' },
-      { key: 'web',      label: 'Web',       type: 'url' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
     ],
   },
   {
     locationTypeId: 'museos-profesional',
     context: 'event',
     fields: [
-      { key: 'slots',           label: 'Plazas',      type: 'number', unit: 'plazas' },
-      { key: 'price',           label: 'Precio',      type: 'number', unit: '€' },
+      { key: 'slots', label: 'Plazas', type: 'number', unit: 'plazas' },
+      { key: 'price', label: 'Precio', type: 'number', unit: '€' },
       { key: 'registrationUrl', label: 'Inscripción', type: 'url' },
     ],
   },
@@ -187,19 +187,19 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'musica-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección', type: 'text' },
-      { key: 'schedule', label: 'Horario',   type: 'text' },
-      { key: 'phone',    label: 'Teléfono',  type: 'phone' },
-      { key: 'web',      label: 'Web',       type: 'url' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
     ],
   },
   {
     locationTypeId: 'musica-quedadas',
     context: 'event',
     fields: [
-      { key: 'slots',    label: 'Plazas libres', type: 'number', unit: 'plazas' },
-      { key: 'price',    label: 'Precio',        type: 'number', unit: '€' },
-      { key: 'contact',  label: 'Contacto',      type: 'phone' },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'price', label: 'Precio', type: 'number', unit: '€' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -209,19 +209,19 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'teatro-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección', type: 'text' },
-      { key: 'schedule', label: 'Horario',   type: 'text' },
-      { key: 'phone',    label: 'Teléfono',  type: 'phone' },
-      { key: 'web',      label: 'Web',       type: 'url' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
     ],
   },
   {
     locationTypeId: 'teatro-quedadas',
     context: 'event',
     fields: [
-      { key: 'slots',   label: 'Plazas libres', type: 'number', unit: 'plazas' },
-      { key: 'price',   label: 'Precio',        type: 'number', unit: '€' },
-      { key: 'contact', label: 'Contacto',      type: 'phone' },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'price', label: 'Precio', type: 'number', unit: '€' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -231,31 +231,31 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'restaurantes-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección',    type: 'text' },
-      { key: 'schedule', label: 'Horario',      type: 'text' },
-      { key: 'phone',    label: 'Teléfono',     type: 'phone' },
-      { key: 'web',      label: 'Web',          type: 'url' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
       { key: 'avgPrice', label: 'Precio medio', type: 'number', unit: '€' },
-      { key: 'cuisine',  label: 'Cocina',       type: 'text' },
-      { key: 'booking',  label: 'Reservas',     type: 'boolean' },
+      { key: 'cuisine', label: 'Cocina', type: 'text' },
+      { key: 'booking', label: 'Reservas', type: 'boolean' },
     ],
   },
   {
     locationTypeId: 'restaurantes-profesional',
     context: 'promotion',
     fields: [
-      { key: 'discountCode',    label: 'Código',     type: 'code' },
-      { key: 'discountPercent', label: 'Descuento',  type: 'number', unit: '%' },
-      { key: 'conditions',      label: 'Condiciones',type: 'text' },
+      { key: 'discountCode', label: 'Código', type: 'code' },
+      { key: 'discountPercent', label: 'Descuento', type: 'number', unit: '%' },
+      { key: 'conditions', label: 'Condiciones', type: 'text' },
     ],
   },
   {
     locationTypeId: 'restaurantes-quedadas',
     context: 'event',
     fields: [
-      { key: 'slots',    label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
       { key: 'avgPrice', label: 'Precio aprox.', type: 'number', unit: '€/persona' },
-      { key: 'contact',  label: 'Contacto',      type: 'phone' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -265,27 +265,27 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'bares-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección', type: 'text' },
-      { key: 'schedule', label: 'Horario',   type: 'text' },
-      { key: 'phone',    label: 'Teléfono',  type: 'phone' },
-      { key: 'web',      label: 'Web',       type: 'url' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
     ],
   },
   {
     locationTypeId: 'bares-profesional',
     context: 'promotion',
     fields: [
-      { key: 'discountCode',    label: 'Código',     type: 'code' },
-      { key: 'discountPercent', label: 'Descuento',  type: 'number', unit: '%' },
-      { key: 'conditions',      label: 'Condiciones',type: 'text' },
+      { key: 'discountCode', label: 'Código', type: 'code' },
+      { key: 'discountPercent', label: 'Descuento', type: 'number', unit: '%' },
+      { key: 'conditions', label: 'Condiciones', type: 'text' },
     ],
   },
   {
     locationTypeId: 'bares-quedadas',
     context: 'event',
     fields: [
-      { key: 'slots',   label: 'Plazas libres', type: 'number', unit: 'plazas' },
-      { key: 'contact', label: 'Contacto',      type: 'phone' },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -295,21 +295,21 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'senderismo-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección', type: 'text' },
-      { key: 'schedule', label: 'Horario',   type: 'text' },
-      { key: 'phone',    label: 'Teléfono',  type: 'phone' },
-      { key: 'web',      label: 'Web',       type: 'url' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
     ],
   },
   {
     locationTypeId: 'senderismo-quedadas',
     context: 'event',
     fields: [
-      { key: 'distance',  label: 'Distancia',  type: 'number', unit: 'km' },
-      { key: 'elevation', label: 'Desnivel',   type: 'number', unit: 'm' },
-      { key: 'level',     label: 'Dificultad', type: 'badge', badgeColors: DIFFICULTY_COLORS },
-      { key: 'slots',     label: 'Plazas libres', type: 'number', unit: 'plazas' },
-      { key: 'contact',   label: 'Contacto',   type: 'phone' },
+      { key: 'distance', label: 'Distancia', type: 'number', unit: 'km' },
+      { key: 'elevation', label: 'Desnivel', type: 'number', unit: 'm' },
+      { key: 'level', label: 'Dificultad', type: 'badge', badgeColors: DIFFICULTY_COLORS },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -319,18 +319,18 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'playas-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección', type: 'text' },
-      { key: 'schedule', label: 'Horario',   type: 'text' },
-      { key: 'phone',    label: 'Teléfono',  type: 'phone' },
-      { key: 'web',      label: 'Web',       type: 'url' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
     ],
   },
   {
     locationTypeId: 'playas-quedadas',
     context: 'event',
     fields: [
-      { key: 'slots',   label: 'Plazas libres', type: 'number', unit: 'plazas' },
-      { key: 'contact', label: 'Contacto',      type: 'phone' },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -340,8 +340,8 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'parques-quedadas',
     context: 'event',
     fields: [
-      { key: 'slots',   label: 'Plazas libres', type: 'number', unit: 'personas' },
-      { key: 'contact', label: 'Contacto',      type: 'phone' },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'personas' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -351,29 +351,29 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'gaming-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección', type: 'text' },
-      { key: 'schedule', label: 'Horario',   type: 'text' },
-      { key: 'phone',    label: 'Teléfono',  type: 'phone' },
-      { key: 'web',      label: 'Web',       type: 'url' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
     ],
   },
   {
     locationTypeId: 'gaming-profesional',
     context: 'promotion',
     fields: [
-      { key: 'discountCode',    label: 'Código',     type: 'code' },
-      { key: 'discountPercent', label: 'Descuento',  type: 'number', unit: '%' },
-      { key: 'conditions',      label: 'Condiciones',type: 'text' },
+      { key: 'discountCode', label: 'Código', type: 'code' },
+      { key: 'discountPercent', label: 'Descuento', type: 'number', unit: '%' },
+      { key: 'conditions', label: 'Condiciones', type: 'text' },
     ],
   },
   {
     locationTypeId: 'gaming-quedadas',
     context: 'event',
     fields: [
-      { key: 'slots',    label: 'Plazas libres', type: 'number', unit: 'plazas' },
-      { key: 'price',    label: 'Precio',        type: 'number', unit: '€' },
-      { key: 'isOnline', label: 'Online',        type: 'boolean' },
-      { key: 'contact',  label: 'Contacto',      type: 'phone' },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'price', label: 'Precio', type: 'number', unit: '€' },
+      { key: 'isOnline', label: 'Online', type: 'boolean' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -383,20 +383,20 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'maker-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección', type: 'text' },
-      { key: 'schedule', label: 'Horario',   type: 'text' },
-      { key: 'phone',    label: 'Teléfono',  type: 'phone' },
-      { key: 'web',      label: 'Web',       type: 'url' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
     ],
   },
   {
     locationTypeId: 'maker-quedadas',
     context: 'event',
     fields: [
-      { key: 'slots',    label: 'Plazas libres', type: 'number', unit: 'plazas' },
-      { key: 'price',    label: 'Precio',        type: 'number', unit: '€' },
-      { key: 'isOnline', label: 'Online',        type: 'boolean' },
-      { key: 'contact',  label: 'Contacto',      type: 'phone' },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'price', label: 'Precio', type: 'number', unit: '€' },
+      { key: 'isOnline', label: 'Online', type: 'boolean' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -406,32 +406,36 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'idiomas-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección', type: 'text' },
-      { key: 'schedule', label: 'Horario',   type: 'text' },
-      { key: 'phone',    label: 'Teléfono',  type: 'phone' },
-      { key: 'web',      label: 'Web',       type: 'url' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
     ],
   },
   {
     locationTypeId: 'idiomas-profesional',
     context: 'promotion',
     fields: [
-      { key: 'discountCode',    label: 'Código',     type: 'code' },
-      { key: 'discountPercent', label: 'Descuento',  type: 'number', unit: '%' },
-      { key: 'conditions',      label: 'Condiciones',type: 'text' },
+      { key: 'discountCode', label: 'Código', type: 'code' },
+      { key: 'discountPercent', label: 'Descuento', type: 'number', unit: '%' },
+      { key: 'conditions', label: 'Condiciones', type: 'text' },
     ],
   },
   {
     locationTypeId: 'idiomas-quedadas',
     context: 'event',
     fields: [
-      { key: 'language', label: 'Idioma',        type: 'text' },
-      { key: 'level',    label: 'Nivel',         type: 'badge',
-        badgeColors: { 'A1': '#10b981', 'A2': '#34d399', 'B1': '#f59e0b',
-                       'B2': '#f97316', 'C1': '#ef4444', 'C2': '#7c3aed' } },
-      { key: 'slots',    label: 'Plazas libres', type: 'number', unit: 'plazas' },
-      { key: 'isOnline', label: 'Online',        type: 'boolean' },
-      { key: 'contact',  label: 'Contacto',      type: 'phone' },
+      { key: 'language', label: 'Idioma', type: 'text' },
+      {
+        key: 'level', label: 'Nivel', type: 'badge',
+        badgeColors: {
+          'A1': '#10b981', 'A2': '#34d399', 'B1': '#f59e0b',
+          'B2': '#f97316', 'C1': '#ef4444', 'C2': '#7c3aed'
+        }
+      },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'isOnline', label: 'Online', type: 'boolean' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 
@@ -441,20 +445,20 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     locationTypeId: 'formacion-profesional',
     context: 'place',
     fields: [
-      { key: 'address',  label: 'Dirección', type: 'text' },
-      { key: 'schedule', label: 'Horario',   type: 'text' },
-      { key: 'phone',    label: 'Teléfono',  type: 'phone' },
-      { key: 'web',      label: 'Web',       type: 'url' },
+      { key: 'address', label: 'Dirección', type: 'text' },
+      { key: 'schedule', label: 'Horario', type: 'text' },
+      { key: 'phone', label: 'Teléfono', type: 'phone' },
+      { key: 'web', label: 'Web', type: 'url' },
     ],
   },
   {
     locationTypeId: 'formacion-quedadas',
     context: 'event',
     fields: [
-      { key: 'slots',    label: 'Plazas libres', type: 'number', unit: 'plazas' },
-      { key: 'price',    label: 'Precio',        type: 'number', unit: '€' },
-      { key: 'isOnline', label: 'Online',        type: 'boolean' },
-      { key: 'contact',  label: 'Contacto',      type: 'phone' },
+      { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
+      { key: 'price', label: 'Precio', type: 'number', unit: '€' },
+      { key: 'isOnline', label: 'Online', type: 'boolean' },
+      { key: 'contact', label: 'Contacto', type: 'phone' },
     ],
   },
 ];

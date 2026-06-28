@@ -1,4 +1,4 @@
-<div class="create-activity-page">
+<div class="create-publication-page">
 
   <!-- ══ PANEL FORMULARIO (izquierda) ══════════════════════════════════════ -->
   <div class="form-panel">
@@ -11,10 +11,11 @@
       <header class="page-header">
         <h2 class="page-header__title">
           <mat-icon>{{ isRepeatMode() ? 'content_copy' : 'add_location_alt' }}</mat-icon>
-          {{ isRepeatMode() ? 'Repetir actividad' : 'Nueva actividad' }}
+          {{ isRepeatMode() ? 'Repetir publicación' : 'Nueva publicación' }}
         </h2>
         <p class="page-header__subtitle">
-          {{ isRepeatMode() ? 'Hemos cargado los datos de una actividad anterior para que la edites y repitas.' : 'Crea
+          {{ isRepeatMode() ? 'Hemos cargado los datos de una publicación anterior para que la edites y repitas.' :
+          'Crea
           un evento y fija su ubicación en el mapa.' }}
         </p>
       </header>
@@ -116,10 +117,10 @@
             </div>
             }
 
-            <!-- Nivel 3: Tipo de actividad (solo si hay subcategoría seleccionada) -->
+            <!-- Nivel 3: Tipo de publicación (solo si hay subcategoría seleccionada) -->
             @if (selectedSub() && visibleTypes().length > 0) {
             <div class="field-group">
-              <p class="field__label">Tipo de actividad</p>
+              <p class="field__label">Tipo de publicación</p>
               <div class="type-list">
                 @for (lt of visibleTypes(); track lt.id) {
                 <button class="type-item" type="button" [class.type-item--active]="locationTypeId === lt.id"
@@ -398,7 +399,7 @@
         <mat-icon>refresh</mat-icon>
         Limpiar
       </button>
-      <!-- Botón principal: Crear/Repetir actividad (disabled si faltan datos obligatorios) -->
+      <!-- Botón principal: Crear/Repetir publicación (disabled si faltan datos obligatorios) -->
       <button class="btn btn--primary" (click)="submitForm()" [disabled]="!canSubmit" type="button">
         <mat-icon>{{ isRepeatMode() ? 'content_copy' : 'add_location_alt' }}</mat-icon>
         {{ submitButtonText }}

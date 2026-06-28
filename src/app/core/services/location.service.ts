@@ -98,6 +98,12 @@ export class LocationService {
                 lat: publication.lat as number,
                 lng: publication.lng as number,
                 metadata: publication.metadata,
+                publicationType: publication.publicationType,
+                startDate: publication.startDate,
+                endDate: publication.endDate,
+                requiredLevel: publication.requiredLevel,
+                occupiedSlots: publication.occupiedSlots,
+                active: publication.active,
             }));
     }
 }

@@ -105,6 +105,17 @@ export interface Publication {
    * `false` indica actividad finalizada/terminada.
    */
   active: boolean;
+
+  /** Número de personas apuntadas actualmente. */
+  occupiedSlots?: number;
+}
+
+export interface PublicationEnrollmentResponse {
+  publicationId: number;
+  userId: string;
+  occupiedSlots: number;
+  maxSlots: number | null;
+  full: boolean;
 }
 
 /**

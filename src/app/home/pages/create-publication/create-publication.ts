@@ -1,5 +1,5 @@
 /**
- * @file create-activity.ts
+ * @file create-publication.ts
  * @description Componente para creación de actividades/eventos por usuarios PARTICULAR.
  *
  * Proporciona un formulario con acordeones y un mapa interactivo para:
@@ -38,13 +38,13 @@ import { PublicationService } from '../../../core/services/publications.service'
  * @implements {AfterViewInit} - Inicializa el mapa de Google tras renderizar la vista
  */
 @Component({
-  selector: 'app-create-activity-page',
+  selector: 'app-create-publication-page',
   standalone: true,
   imports: [FormsModule, MatIconModule, MatButtonModule, MatExpansionModule],
-  templateUrl: './create-activity.html',
-  styleUrl: './create-activity.scss',
+  templateUrl: './create-publication.html',
+  styleUrl: './create-publication.scss',
 })
-export class CreateActivityPageComponent implements AfterViewInit {
+export class CreatePublicationPageComponent implements AfterViewInit {
 
   // ── Servicios ──────────────────────────────────────────────────────────────
   /** Servicio para cargar Google Maps API de forma lazy */
@@ -240,7 +240,7 @@ export class CreateActivityPageComponent implements AfterViewInit {
    * Etiqueta del botón principal según modo del formulario.
    */
   get submitButtonText(): string {
-    return this.isRepeatMode() ? 'Repetir actividad' : 'Crear actividad';
+    return this.isRepeatMode() ? 'Repetir publicación' : 'Crear publicación';
   }
 
 
@@ -287,7 +287,7 @@ export class CreateActivityPageComponent implements AfterViewInit {
   }
 
   /**
-   * Carga un borrador desde una actividad existente si llega `repeatFrom` en query params.
+  * Carga un borrador desde una publicación existente si llega `repeatFrom` en query params.
    */
   private loadRepeatDraftFromQueryParams(): void {
     const repeatFromRaw = this.route.snapshot.queryParamMap.get('repeatFrom');
@@ -308,7 +308,7 @@ export class CreateActivityPageComponent implements AfterViewInit {
       },
       error: () => {
         this.isRepeatMode.set(false);
-        this.snackBar.open('No se pudo cargar la actividad a repetir', 'Cerrar', {
+        this.snackBar.open('No se pudo cargar la publicación a repetir', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'center',
           verticalPosition: 'top',
@@ -318,7 +318,7 @@ export class CreateActivityPageComponent implements AfterViewInit {
   }
 
   /**
-   * Precarga el formulario con una actividad existente para repetirla/editarla.
+  * Precarga el formulario con una publicación existente para repetirla/editarla.
    *
    * La fecha se actualiza a la del día actual para iniciar una nueva convocatoria.
    */
@@ -491,7 +491,7 @@ export class CreateActivityPageComponent implements AfterViewInit {
         40,
         this.themeService.isDark(),
       ),
-      title: this.title || 'Nueva actividad',
+      title: this.title || 'Nueva publicación',
       animation: google.maps.Animation.DROP,
     });
   }
@@ -668,7 +668,7 @@ export class CreateActivityPageComponent implements AfterViewInit {
   // ── Acciones ───────────────────────────────────────────────────────────────
 
   /**
-   * Envía el formulario y crea la actividad.
+  * Envía el formulario y crea la publicación.
    *
    * Validaciones:
    * - Título no vacío
@@ -676,7 +676,7 @@ export class CreateActivityPageComponent implements AfterViewInit {
    * - Tipo de ubicación seleccionado
    * - Coordenadas establecidas
    *
-   * Tras crear la actividad:
+  * Tras crear la publicación:
    * - Muestra mensaje de éxito (5 segundos)
    * - Resetea el formulario
    */
@@ -718,7 +718,7 @@ export class CreateActivityPageComponent implements AfterViewInit {
     }).subscribe({
       next: pub => {
         this.snackBar.open(
-          this.isRepeatMode() ? 'Actividad repetida correctamente' : 'Actividad creada correctamente',
+          this.isRepeatMode() ? 'Publicación repetida correctamente' : 'Publicación creada correctamente',
           'Cerrar',
           {
             duration: 3500,
@@ -728,8 +728,8 @@ export class CreateActivityPageComponent implements AfterViewInit {
         );
         this.successMessage.set(
           this.isRepeatMode()
-            ? `✅ Actividad "${pub.title}" repetida. Aparecerá en el mapa.`
-            : `✅ Actividad "${pub.title}" creada. Aparecerá en el mapa.`
+            ? `✅ Publicación "${pub.title}" repetida. Aparecerá en el mapa.`
+            : `✅ Publicación "${pub.title}" creada. Aparecerá en el mapa.`
         );
         this.resetForm();
         setTimeout(() => this.successMessage.set(null), 5000);

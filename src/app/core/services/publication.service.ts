@@ -1,29 +1,56 @@
 /**
  * @file publication.service.ts
- * @description Store en memoria para publicaciones. Sustituir add() por HttpClient en el futuro.
+ * @description Servicio HTTP para crear, consultar y eliminar publicaciones persistidas.
  */
-import { Injectable, inject, signal } from '@angular/core';
-import { Publication } from '../models/publication.model';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Publication, PublicationCreateRequest } from '../models/publication.model';
+import { environment } from '../../../environments/environment';
 import { CurrentUserService } from './current-user.service';
 
 @Injectable({ providedIn: 'root' })
 export class PublicationService {
 
-  private readonly cu = inject(CurrentUserService);
-  private nextId = 1;
+    private readonly http = inject(HttpClient);
+    private readonly cu = inject(CurrentUserService);
+    private readonly baseUrl = environment.apiPublicationsUrl;
+    private readonly usersBaseUrl = environment.apiUsersUrl;
 
-  private readonly _publications = signal<Publication[]>([]);
-  readonly publications = this._publications.asReadonly();
+    /**
+     * Crea una publicación persistida.
+     */
+    add(draft: PublicationCreateRequest): Observable<Publication> {
+        return this.http.post<Publication>(this.baseUrl, draft);
+    }
 
-  add(draft: Omit<Publication, 'id' | 'authorId'>): Publication {
-    const user = this.cu.user();
-    if (!user) throw new Error('No hay usuario autenticado');
-    const pub: Publication = { ...draft, id: this.nextId++, authorId: user.id };
-    this._publications.update(list => [...list, pub]);
-    return pub;
-  }
+    /**
+     * Recupera una publicación por su identificador.
+     */
+    getById(id: number): Observable<Publication> {
+        return this.http.get<Publication>(`${this.baseUrl}/${id}`);
+    }
 
-  remove(id: number): void {
-    this._publications.update(list => list.filter(p => p.id !== id));
-  }
+    /**
+     * Recupera las publicaciones del usuario autenticado.
+     *
+     * @param activeOnly si true, filtra solo publicaciones activas
+     */
+    getMine(activeOnly: boolean): Observable<Publication[]> {
+        const userId = this.cu.user()?.id;
+        if (!userId) {
+            throw new Error('No hay usuario autenticado');
+        }
+
+        return this.http.get<Publication[]>(`${this.usersBaseUrl}/${userId}/publications`, {
+            params: { activeOnly: String(activeOnly) },
+        });
+    }
+
+    /**
+     * Elimina definitivamente una publicación.
+     */
+    remove(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.baseUrl}/${id}`);
+    }
 }

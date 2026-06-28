@@ -99,4 +99,17 @@ export interface Publication {
    * { slots: 8, price: 0 }
    */
   metadata: Record<string, unknown>;
+
+  /**
+   * Estado de vigencia de la publicación.
+   * `false` indica actividad finalizada/terminada.
+   */
+  active: boolean;
 }
+
+/**
+ * Payload para crear una publicación desde frontend.
+ *
+ * `id`, `authorId` y `active` son campos gestionados por backend.
+ */
+export type PublicationCreateRequest = Omit<Publication, 'id' | 'authorId' | 'active'>;

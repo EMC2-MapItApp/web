@@ -8,7 +8,7 @@
  * - Establecer fechas y detalles (plazas, precio, nivel requerido)
  * - Fijar ubicación mediante click en el mapa
  *
- * Las publicaciones se guardan en memoria (PublicationService).
+ * Las publicaciones se persisten en backend mediante PublicationService.
  */
 import {
   Component, inject, signal, computed,
@@ -17,15 +17,18 @@ import {
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GoogleMapsService } from '../../../core/services/google-maps.service';
 import { CategoryService } from '../../../core/services/category.service';
-import { PublicationService } from '../../../core/services/publication.service';
 import { CurrentUserService } from '../../../core/services/current-user.service';
 import { MainCategory, SubCategory } from '../../../core/models/category.model';
+import { Publication } from '../../../core/models/publication.model';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MapSettingsService } from '../../../core/services/map-settings.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { GeoIpService } from '../../../core/services/geo-ip.service';
+import { PublicationService } from '../../../core/services/publications.service';
 
 /**
  * Componente de página para crear actividades (eventos) para usuarios particulares.
@@ -56,11 +59,19 @@ export class CreateActivityPageComponent implements AfterViewInit {
   /** Servicio de usuario actual (usado para validaciones de tipo PARTICULAR) */
   readonly cu = inject(CurrentUserService);
 
+  /** Toast/snack bar para feedback de creación y errores. */
+  private readonly snackBar = inject(MatSnackBar);
+
   private readonly mapSettingsService = inject(MapSettingsService);
 
   private readonly themeService = inject(ThemeService);
 
   private readonly geoIpService = inject(GeoIpService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  /** Indica si el formulario está en modo repetición de actividad. */
+  isRepeatMode = signal(false);
 
   // ── Mapa ───────────────────────────────────────────────────────────────────
   /** Referencia al contenedor DOM del mapa */
@@ -225,6 +236,13 @@ export class CreateActivityPageComponent implements AfterViewInit {
     });
   }
 
+  /**
+   * Etiqueta del botón principal según modo del formulario.
+   */
+  get submitButtonText(): string {
+    return this.isRepeatMode() ? 'Repetir actividad' : 'Crear actividad';
+  }
+
 
   private getTodayDate(): string {
     const now = new Date();
@@ -263,7 +281,136 @@ export class CreateActivityPageComponent implements AfterViewInit {
           this.placeMarker(e.latLng);
         }
       });
+
+      this.loadRepeatDraftFromQueryParams();
     });
+  }
+
+  /**
+   * Carga un borrador desde una actividad existente si llega `repeatFrom` en query params.
+   */
+  private loadRepeatDraftFromQueryParams(): void {
+    const repeatFromRaw = this.route.snapshot.queryParamMap.get('repeatFrom');
+    if (!repeatFromRaw) {
+      this.isRepeatMode.set(false);
+      return;
+    }
+
+    const publicationId = Number(repeatFromRaw);
+    if (!Number.isFinite(publicationId)) {
+      this.isRepeatMode.set(false);
+      return;
+    }
+
+    this.pubService.getById(publicationId).subscribe({
+      next: publication => {
+        this.applyRepeatDraft(publication);
+      },
+      error: () => {
+        this.isRepeatMode.set(false);
+        this.snackBar.open('No se pudo cargar la actividad a repetir', 'Cerrar', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
+      }
+    });
+  }
+
+  /**
+   * Precarga el formulario con una actividad existente para repetirla/editarla.
+   *
+   * La fecha se actualiza a la del día actual para iniciar una nueva convocatoria.
+   */
+  private applyRepeatDraft(publication: Publication): void {
+    this.isRepeatMode.set(true);
+
+    this.title = publication.title;
+    this.description = publication.description ?? '';
+    this.locationTypeId = publication.locationTypeId;
+    this.requiredLevel = publication.requiredLevel ?? 0;
+    this.activityDate = this.getTodayDate();
+
+    const start = new Date(publication.startDate);
+    const end = publication.endDate ? new Date(publication.endDate) : null;
+    const looksAllDay = !!end &&
+      start.getHours() === 0 && start.getMinutes() === 0 &&
+      end.getHours() === 23 && end.getMinutes() >= 59;
+
+    this.allDay = looksAllDay || !end;
+    this.startTime = this.allDay ? '' : this.toHHmm(start);
+    this.endTime = this.allDay || !end ? '' : this.toHHmm(end);
+
+    const meta = publication.metadata ?? {};
+    this.slots = typeof meta['slots'] === 'number' ? meta['slots'] : null;
+    this.exactLocation = typeof meta['exactLocation'] === 'boolean' ? meta['exactLocation'] : true;
+    this.directions = typeof meta['directions'] === 'string' ? meta['directions'] : '';
+
+    if (publication.lat !== null && publication.lng !== null) {
+      this.lat.set(publication.lat);
+      this.lng.set(publication.lng);
+      const point = new google.maps.LatLng(publication.lat, publication.lng);
+      this.placeMarker(point);
+      this.map.panTo(point);
+    }
+
+    this.restoreRouteFromMetadata(meta['route']);
+
+    const breadcrumb = this.categoryService.resolveBreadcrumb(publication.locationTypeId);
+    this.selectedMain.set(breadcrumb?.mainCategory ?? null);
+    this.selectedSub.set(breadcrumb?.subCategory ?? null);
+  }
+
+  /**
+   * Convierte una fecha a texto HH:mm.
+   */
+  private toHHmm(value: Date): string {
+    const hh = String(value.getHours()).padStart(2, '0');
+    const mm = String(value.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+  }
+
+  /**
+   * Reconstruye la ruta desde el metadata persistido.
+   */
+  private restoreRouteFromMetadata(routeMetadata: unknown): void {
+    this.clearRoute();
+
+    if (!Array.isArray(routeMetadata)) {
+      return;
+    }
+
+    for (const point of routeMetadata) {
+      if (!point || typeof point !== 'object') {
+        continue;
+      }
+
+      const lat = Number((point as Record<string, unknown>)['lat']);
+      const lng = Number((point as Record<string, unknown>)['lng']);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        continue;
+      }
+
+      this.addRoutePoint(new google.maps.LatLng(lat, lng));
+    }
+
+    if (this.routePointsCount() > 0) {
+      this.routePolyline?.setOptions({
+        strokeColor: this.selectedMain()?.color ?? '#3f51b5',
+        strokeWeight: 4,
+      });
+
+      this.routeMarkers.forEach(marker => {
+        marker.setIcon({
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 6,
+          fillColor: '#16a34a',
+          fillOpacity: 1,
+          strokeColor: '#fff',
+          strokeWeight: 2,
+        });
+      });
+    }
   }
 
   // ── Selector de categorías ─────────────────────────────────────────────────
@@ -539,7 +686,7 @@ export class CreateActivityPageComponent implements AfterViewInit {
     const selectedLocationTypeId = this.locationTypeId;
     if (selectedLocationTypeId === null) return;
 
-    const pub = this.pubService.add({
+    this.pubService.add({
       publicationType: 'event',
       placeId: null,
       locationTypeId: selectedLocationTypeId,
@@ -549,7 +696,7 @@ export class CreateActivityPageComponent implements AfterViewInit {
         ? `${this.activityDate}T00:00`
         : `${this.activityDate}T${this.startTime || '00:00'}`,
       endDate: this.allDay
-        ? null
+        ? `${this.activityDate}T23:59`
         : (this.endTime ? `${this.activityDate}T${this.endTime}` : null),
       lat: this.lat(),
       lng: this.lng(),
@@ -568,11 +715,26 @@ export class CreateActivityPageComponent implements AfterViewInit {
         // Guardar indicaciones si existen
         ...(this.directions.trim() ? { directions: this.directions.trim() } : {})
       },
+    }).subscribe({
+      next: pub => {
+        this.snackBar.open(
+          this.isRepeatMode() ? 'Actividad repetida correctamente' : 'Actividad creada correctamente',
+          'Cerrar',
+          {
+            duration: 3500,
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+          }
+        );
+        this.successMessage.set(
+          this.isRepeatMode()
+            ? `✅ Actividad "${pub.title}" repetida. Aparecerá en el mapa.`
+            : `✅ Actividad "${pub.title}" creada. Aparecerá en el mapa.`
+        );
+        this.resetForm();
+        setTimeout(() => this.successMessage.set(null), 5000);
+      }
     });
-
-    this.successMessage.set(`✅ Actividad "${pub.title}" creada. Aparecerá en el mapa.`);
-    this.resetForm();
-    setTimeout(() => this.successMessage.set(null), 5000);
   }
 
   /**
@@ -580,6 +742,7 @@ export class CreateActivityPageComponent implements AfterViewInit {
    * Limpia la ubicación y deselecciona todas las categorías.
    */
   resetForm(): void {
+    this.isRepeatMode.set(false);
     this.title = '';
     this.description = '';
     this.directions = '';
@@ -596,5 +759,12 @@ export class CreateActivityPageComponent implements AfterViewInit {
     this.clearRoute();
     this.selectedMain.set(null);
     this.selectedSub.set(null);
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { repeatFrom: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 }

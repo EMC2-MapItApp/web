@@ -1,174 +1,103 @@
+/**
+ * @file location.service.ts
+ * @description Servicio HTTP que expone las localizaciones geográficas que se
+ * pintan en el mapa.
+ *
+ * La fuente real de datos ahora es la API de publicaciones persistidas.
+ * El mock anterior se mantiene únicamente como referencia comentada.
+ */
 import { Injectable, inject } from '@angular/core';
-import { Observable, delay, map } from 'rxjs';
-import { MainCategory } from '../models/category.model';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { MapLocation } from '../models/location.model';
-import { CategoryService } from './category.service';
+import { Publication } from '../models/publication.model';
 
-interface MockLocationSeed {
-  id: number;
-  name: string;
-  description?: string;
-  locationTypeKey: string;
-  lat: number;
-  lng: number;
-}
+/*
+ * Legacy mock seed data kept as reference only.
+ * No se usa en runtime; el mapa consume datos reales desde backend.
+ *
+ * interface MockLocationSeed {
+ *   id: number;
+ *   name: string;
+ *   description?: string;
+ *   locationTypeKey: string;
+ *   lat: number;
+ *   lng: number;
+ * }
+ *
+ * const MOCK_LOCATION_SEEDS: MockLocationSeed[] = [
+ *   ...
+ * ];
+ */
 
-const MOCK_LOCATION_SEEDS: MockLocationSeed[] = [
-  {
-    id: 1,
-    name: 'Ruta del sábado – Guadarrama',
-    description: 'Salida grupal en bicicleta de montaña. Nivel medio. ¡Apúntate!',
-    locationTypeKey: 'ciclismo-quedadas',
-    lat: 40.53, lng: -3.99,
-  },
-  {
-    id: 2,
-    name: 'Bicicletas López S.L.',
-    description: 'Tienda especializada en bicicletas de carretera y MTB. Taller propio.',
-    locationTypeKey: 'ciclismo-profesional',
-    lat: 40.42, lng: -3.71,
-  },
-  {
-    id: 3,
-    name: 'Running en el Retiro',
-    description: 'Grupo de running mañanero. Todos los jueves a las 7:30 h.',
-    locationTypeKey: 'running-quedadas',
-    lat: 40.4153, lng: -3.6844,
-  },
-  {
-    id: 4,
-    name: 'Intersport Gran Vía',
-    description: 'Tienda de material deportivo con sección especializada en running.',
-    locationTypeKey: 'running-profesional',
-    lat: 40.42, lng: -3.7025,
-  },
-  {
-    id: 5,
-    name: 'Museo del Prado',
-    description: 'Uno de los museos de arte más importantes del mundo.',
-    locationTypeKey: 'museos-visita',
-    lat: 40.4138, lng: -3.6922,
-  },
-  {
-    id: 6,
-    name: 'Museo Reina Sofía',
-    description: 'Museo nacional de arte contemporáneo. Sede del Guernica de Picasso.',
-    locationTypeKey: 'museos-profesional',
-    lat: 40.4082, lng: -3.694,
-  },
-  {
-    id: 7,
-    name: 'Jam Session – La Riviera',
-    description: 'Jam session abierta de jazz. Trae tu instrumento. Miércoles 21 h.',
-    locationTypeKey: 'musica-quedadas',
-    lat: 40.4065, lng: -3.712,
-  },
-  {
-    id: 8,
-    name: 'Cena de amigos – Malasaña',
-    description: 'Quedada gastronómica del grupo "Foodies Madrid". Viernes a las 21 h.',
-    locationTypeKey: 'restaurantes-quedadas',
-    lat: 40.426, lng: -3.708,
-  },
-  {
-    id: 9,
-    name: 'Taberna El Botín',
-    description: 'El restaurante más antiguo del mundo según el Guinness. Asados tradicionales.',
-    locationTypeKey: 'restaurantes-profesional',
-    lat: 40.4145, lng: -3.7074,
-  },
-  {
-    id: 10,
-    name: 'Ruta La Pedriza – domingo',
-    description: 'Senderismo por La Pedriza. Salida desde Manzanares el Real a las 9 h.',
-    locationTypeKey: 'senderismo-quedadas',
-    lat: 40.611, lng: -3.865,
-  },
-  {
-    id: 11,
-    name: 'Decathlon Alcobendas',
-    description: 'Gran superficie deportiva con sección especializada en montaña y senderismo.',
-    locationTypeKey: 'senderismo-profesional',
-    lat: 40.534, lng: -3.642,
-  },
-  {
-    id: 12,
-    name: 'Pícnic en Casa de Campo',
-    description: 'Quedada familiar en el pinar. Sábado 12 h. Bring your own food!',
-    locationTypeKey: 'parques-quedadas',
-    lat: 40.408, lng: -3.745,
-  },
-];
-
+/**
+ * Servicio para resolver las localizaciones visibles en el mapa.
+ *
+ * @remarks
+ * El backend devuelve publicaciones persistidas, y este servicio las convierte
+ * a la forma mínima que consume la capa de mapas.
+ */
 @Injectable({ providedIn: 'root' })
 export class LocationService {
-  private readonly categoryService = inject(CategoryService);
+    /** Cliente HTTP para consultas a la API. */
+    private readonly http = inject(HttpClient);
 
-  getAll(): Observable<MapLocation[]> {
-    return this.categoryService.getAll().pipe(
-      map(tree => this.resolveSeeds(tree)),
-      delay(600)
-    );
-  }
+    /** Endpoint base de publicaciones. */
+    private readonly baseUrl = environment.apiPublicationsUrl;
 
-  getByLocationType(locationTypeId: number): Observable<MapLocation[]> {
-    return this.getAll().pipe(
-      map(locations => locations.filter(l => l.locationTypeId === locationTypeId))
-    );
-  }
-
-  getById(id: number): Observable<MapLocation | undefined> {
-    return this.getAll().pipe(
-      map(locations => locations.find(l => l.id === id))
-    );
-  }
-
-  private resolveSeeds(tree: MainCategory[]): MapLocation[] {
-    const typeIdByKey = this.buildTypeIndex(tree);
-    const resolved: MapLocation[] = [];
-
-    for (const seed of MOCK_LOCATION_SEEDS) {
-      const resolvedTypeId = typeIdByKey.get(seed.locationTypeKey);
-      if (!resolvedTypeId) {
-        continue;
-      }
-
-      resolved.push({
-        id: seed.id,
-        name: seed.name,
-        description: seed.description,
-        locationTypeId: resolvedTypeId,
-        lat: seed.lat,
-        lng: seed.lng,
-      });
+    /**
+     * Recupera todas las localizaciones activas del mapa.
+     *
+     * @returns Observable con una lista de localizaciones listas para pintar.
+     */
+    getAll(): Observable<MapLocation[]> {
+        return this.http.get<Publication[]>(`${this.baseUrl}?activeOnly=true`).pipe(
+            map(publications => this.toMapLocations(publications))
+        );
     }
 
-    return resolved;
-  }
-
-  private buildTypeIndex(tree: MainCategory[]): Map<string, number> {
-    const index = new Map<string, number>();
-    for (const main of tree) {
-      for (const sub of main.subcategories) {
-        const subSlug = this.slugify(sub.name);
-
-        for (const type of sub.locationTypes) {
-          const typeSlug = this.slugify(type.name);
-          index.set(subSlug + '-' + typeSlug, type.id);
-        }
-      }
+    /**
+     * Recupera las localizaciones que pertenecen a un tipo concreto.
+     *
+     * @param locationTypeId id numérico del LocationType
+     * @returns Observable con las localizaciones filtradas por tipo
+     */
+    getByLocationType(locationTypeId: number): Observable<MapLocation[]> {
+        return this.getAll().pipe(
+            map(locations => locations.filter(location => location.locationTypeId === locationTypeId))
+        );
     }
 
-    return index;
-  }
+    /**
+     * Recupera una localización concreta por identificador.
+     *
+     * @param id id de la localización
+     * @returns Observable con la localización encontrada o undefined
+     */
+    getById(id: number): Observable<MapLocation | undefined> {
+        return this.getAll().pipe(
+            map(locations => locations.find(location => location.id === id))
+        );
+    }
 
-  private slugify(input: string): string {
-    return input
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/&/g, 'y')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  }
+    /**
+     * Convierte las publicaciones persistidas a localizaciones de mapa.
+     *
+     * @param publications lista de publicaciones devuelta por backend
+     * @returns lista de localizaciones consumibles por el mapa
+     */
+    private toMapLocations(publications: Publication[]): MapLocation[] {
+        return publications
+            .filter(publication => publication.lat !== null && publication.lng !== null)
+            .map(publication => ({
+                id: publication.id,
+                name: publication.title,
+                description: publication.description,
+                locationTypeId: publication.locationTypeId,
+                lat: publication.lat as number,
+                lng: publication.lng as number,
+                metadata: publication.metadata,
+            }));
+    }
 }

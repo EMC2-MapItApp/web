@@ -57,41 +57,19 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 10px 8px 6px;
+    padding: 8px 10px;
   }
 
-  &__toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    background: none;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    color: var(--c-text-primary);
-    transition: background v.$transition-fast;
-
-    mat-icon {
-      font-size: 22px;
-      width: 22px;
-      height: 22px;
-    }
-
-    &:hover {
-      background: rgba(0, 0, 0, .07);
-    }
-  }
-
-  &__title {
+  &__title-btn {
     flex: 1;
+    min-width: 0;
     font-size: v.$font-body;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .04em;
     color: var(--c-text-primary);
+    justify-content: flex-start;
+    padding: 0 6px;
   }
 
   &__clear {
@@ -208,15 +186,51 @@
   }
 }
 
-@include m.sm {
+@media (max-width: 1023px) {
+  .maps-page {
+    gap: 0;
+  }
+
+  .maps-header {
+    display: none;
+  }
+
+  .maps-body {
+    border: none;
+    border-radius: 0;
+  }
+
   .filter-panel {
-    bottom: 10px;
-    left: 10px;
-    width: calc(100% - 20px);
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    left: calc(10px + env(safe-area-inset-left));
+    right: calc(10px + env(safe-area-inset-right));
+    width: calc(100% - 20px - env(safe-area-inset-left) - env(safe-area-inset-right));
+    max-width: none;
+
+    &--collapsed {
+      width: calc(100% - 20px - env(safe-area-inset-left) - env(safe-area-inset-right));
+    }
+
+    &__header {
+      padding: 6px 10px;
+      gap: 8px;
+    }
 
     &__body {
-      max-height: 40vh;
+      max-height: 38dvh;
     }
+  }
+}
+
+@include m.md {
+  .maps-header {
+    p {
+      display: none;
+    }
+  }
+
+  .maps-body {
+    border-radius: v.$radius-md;
   }
 }
 
@@ -259,12 +273,12 @@
   }
 }
 
-@include m.sm {
+@media (max-width: 1023px) {
   .detail-panel {
-    bottom: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 20px);
-    max-height: 45vh;
+    max-height: 55dvh;
   }
 }

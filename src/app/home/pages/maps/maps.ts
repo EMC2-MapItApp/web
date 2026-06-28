@@ -1,5 +1,6 @@
 import { AfterViewInit, Component, ElementRef, ViewChild, inject, signal, computed, effect } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { GoogleMapsService } from '../../../core/services/google-maps.service';
 import { LocationService } from '../../../core/services/location.service';
@@ -17,6 +18,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { GeoIpService } from '../../../core/services/geo-ip.service';
 import { PublicationService } from '../../../core/services/publication.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ResponsiveService } from '../../../core/responsive/responsive.service';
 
 
 /**
@@ -32,7 +34,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 @Component({
   selector: 'app-maps-page',
   standalone: true,
-  imports: [MatIconModule, PublicationDetailComponent],
+  imports: [MatIconModule, MatButtonModule, PublicationDetailComponent],
   templateUrl: './maps.html',
   styleUrl: './maps.scss'
 })
@@ -47,6 +49,7 @@ export class MapsPageComponent implements AfterViewInit {
   private dialog = inject(MatDialog);
   private geoIpService = inject(GeoIpService);
   private publicationService = inject(PublicationService);
+  private responsiveService = inject(ResponsiveService);
 
   // ── Propiedades ──────────────────────────────────────────────────────────────
 
@@ -74,11 +77,46 @@ export class MapsPageComponent implements AfterViewInit {
   visibleTypes = computed(() => this.selectedSub()?.locationTypes ?? []);
 
   // Panel colapsado reactivo: se recalcula cuando el usuario cambia (login/logout)
-  panelVisible = signal(!this.currentUser.isIndividual());
+  panelVisible = signal(this.resolveInitialPanelVisibility());
 
   /** Alterna la visibilidad del panel de categorías. */
   togglePanel(): void {
     this.panelVisible.update(v => !v);
+  }
+
+  /** Cierra el panel de categorías cuando se toca fuera de él. */
+  closePanel(): void {
+    this.panelVisible.set(false);
+  }
+
+  /**
+   * Cierra categorías al pulsar fuera del panel, ignorando controles
+   * interactivos (botones, enlaces y controles del mapa).
+   */
+  handleOutsidePanelClick(event: MouseEvent): void {
+    if (!this.panelVisible()) return;
+
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    if (target.closest('.filter-panel')) return;
+    if (target.closest('button, a, input, select, textarea, [role="button"], [role="menuitem"], .gm-control-active')) {
+      return;
+    }
+
+    this.closePanel();
+  }
+
+  /** Determina si el viewport actual corresponde a mobile/tablet. */
+  private isCompactViewport(): boolean {
+    const state = this.responsiveService.state();
+    return state.isMobile || state.isTablet;
+  }
+
+  /** Estado inicial del panel en funcion de viewport y perfil de usuario. */
+  private resolveInitialPanelVisibility(): boolean {
+    if (this.isCompactViewport()) return false;
+    return !this.currentUser.isIndividual();
   }
 
   // ── Estado del mapa ────────────────────────────────────────────────────────
@@ -188,6 +226,11 @@ export class MapsPageComponent implements AfterViewInit {
     });
     // Resetea la visibilidad del panel cuando el estado de usuario cambia
     effect(() => {
+      if (this.isCompactViewport()) {
+        this.panelVisible.set(false);
+        return;
+      }
+
       this.panelVisible.set(!this.currentUser.isIndividual());
     });
     // se suscribe al cambio de tema
@@ -265,6 +308,8 @@ export class MapsPageComponent implements AfterViewInit {
     const isSame = this.selectedTypeId() === typeId;
     this.selectedTypeId.set(isSame ? null : typeId);
     this.applyFilter();
+
+    if (!isSame) this.panelVisible.set(false);
   }
 
   /** Limpia todos los filtros y muestra todas las localizaciones. */

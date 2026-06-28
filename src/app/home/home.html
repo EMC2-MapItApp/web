@@ -27,8 +27,8 @@
     }
   </header>
 
-  <section class="app-body" [class.collapsed]="collapsed()">
-    <aside class="app-sidenav">
+  <section class="app-body" [class.collapsed]="collapsed()" (click)="handleOutsideMenuClick($event)">
+    <aside class="app-sidenav" (click)="$event.stopPropagation()">
       <div class="brand">
         <mat-icon>map</mat-icon>
         @if (!collapsed()) {
@@ -36,7 +36,7 @@
         }
       </div>
 
-      <nav class="menu">
+      <nav class="menu" (click)="handleMenuActionClick($event)">
 
         <!-- Mapa: siempre visible -->
         <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact: true}">

@@ -9,7 +9,7 @@
 .shell {
   height: 100dvh;
   display: grid;
-  grid-template-rows: 64px 1fr 48px;
+  grid-template-rows: 56px 1fr 36px;
   background: var(--c-bg);
 }
 
@@ -17,25 +17,30 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 0 12px;
+  padding: 0 10px;
   background: var(--c-header-bg);
   color: var(--c-header-text);
 
-  .spacer { flex: 1; }
+  .spacer {
+    flex: 1;
+  }
 }
 
 .app-footer {
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 12px;
   border-top: 1px solid var(--c-border);
   background: var(--c-surface);
   color: var(--c-text-secondary);
+  font-size: v.$font-xs;
 }
 
-.app-body {//compatilbe con Firefox
+.app-body {
+  //compatilbe con Firefox
   display: flex;
   min-height: 0;
+  position: relative;
 }
 
 .app-sidenav {
@@ -46,7 +51,9 @@
   overflow: hidden;
   transition: width 180ms ease;
 
-  .collapsed & { width: 72px; }
+  .collapsed & {
+    width: 72px;
+  }
 
   .brand {
     height: 56px;
@@ -58,6 +65,7 @@
     font-weight: 700;
     color: var(--c-text-primary);
   }
+
   .menu {
     display: grid;
     gap: 4px;
@@ -80,8 +88,9 @@
     }
   }
 }
+
 .app-main {
-  flex: 1;              // ← ocupa todo el ancho restante tras el sidebar
+  flex: 1; // ← ocupa todo el ancho restante tras el sidebar
   min-width: 0;
   min-height: 0;
   overflow: auto;
@@ -102,9 +111,15 @@
   transition: border-color v.$transition-base;
   flex-shrink: 0;
 
-  &:hover { border-color: rgba(255, 255, 255, 0.9); }
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.9);
+  }
 
-  img { width: 100%; height: 100%; object-fit: cover; }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
   &__initials {
     width: 100%;
@@ -144,7 +159,64 @@
   }
 }
 
-@include m.sm {
-  .app-sidenav { width: 0; border-right: none; }
-  .app-body.collapsed .app-sidenav { width: 0; }
+@media (max-width: #{v.$bp-sm}) and (orientation: portrait) {
+  .app-sidenav {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: auto;
+    width: fit-content;
+    height: auto;
+    max-height: 72dvh;
+    overflow-y: auto;
+    border-right: none;
+    z-index: 20;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    background: color-mix(in srgb, var(--c-surface) 4%, transparent);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    transform-origin: top left;
+    transform: translateY(-8px) scaleY(0.92);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  .app-sidenav .brand {
+    display: none;
+  }
+
+  .app-sidenav .menu {
+    width: fit-content;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .app-sidenav .menu a,
+  .app-sidenav .menu-item {
+    justify-content: center;
+    gap: 0;
+    width: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0;
+    background: color-mix(in srgb, var(--c-surface) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c-border) 22%, transparent);
+  }
+
+  .app-sidenav .menu a span,
+  .app-sidenav .menu-item span {
+    display: none;
+  }
+
+  .app-body:not(.collapsed) .app-sidenav {
+    transform: translateY(0) scaleY(1);
+    opacity: 1;
+    pointer-events: auto;
+    border-bottom: 1px solid var(--c-sidenav-border);
+  }
+
+  .app-main {
+    padding: 12px;
+  }
 }

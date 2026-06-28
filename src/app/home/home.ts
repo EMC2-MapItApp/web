@@ -48,6 +48,37 @@ export class HomeComponent {
     this.collapsed.update((v) => !v);
   }
 
+  /** Cierra el menú al pulsar cualquier opción del propio menú lateral. */
+  handleMenuActionClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    if (target.closest('a, .menu-item')) {
+      this.closeSidenav();
+    }
+  }
+
+  /** Cierra el menú lateral. */
+  closeSidenav(): void {
+    this.collapsed.set(true);
+  }
+
+  /**
+   * Cierra el menú solo al pulsar fuera y evita cerrar si el click
+   * proviene de un control interactivo.
+   */
+  handleOutsideMenuClick(event: MouseEvent): void {
+    if (this.collapsed()) return;
+
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    if (target.closest('.app-sidenav')) return;
+    if (target.closest('button, a, input, select, textarea, [role="button"], [role="menuitem"]')) return;
+
+    this.closeSidenav();
+  }
+
   logout(): void {
     localStorage.removeItem('token');
     this.currentUser.clear();

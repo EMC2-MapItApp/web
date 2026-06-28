@@ -7,17 +7,17 @@
   </header>
 
   <!-- ── Contenido principal ──────────────────────────────────────────── -->
-  <div class="maps-body">
+  <div class="maps-body" (click)="handleOutsidePanelClick($event)">
 
     <!-- Panel de filtros -->
     <aside class="filter-panel" [class.filter-panel--collapsed]="!panelVisible()">
 
       <!-- Cabecera siempre visible -->
       <div class="filter-panel__header">
-        <button class="filter-panel__toggle" (click)="togglePanel()" aria-label="Toggle categorías">
-          <mat-icon>menu</mat-icon>
+        <button mat-button class="filter-panel__title-btn" (click)="togglePanel()" [attr.aria-expanded]="panelVisible()"
+          aria-label="Toggle categorías">
+          Categorías
         </button>
-        <span class="filter-panel__title">Categorías</span>
         @if (selectedMain() && panelVisible()) {
         <button class="filter-panel__clear" (click)="clearFilters()">Limpiar</button>
         }

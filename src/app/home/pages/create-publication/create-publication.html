@@ -342,17 +342,14 @@
               } @else if (hasRoute()) {
               <div class="route-status route-status--complete">
                 <mat-icon>check_circle</mat-icon>
-                <span>Ruta guardada con {{ routePointsCount() }} puntos. Puedes editarla para ajustar.</span>
+                <span>Ruta guardada con {{ routePointsCount() }} puntos.</span>
               </div>
 
-              <div class="route-preview route-preview--saved" aria-label="Captura de ruta guardada">
+              <div class="route-preview route-preview--saved">
                 <div class="route-preview__map">
-                  <img class="route-preview__image" [src]="routeStaticMapUrl()"
-                    alt="Captura de mapa con ruta guardada" />
-                  <svg class="route-preview__svg-overlay" viewBox="0 0 256 256" preserveAspectRatio="none"
-                    aria-hidden="true">
-                    <polyline [attr.points]="routePreviewPolyline()"></polyline>
-                  </svg>
+                  @if (routeMapCapture(); as capture) {
+                  <img class="route-preview__image" [src]="capture" alt="Captura Google Maps" />
+                  }
                 </div>
                 <span class="route-preview__meta">Captura de la ruta guardada</span>
               </div>

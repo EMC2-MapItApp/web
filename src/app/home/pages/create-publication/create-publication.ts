@@ -30,6 +30,7 @@ import { ThemeService } from '../../../core/services/theme.service';
 import { GeoIpService } from '../../../core/services/geo-ip.service';
 import { PublicationService } from '../../../core/services/publications.service';
 import { ResponsiveService } from '../../../core/responsive/responsive.service';
+import html2canvas from 'html2canvas';
 
 /**
  * Componente de página para crear actividades (eventos) para usuarios particulares.
@@ -74,6 +75,8 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   /** Indica si el formulario está en modo repetición de actividad. */
   isRepeatMode = signal(false);
+
+  routeMapCapture = signal<string | null>(null);
 
   /** Estado derivado para detectar viewport compacto (mobile/tablet). */
   readonly isCompactViewport = computed(() => {
@@ -842,7 +845,7 @@ finishRouteFromMap(): void {
   if (!bounds || !this.map) return;
   
   // Usar ResizeObserver para detectar cuando el contenedor cambia de tamaño
-  const resizeObserver = new ResizeObserver(() => {
+  const resizeObserver = new ResizeObserver(async () => {
     resizeObserver.disconnect();
     
     google.maps.event.trigger(this.map, 'resize');
@@ -851,7 +854,7 @@ finishRouteFromMap(): void {
     const ne = bounds.getNorthEast();
     const sw = bounds.getSouthWest();
     const maxZoom = 17;
-    const padding = 200;
+    const padding = 50;
     
     let zoom = maxZoom;
     for (let z = maxZoom; z >= 1; z--) {
@@ -870,6 +873,25 @@ finishRouteFromMap(): void {
     
     this.map.setCenter(center);
     this.map.setZoom(zoom);
+
+    // Esperar a que el mapa termine de renderizar
+    const idleListener = google.maps.event.addListenerOnce(this.map, 'idle', async () => {
+      // Pequeño delay adicional para asegurar renderización completa
+      // await new Promise(resolve => setTimeout(resolve, 500));
+      
+      try {
+        const canvas = await html2canvas(this.mapContainer.nativeElement, {
+          backgroundColor: null,
+          scale: 1,
+          logging: false,
+          useCORS: true,
+        });
+        this.routeMapCapture.set(canvas.toDataURL('image/png'));
+        console.info('Map captured successfully');
+      } catch (error) {
+        console.error('Error capturando mapa:', error);
+      }
+    });
     
     console.info('Map adjusted to route center:', center.toString(), 'zoom:', zoom);
   });

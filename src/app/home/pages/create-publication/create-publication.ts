@@ -662,12 +662,12 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   }
 
   /** Finaliza el trazado de ruta desde el mapa y vuelve al formulario. */
-  finishRouteFromMap(): void {
-    if (this.isAddingRoute) {
-      this.toggleRouteMode();
-    }
-    this.openFormPanel();
-  }
+  // finishRouteFromMap(): void {
+  //   if (this.isAddingRoute) {
+  //     this.toggleRouteMode();
+  //   }
+  //   this.openFormPanel();
+  // }
 
   /**
    * Elimina la ruta del mapa y limpia todos los puntos.
@@ -816,6 +816,71 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    * @returns True si hay al menos un punto en la ruta
    */
   hasRoute = computed(() => this.routePoints().length > 0);
+
+    /**
+   * Calcula el bounding box (extent) de los puntos de la ruta
+   */
+  private calculateRouteExtent(): google.maps.LatLngBounds | null {
+    const points = this.routePoints();
+    if (points.length === 0) return null;
+  
+    const bounds = new google.maps.LatLngBounds();
+    points.forEach(point => bounds.extend(point));
+    console.log('Calculated route extent:', bounds.toString());
+    return bounds;
+  }
+  
+/** Finaliza el trazado de ruta desde el mapa y vuelve al formulario. */
+finishRouteFromMap(): void {
+  if (this.isAddingRoute) {
+    this.toggleRouteMode();
+  }
+
+  const bounds = this.calculateRouteExtent();
+  this.openFormPanel();
+  
+  if (!bounds || !this.map) return;
+  
+  // Usar ResizeObserver para detectar cuando el contenedor cambia de tamaño
+  const resizeObserver = new ResizeObserver(() => {
+    resizeObserver.disconnect();
+    
+    google.maps.event.trigger(this.map, 'resize');
+    
+    const center = bounds.getCenter();
+    const ne = bounds.getNorthEast();
+    const sw = bounds.getSouthWest();
+    const maxZoom = 17;
+    const padding = 200;
+    
+    let zoom = maxZoom;
+    for (let z = maxZoom; z >= 1; z--) {
+      const nwWorldCoord = this.latlngToPoint(sw, z);
+      const seWorldCoord = this.latlngToPoint(ne, z);
+      
+      const worldWidth = seWorldCoord.x - nwWorldCoord.x;
+      const worldHeight = seWorldCoord.y - nwWorldCoord.y;
+      
+      if (worldWidth < this.mapContainer.nativeElement.offsetWidth - padding &&
+          worldHeight < this.mapContainer.nativeElement.offsetHeight - padding) {
+        zoom = z;
+        break;
+      }
+    }
+    
+    this.map.setCenter(center);
+    this.map.setZoom(zoom);
+    
+    console.info('Map adjusted to route center:', center.toString(), 'zoom:', zoom);
+  });
+  
+  resizeObserver.observe(this.mapContainer.nativeElement);
+}
+
+/** Convierte lat/lng a coordenadas de mundo para calcular zoom */
+private latlngToPoint(latlng: google.maps.LatLng, zoom: number): { x: number; y: number } {
+  return this.projectToWorldPixels(latlng.lat(), latlng.lng(), zoom);
+}
 
   // ── Acciones ───────────────────────────────────────────────────────────────
 

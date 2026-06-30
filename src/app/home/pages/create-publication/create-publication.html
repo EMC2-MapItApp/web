@@ -15,8 +15,7 @@
         </h2>
         <p class="page-header__subtitle">
           {{ isRepeatMode() ? 'Hemos cargado los datos de una publicación anterior para que la edites y repitas.' :
-          'Crea
-          un evento y fija su ubicación en el mapa.' }}
+          'Crea un evento y fija su ubicación en el mapa.' }}
         </p>
       </header>
 
@@ -288,15 +287,15 @@
               <div class="route-controls">
 
                 <!-- Botón principal: Dibujar/Finalizar ruta -->
-                <button class="btn-route" [class.btn-route--active]="isAddingRoute" (click)="onRoutePrimaryAction()"
-                  type="button">
+                <button class="btn-route" [class.btn-route--active]="isAddingRoute"
+                  (click)="isAddingRoute ? finishRouteFromMap() : onRoutePrimaryAction()" type="button">
                   <mat-icon>{{ isAddingRoute ? 'check_circle' : 'route' }}</mat-icon>
                   <span>{{ isAddingRoute ? 'Finalizar ruta' : 'Dibujar ruta' }}</span>
                   @if (hasRoute() && !isAddingRoute) {
                   <span class="route-points-badge">{{ routePointsCount() }} puntos</span>
                   }
                 </button>
-
+                <!-- 
                 @if (isAddingRoute && hasRoute()) {
                 <div class="route-preview" aria-label="Captura de ruta actual">
                   <div class="route-preview__map">
@@ -307,10 +306,11 @@
                   </div>
                   <span class="route-preview__meta">{{ routePointsCount() }} punto{{ routePointsCount() > 1 ? 's' : '' }}</span>
                 </div>
-                }
+                } -->
 
                 <!-- Botones de edición (solo visibles en modo dibujo) -->
-                @if (isAddingRoute && hasRoute()) {
+                <!-- @if (isAddingRoute && hasRoute()) { -->
+                @if (hasRoute()) {
                 <div class="route-edit-actions">
                   <button class="btn-route-edit" (click)="undoLastRoutePoint()" type="button"
                     title="Deshacer último punto">
@@ -347,8 +347,10 @@
 
               <div class="route-preview route-preview--saved" aria-label="Captura de ruta guardada">
                 <div class="route-preview__map">
-                  <img class="route-preview__image" [src]="routeStaticMapUrl()" alt="Captura de mapa con ruta guardada" />
-                  <svg class="route-preview__svg-overlay" viewBox="0 0 256 256" preserveAspectRatio="none" aria-hidden="true">
+                  <img class="route-preview__image" [src]="routeStaticMapUrl()"
+                    alt="Captura de mapa con ruta guardada" />
+                  <svg class="route-preview__svg-overlay" viewBox="0 0 256 256" preserveAspectRatio="none"
+                    aria-hidden="true">
                     <polyline [attr.points]="routePreviewPolyline()"></polyline>
                   </svg>
                 </div>

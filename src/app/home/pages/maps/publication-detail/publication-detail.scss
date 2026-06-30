@@ -255,3 +255,22 @@
     font-weight: 600;
   }
 }
+
+
+.route-capture {
+  margin-top: 16px;
+  
+  h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  &__image {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    object-fit: contain;
+  }
+}

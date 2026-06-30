@@ -51,6 +51,13 @@
     }
   </div>
   }
+  <!-- Mostrar captura de ruta si existe -->
+  @if (item.metadata?.['routeMapCapture']; as capture) {
+  <div class="route-capture">
+    <h3>Captura de la ruta</h3>
+    <img [src]="capture" alt="Captura del mapa con la ruta" class="route-capture__image" />
+  </div>
+  }
 
   <!-- ── Nivel requerido (solo Publications con requiredLevel > 0) ──────── -->
   @if (hasLevelRequirement) {

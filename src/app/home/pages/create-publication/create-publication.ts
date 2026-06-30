@@ -359,28 +359,28 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    */
   private applyRepeatDraft(publication: Publication): void {
     this.isRepeatMode.set(true);
-
+  
     this.title = publication.title;
     this.description = publication.description ?? '';
     this.locationTypeId = publication.locationTypeId;
     this.requiredLevel = publication.requiredLevel ?? 0;
     this.activityDate = this.getTodayDate();
-
+  
     const start = new Date(publication.startDate);
     const end = publication.endDate ? new Date(publication.endDate) : null;
     const looksAllDay = !!end &&
       start.getHours() === 0 && start.getMinutes() === 0 &&
       end.getHours() === 23 && end.getMinutes() >= 59;
-
+  
     this.allDay = looksAllDay || !end;
     this.startTime = this.allDay ? '' : this.toHHmm(start);
     this.endTime = this.allDay || !end ? '' : this.toHHmm(end);
-
+  
     const meta = publication.metadata ?? {};
     this.slots = typeof meta['slots'] === 'number' ? meta['slots'] : null;
     this.exactLocation = typeof meta['exactLocation'] === 'boolean' ? meta['exactLocation'] : true;
     this.directions = typeof meta['directions'] === 'string' ? meta['directions'] : '';
-
+  
     if (publication.lat !== null && publication.lng !== null) {
       this.lat.set(publication.lat);
       this.lng.set(publication.lng);
@@ -388,9 +388,14 @@ export class CreatePublicationPageComponent implements AfterViewInit {
       this.placeMarker(point);
       this.map.panTo(point);
     }
-
+  
     this.restoreRouteFromMetadata(meta['route']);
-
+    
+    // Restaurar captura si existe
+    if (typeof meta['routeMapCapture'] === 'string') {
+      this.routeMapCapture.set(meta['routeMapCapture']);
+    }
+  
     const breadcrumb = this.categoryService.resolveBreadcrumb(publication.locationTypeId);
     this.selectedMain.set(breadcrumb?.mainCategory ?? null);
     this.selectedSub.set(breadcrumb?.subCategory ?? null);
@@ -921,10 +926,10 @@ private latlngToPoint(latlng: google.maps.LatLng, zoom: number): { x: number; y:
    */
   submitForm(): void {
     if (!this.canSubmit) return;
-
+  
     const selectedLocationTypeId = this.locationTypeId;
     if (selectedLocationTypeId === null) return;
-
+  
     this.pubService.add({
       publicationType: 'event',
       placeId: null,
@@ -950,6 +955,10 @@ private latlngToPoint(latlng: google.maps.LatLng, zoom: number): { x: number; y:
             lat: p.lat(),
             lng: p.lng()
           }))
+        } : {}),
+        // Guardar la captura del mapa si existe
+        ...(this.routeMapCapture() ? {
+          routeMapCapture: this.routeMapCapture()
         } : {}),
         // Guardar indicaciones si existen
         ...(this.directions.trim() ? { directions: this.directions.trim() } : {})

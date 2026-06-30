@@ -14,6 +14,17 @@ import { Component, EventEmitter, Input, OnChanges, Output, inject } from '@angu
 import { CategoryBreadcrumb } from '../../../../core/models/category.model';
 import { FieldContext, LocationFieldDef } from '../../../../core/models/location-field.model';
 import { LocationFieldService } from '../../../../core/services/location-field.service';
+import { CurrentUserService } from '../../../../core/services/current-user.service';
+
+/**
+ * Forma mínima de un usuario inscrito en la publicación.
+ * Compatible con User (legacy) y PublicationEnrollment.
+ */
+export interface EnrolledUser {
+  userId: string;
+  userName: string;
+  enrolledAt: string;
+}
 
 /**
  * Forma mínima del objeto que recibe el componente.
@@ -37,6 +48,8 @@ export interface PublicationDetailInput {
   active?: boolean;
   /** Solo Publication: plazas ocupadas actuales. */
   occupiedSlots?: number;
+  /** Lista de usuarios inscritos en la publicación. */
+  enrolledUsers?: EnrolledUser[];
 }
 
 @Component({
@@ -49,6 +62,7 @@ export interface PublicationDetailInput {
 export class PublicationDetailComponent implements OnChanges {
 
   private fieldService = inject(LocationFieldService);
+  private currentUser = inject(CurrentUserService);
 
   /** Datos de la localización a mostrar. */
   @Input() item!: PublicationDetailInput;
@@ -65,6 +79,9 @@ export class PublicationDetailComponent implements OnChanges {
   /** Notifica al padre que el usuario intenta apuntarse. */
   @Output() joinRequested = new EventEmitter<void>();
 
+  /** Notifica al padre que el usuario intenta salir de la publicación. */
+  @Output() leaveRequested = new EventEmitter<void>();
+
   /**
    * Contexto que determina qué schema de campos se carga.
    * 'place' | 'promotion' | 'event'
@@ -75,10 +92,33 @@ export class PublicationDetailComponent implements OnChanges {
   fields: LocationFieldDef[] = [];
 
   ngOnChanges(): void {
+    console.log('PublicationDetailComponent.ngOnChanges, this.item', this.item);
     this.fields = this.fieldService.getFields(this.item.locationTypeId, this.context);
   }
 
   // ── Helpers de template ───────────────────────────────────────────────────
+  /** Niveles de actividad predefinidos */
+  readonly ACTIVITY_LEVELS = [
+    { label: 'Básico', description: 'Apto para todos', value: 0 },
+    { label: 'Iniciado', description: 'Algo de experiencia', value: 3 },
+    { label: 'Intermedio', description: 'Bastante experiencia y preparación', value: 5 },
+    { label: 'Avanzado', description: 'Alta preparación y experiencia', value: 7 },
+    { label: 'Experto', description: 'Máximo nivel', value: 10 },
+  ];
+
+  normalizeLevel(level: number | undefined): string {
+    if (level === undefined || level === null) return '–';
+    if (level <= 0) return 'Ninguno';
+
+    if (level == 0 || level == 1) return 'Básico';
+    if (level == 2 || level == 3) return 'Iniciado';
+    if (level == 4 || level == 5) return 'Intermedio';
+    if (level == 6 || level == 7) return 'Avanzado';
+    if (level == 8 || level == 9 || level == 10) return 'Experto';
+
+
+    return level.toString();
+  }
 
   getValue(key: string): unknown {
     return this.item.metadata?.[key];
@@ -99,6 +139,12 @@ export class PublicationDetailComponent implements OnChanges {
     if (!value) return '–';
     const d = new Date(value as string);
     return d.toLocaleDateString('es-ES', { dateStyle: 'medium' });
+  }
+
+  /** Verifica si el userId corresponde al usuario autenticado actual. */
+  isCurrentUser(userId: string): boolean {
+    const currentUserId = this.currentUser.user()?.id?.toString();
+    return currentUserId === userId;
   }
 
   /** Color de acento heredado de la MainCategory. */
@@ -157,5 +203,10 @@ export class PublicationDetailComponent implements OnChanges {
   onJoin(): void {
     if (this.joinDisabled) return;
     this.joinRequested.emit();
+  }
+
+  /** Solicita salir del evento. */
+  onLeave(): void {
+    this.leaveRequested.emit();
   }
 }

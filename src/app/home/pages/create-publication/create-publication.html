@@ -344,10 +344,14 @@
                 <mat-icon>check_circle</mat-icon>
                 <span>Ruta guardada con {{ routePointsCount() }} puntos.</span>
               </div>
-
               <div class="route-preview route-preview--saved">
                 <div class="route-preview__map">
-                  @if (routeMapCapture(); as capture) {
+                  @if (capturingRoute()) {
+                  <div class="route-preview__loading">
+                    <span class="route-preview__spinner" aria-hidden="true"></span>
+                    <span class="route-preview__loading-text">Generando captura…</span>
+                  </div>
+                  } @else if (routeMapCapture(); as capture) {
                   <img class="route-preview__image" [src]="capture" alt="Captura Google Maps" />
                   }
                 </div>

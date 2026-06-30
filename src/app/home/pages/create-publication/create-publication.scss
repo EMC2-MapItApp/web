@@ -704,6 +704,36 @@
     color: var(--c-text-secondary);
     text-align: center;
   }
+
+  .route-preview__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 120px;
+  }
+
+  .route-preview__spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid var(--c-border, #d1d5db);
+    border-top-color: var(--accent, #3f51b5);
+    border-radius: 50%;
+    animation: route-preview-spin 0.7s linear infinite;
+  }
+
+  .route-preview__loading-text {
+    font-size: 0.8rem;
+    color: var(--c-text-muted, #6b7280);
+  }
+
+  @keyframes route-preview-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 }
 
 @media (max-width: 1023px) {

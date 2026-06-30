@@ -28,25 +28,21 @@
         <ul class="filter-list">
 
           @for (cat of categories(); track cat.id) {
-
           <!-- ── Nivel 1: Categoría principal ──────────────────────── -->
           <li class="filter-list__item" [class.filter-list__item--active]="selectedMain()?.id === cat.id"
             [style.--cat-color]="cat.color" (click)="selectMain(cat)">
             <span class="filter-list__icon">{{ cat.icon }}</span>
             <span class="filter-list__name">{{ cat.name }}</span>
           </li>
-
           <!-- ── Nivel 2: Subcategorías (inline, solo si esta cat está activa) -->
           @if (selectedMain()?.id === cat.id) {
           @for (sub of cat.subcategories; track sub.id) {
-
           <li class="filter-list__item filter-list__item--sub"
             [class.filter-list__item--active]="selectedSub()?.id === sub.id" [style.--cat-color]="cat.color"
             (click)="$event.stopPropagation(); selectSub(sub)">
             <span class="filter-list__icon">{{ sub.icon }}</span>
             <span class="filter-list__name">{{ sub.name }}</span>
           </li>
-
           <!-- ── Nivel 3: Tipos (inline, solo si esta sub está activa) -->
           @if (selectedSub()?.id === sub.id) {
           @for (type of sub.locationTypes; track type.id) {
@@ -58,10 +54,8 @@
           </li>
           }
           }
-
           }
           }
-
           }
         </ul>
       </div><!-- /filter-panel__body -->
@@ -72,13 +66,14 @@
 
     <!-- Panel de detalle – aparece al hacer click en un marker -->
     @if (selectedDetail() && selectedBreadcrumb()) {
-    <div class="detail-panel">
+    <div class="detail-panel" (click)="$event.stopPropagation()">
       <button class="detail-panel__close" (click)="closeDetail()" aria-label="Cerrar detalle">
         ✕
       </button>
       <app-publication-detail [item]="selectedDetail()!" [breadcrumb]="selectedBreadcrumb()!"
         [context]="selectedContext()" [joinedCount]="getJoinedCount(selectedDetail()!.id)"
-        [alreadyJoined]="hasJoined(selectedDetail()!.id)" (joinRequested)="joinSelectedLocation()" />
+        [alreadyJoined]="hasJoined(selectedDetail()!.id)" (joinRequested)="joinSelectedLocation()"
+        (leaveRequested)="leaveSelectedLocation()" />
     </div>
     }
 

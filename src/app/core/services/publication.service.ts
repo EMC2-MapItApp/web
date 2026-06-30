@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { Publication, PublicationCreateRequest, PublicationEnrollmentResponse } from '../models/publication.model';
 import { environment } from '../../../environments/environment';
 import { CurrentUserService } from './current-user.service';
+import { EnrolledUser } from '../../home/pages/maps/publication-detail/publication-detail';
 
 @Injectable({ providedIn: 'root' })
 export class PublicationService {
@@ -59,5 +60,19 @@ export class PublicationService {
      */
     enroll(id: number): Observable<PublicationEnrollmentResponse> {
         return this.http.post<PublicationEnrollmentResponse>(`${this.baseUrl}/${id}/enroll`, {});
+    }
+
+    /**
+ * Obtiene la lista de usuarios inscritos en una publicación.
+ */
+    getEnrollments(id: number): Observable<EnrolledUser[]> {
+        return this.http.get<EnrolledUser[]>(`${this.baseUrl}/${id}/enrollments`);
+    }
+
+    /**
+ * Desapunta al usuario autenticado de una publicación.
+ */
+    unenroll(id: number): Observable<void> {
+        return this.http.delete<void>(`${this.baseUrl}/${id}/unenroll`);
     }
 }

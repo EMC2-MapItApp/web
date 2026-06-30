@@ -94,17 +94,27 @@ export class MapsPageComponent implements AfterViewInit {
    * interactivos (botones, enlaces y controles del mapa).
    */
   handleOutsidePanelClick(event: MouseEvent): void {
-    if (!this.panelVisible()) return;
-
     const target = event.target as HTMLElement | null;
     if (!target) return;
 
+    // Si el clic fue en el panel de filtros o controles interactivos, ignora
     if (target.closest('.filter-panel')) return;
     if (target.closest('button, a, input, select, textarea, [role="button"], [role="menuitem"], .gm-control-active')) {
       return;
     }
 
-    this.closePanel();
+    // Si el clic fue dentro del detail-panel, ignora (stopPropagation no aplica siempre)
+    if (target.closest('.detail-panel')) return;
+
+    // Cierra el panel de filtros si está visible
+    if (this.panelVisible()) {
+      this.closePanel();
+    }
+
+    // Cierra el panel de detalle si está abierto
+    if (this.selectedDetail()) {
+      this.closeDetail();
+    }
   }
 
   /** Determina si el viewport actual corresponde a mobile/tablet. */
@@ -189,6 +199,10 @@ export class MapsPageComponent implements AfterViewInit {
           ...prev,
           [this.buildJoinKey(detail.id)]: true,
         }));
+        // Recargar apuntados
+        this.publicationService.getEnrollments(detail.id).subscribe(users => {
+          this.selectedDetail.update(d => d ? { ...d, enrolledUsers: users } : null);
+        });
       },
       error: (error: HttpErrorResponse) => {
         const message = error?.error?.error?.message ?? '';
@@ -373,22 +387,36 @@ export class MapsPageComponent implements AfterViewInit {
       marker.addListener('click', () => {
         const bc = this.categoryService.resolveBreadcrumb(location.locationTypeId);
         if (!bc) return;
-        this.selectedDetail.set({
-          id: location.id,
-          name: location.name,
-          description: location.description,
-          locationTypeId: location.locationTypeId,
-          metadata: location.metadata,
-          startDate: location.startDate,
-          endDate: location.endDate,
-          requiredLevel: location.requiredLevel,
-          publicationType: location.publicationType,
-          active: location.active,
-          occupiedSlots: location.occupiedSlots,
+        this.publicationService.getEnrollments(location.id).subscribe(users => {
+
+          // Actualizar estado local si el usuario actual está en la lista
+          const currentUserId = this.currentUser.user()?.id?.toString();
+          if (currentUserId && users.some(u => u.userId === currentUserId)) {
+            this.joinedByUserAndLocation.update(prev => ({
+              ...prev,
+              [this.buildJoinKey(location.id)]: true,
+            }));
+          }
+
+          this.selectedDetail.set({
+            id: location.id,
+            name: location.name,
+            description: location.description,
+            locationTypeId: location.locationTypeId,
+            metadata: location.metadata,
+            startDate: location.startDate,
+            endDate: location.endDate,
+            requiredLevel: location.requiredLevel,
+            publicationType: location.publicationType,
+            active: location.active,
+            occupiedSlots: location.occupiedSlots,
+            enrolledUsers: users,
+          });
+          this.selectedBreadcrumb.set(bc);
+          this.selectedContext.set(location.publicationType ?? 'place');
         });
-        this.selectedBreadcrumb.set(bc);
-        this.selectedContext.set(location.publicationType ?? 'place');
       });
+
 
       marker.addListener('mouseover', () => {
         this.infoWindow.setContent(this.buildTooltipContent(location, color));
@@ -438,5 +466,35 @@ export class MapsPageComponent implements AfterViewInit {
       ${badge}
     </div>
   `;
+  }
+
+  /** Desapunta al usuario del detalle abierto. */
+  leaveSelectedLocation(): void {
+    const detail = this.selectedDetail();
+    if (!detail) return;
+
+    this.publicationService.unenroll(detail.id).subscribe({
+      next: () => {
+        this.joinedByLocation.update(prev => ({
+          ...prev,
+          [detail.id]: Math.max(0, (prev[detail.id] ?? 0) - 1),
+        }));
+
+        this.joinedByUserAndLocation.update(prev => {
+          const key = this.buildJoinKey(detail.id);
+          const newState = { ...prev };
+          delete newState[key];
+          return newState;
+        });
+
+        // Recargar apuntados
+        this.publicationService.getEnrollments(detail.id).subscribe(users => {
+          this.selectedDetail.update(d => d ? { ...d, enrolledUsers: users } : null);
+        });
+      },
+      error: (error: HttpErrorResponse) => {
+        console.error('Error al salir del evento', error);
+      },
+    });
   }
 }

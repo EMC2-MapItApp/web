@@ -13,7 +13,7 @@ import { CategoryBreadcrumb } from '../../../core/models/category.model';
 import { FieldContext } from '../../../core/models/location-field.model';
 import { CurrentUserService } from '../../../core/services/current-user.service';
 import { AuthRequiredDialogComponent } from '../../../shared/auth-required-dialog/auth-required-dialog';
-import { AUTH_REQUIRED_DIALOG_CONFIG } from '../../../core/constants/dialog.constants';
+import { AUTH_REQUIRED_DIALOG_CONFIG, withResponsiveDialogLayout } from '../../../core/constants/dialog.constants';
 import { ThemeService } from '../../../core/services/theme.service';
 import { GeoIpService } from '../../../core/services/geo-ip.service';
 import { PublicationService } from '../../../core/services/publication.service';
@@ -243,7 +243,13 @@ export class MapsPageComponent implements AfterViewInit {
   /** Abre el dialog de auth si no hay usuario. Retorna true si puede continuar. */
   private requireAuth(): boolean {
     if (this.currentUser.user()) return true;
-    this.dialog.open(AuthRequiredDialogComponent, AUTH_REQUIRED_DIALOG_CONFIG);
+
+    const responsiveState = this.responsiveService.state();
+    const compactViewport = responsiveState.isMobile || responsiveState.isTablet;
+    this.dialog.open(
+      AuthRequiredDialogComponent,
+      withResponsiveDialogLayout(AUTH_REQUIRED_DIALOG_CONFIG, compactViewport),
+    );
     return false;
   }
 

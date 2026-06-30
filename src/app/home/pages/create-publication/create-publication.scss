@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 .create-publication-page {
+  position: relative;
   display: grid;
   grid-template-columns: 460px 1fr;
   gap: 20px;
@@ -22,10 +23,16 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 .form-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0; // ← necesario en contexto flex/grid
   // SIN overflow-y aquí — lo gestiona .form-scroll-area
+}
+
+.form-panel--hidden {
+  display: none !important;
+  pointer-events: none;
 }
 
 .form-scroll-area {
@@ -492,6 +499,7 @@
   align-items: center;
   gap: 5px;
   padding: 8px 16px;
+  min-height: 40px;
   border-radius: v.$radius-sm;
   font-size: 12.5px;
   font-weight: 600;
@@ -571,6 +579,200 @@
   height: 100%;
 }
 
+.open-form-fab {
+  position: absolute;
+  left: calc(14px + env(safe-area-inset-left));
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  z-index: 12;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: var(--c-primary);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.route-finish-stack {
+  position: absolute;
+  left: calc(14px + env(safe-area-inset-left));
+  bottom: calc(14px + env(safe-area-inset-bottom));
+  z-index: 13;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.route-finish-fab {
+  height: 44px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 999px;
+  background: #16a34a;
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.route-preview {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--c-surface) 92%, transparent);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &--floating {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  &--saved {
+    margin-top: 4px;
+    width: 100%;
+    align-self: stretch;
+  }
+
+  &__map {
+    position: relative;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  &__svg {
+    display: none;
+  }
+
+  &__svg-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+
+    polyline {
+      fill: none;
+      stroke: #16a34a;
+      stroke-width: 3.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.85));
+    }
+  }
+
+  &__image {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--c-border) 65%, transparent);
+    display: block;
+    background: var(--c-surface-alt);
+    margin: 0 auto;
+  }
+
+  &__meta {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--c-text-secondary);
+    text-align: center;
+  }
+}
+
+@media (max-width: 1023px) {
+  .create-publication-page {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .form-panel {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    padding: 10px;
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    border-radius: 0;
+    padding-bottom: 52px;
+  }
+
+  .form-panel--hidden {
+    display: none;
+  }
+
+  .map-panel {
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  .map-hint-overlay {
+    top: calc(10px + env(safe-area-inset-top));
+    bottom: auto;
+    max-width: 198px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .route-preview {
+    width: 100%;
+
+    &__image {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    &--saved {
+      width: 100%;
+    }
+  }
+
+  .form-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+
+    .form-actions__back {
+      grid-column: 1 / -1;
+    }
+  }
+}
+
 .map-hint-overlay {
   position: absolute;
   top: 12px;
@@ -580,15 +782,21 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 12px;
+  padding: 6px 10px;
   background: var(--c-panel-glass-bg);
-  border-radius: 18px;
+  border-radius: 999px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
   font-size: v.$font-sm;
   font-weight: 600;
   color: var(--c-text-secondary);
   pointer-events: none;
-  backdrop-filter: blur(4px);
+  white-space: nowrap;
+  width: fit-content;
+  max-width: 198px;
+  height: auto;
+  max-height: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 
   mat-icon {
     font-size: 15px;
@@ -783,6 +991,10 @@
   display: flex;
   flex-direction: column;
   gap: v.$space-sm;
+}
+
+.route-controls .route-preview {
+  align-self: stretch;
 }
 
 .btn-route {

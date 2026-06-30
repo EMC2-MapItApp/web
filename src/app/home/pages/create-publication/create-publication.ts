@@ -29,6 +29,7 @@ import { MapSettingsService } from '../../../core/services/map-settings.service'
 import { ThemeService } from '../../../core/services/theme.service';
 import { GeoIpService } from '../../../core/services/geo-ip.service';
 import { PublicationService } from '../../../core/services/publications.service';
+import { ResponsiveService } from '../../../core/responsive/responsive.service';
 
 /**
  * Componente de página para crear actividades (eventos) para usuarios particulares.
@@ -69,9 +70,22 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   private readonly geoIpService = inject(GeoIpService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly responsiveService = inject(ResponsiveService);
 
   /** Indica si el formulario está en modo repetición de actividad. */
   isRepeatMode = signal(false);
+
+  /** Estado derivado para detectar viewport compacto (mobile/tablet). */
+  readonly isCompactViewport = computed(() => {
+    const state = this.responsiveService.state();
+    return state.isMobile || state.isTablet;
+  });
+
+  /**
+   * En mobile/tablet el formulario arranca oculto para priorizar el mapa.
+   * En desktop permanece visible para mantener la experiencia actual.
+   */
+  readonly showFormPanel = signal(false);
 
   // ── Mapa ───────────────────────────────────────────────────────────────────
   /** Referencia al contenedor DOM del mapa */
@@ -217,6 +231,12 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   constructor() {
     this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
 
+    // Sincroniza visibilidad del formulario según viewport.
+    // En compact se prioriza el mapa; en desktop se mantiene visible.
+    effect(() => {
+      this.showFormPanel.set(!this.isCompactViewport());
+    });
+
     // Aplica estilos del mapa reactivamente (dark mode + POIs)
     effect(() => {
       if (this.map) this.map.setOptions({ styles: this.mapSettingsService.mapStyles() });
@@ -234,6 +254,17 @@ export class CreatePublicationPageComponent implements AfterViewInit {
         ));
       }
     });
+  }
+
+  /** Muestra el formulario en mobile/tablet desde el botón flotante. */
+  openFormPanel(): void {
+    this.showFormPanel.set(true);
+  }
+
+  /** Cierra el formulario en mobile/tablet para volver al mapa completo. */
+  closeFormPanel(): void {
+    if (!this.isCompactViewport()) return;
+    this.showFormPanel.set(false);
   }
 
   /**
@@ -267,6 +298,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
         zoom: 12,
         disableDefaultUI: true,
         zoomControl: true,
+        clickableIcons: true,
         styles: this.mapSettingsService.mapStyles(),
       });
 
@@ -587,6 +619,11 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   toggleRouteMode(): void {
     this.isAddingRoute = !this.isAddingRoute;
 
+    // Mientras se dibuja ruta, desactiva clicks de POIs nativos de Google.
+    if (this.map) {
+      this.map.setOptions({ clickableIcons: !this.isAddingRoute });
+    }
+
     if (!this.isAddingRoute && this.routePolyline) {
       // Al desactivar, aplicar estilo final a la ruta
       this.routePolyline.setOptions({
@@ -609,6 +646,30 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   }
 
   /**
+   * Acción principal de ruta desde formulario.
+   * En mobile/tablet inicia el trazado y vuelve al mapa automáticamente.
+   */
+  onRoutePrimaryAction(): void {
+    const compactViewport = this.isCompactViewport();
+
+    if (compactViewport && !this.isAddingRoute) {
+      this.toggleRouteMode();
+      this.closeFormPanel();
+      return;
+    }
+
+    this.toggleRouteMode();
+  }
+
+  /** Finaliza el trazado de ruta desde el mapa y vuelve al formulario. */
+  finishRouteFromMap(): void {
+    if (this.isAddingRoute) {
+      this.toggleRouteMode();
+    }
+    this.openFormPanel();
+  }
+
+  /**
    * Elimina la ruta del mapa y limpia todos los puntos.
    */
   clearRoute(): void {
@@ -625,6 +686,11 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     this.routePoints.set([]);
     this.routeMarkers = [];
     this.isAddingRoute = false;
+
+    // Asegura restaurar POIs clicables al salir del modo dibujo.
+    if (this.map) {
+      this.map.setOptions({ clickableIcons: true });
+    }
   }
 
   /**
@@ -659,6 +725,92 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    * @returns Número de puntos en la ruta actual
    */
   routePointsCount = computed(() => this.routePoints().length);
+
+  /** Puntos normalizados para renderizar una mini captura SVG de la ruta. */
+  readonly routePreviewPolyline = computed(() => {
+    const tile = this.routePreviewTile();
+    return tile?.polylinePoints ?? '';
+  });
+
+  /**
+   * Calcula la tesela y los puntos en coordenadas de tesela para que
+   * la ruta se alinee con la captura de mapa sin desfases de zoom/proyección.
+   */
+  private readonly routePreviewTile = computed(() => {
+    const points = this.routePoints();
+    if (points.length === 0) return null;
+
+    const tileSize = 256;
+    const padding = 20;
+    const maxZoom = this.isCompactViewport() ? 16 : 17;
+
+    for (let zoom = maxZoom; zoom >= 1; zoom--) {
+      const projected = points.map(point => this.projectToWorldPixels(point.lat(), point.lng(), zoom));
+      const xs = projected.map(point => point.x);
+      const ys = projected.map(point => point.y);
+
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+
+      const tileMinX = Math.floor(minX / tileSize);
+      const tileMaxX = Math.floor(maxX / tileSize);
+      const tileMinY = Math.floor(minY / tileSize);
+      const tileMaxY = Math.floor(maxY / tileSize);
+
+      const fitsSingleTile = tileMinX === tileMaxX && tileMinY === tileMaxY;
+      const fitsPadding =
+        maxX - minX <= tileSize - padding * 2
+        && maxY - minY <= tileSize - padding * 2;
+
+      if (!fitsSingleTile || !fitsPadding) continue;
+
+      const tileX = tileMinX;
+      const tileY = tileMinY;
+      const polylinePoints = projected
+        .map(point => {
+          const x = point.x - tileX * tileSize;
+          const y = point.y - tileY * tileSize;
+          return `${x.toFixed(1)},${y.toFixed(1)}`;
+        })
+        .join(' ');
+
+      return { zoom, tileX, tileY, polylinePoints };
+    }
+
+    // Fallback seguro si no cabe en una sola tesela a zoom alto.
+    const zoom = 1;
+    const first = points[0];
+    const firstProjected = this.projectToWorldPixels(first.lat(), first.lng(), zoom);
+    const tileX = Math.floor(firstProjected.x / tileSize);
+    const tileY = Math.floor(firstProjected.y / tileSize);
+    const polylinePoints = points
+      .map(point => this.projectToWorldPixels(point.lat(), point.lng(), zoom))
+      .map(point => `${(point.x - tileX * tileSize).toFixed(1)},${(point.y - tileY * tileSize).toFixed(1)}`)
+      .join(' ');
+
+    return { zoom, tileX, tileY, polylinePoints };
+  });
+
+  /** Proyección Web Mercator a píxeles de mundo para un zoom dado. */
+  private projectToWorldPixels(lat: number, lng: number, zoom: number): { x: number; y: number } {
+    const tileSize = 256;
+    const sinLat = Math.sin((lat * Math.PI) / 180);
+    const clamped = Math.min(Math.max(sinLat, -0.9999), 0.9999);
+    const scale = Math.pow(2, zoom) * tileSize;
+
+    const x = ((lng + 180) / 360) * scale;
+    const y = (0.5 - Math.log((1 + clamped) / (1 - clamped)) / (4 * Math.PI)) * scale;
+    return { x, y };
+  }
+
+  /** URL de una tesela OSM para mostrar una base de mapa real en la captura. */
+  readonly routeStaticMapUrl = computed(() => {
+    const tile = this.routePreviewTile();
+    if (!tile) return '';
+    return `https://tile.openstreetmap.org/${tile.zoom}/${tile.tileX}/${tile.tileY}.png`;
+  });
 
   /**
    * @returns True si hay al menos un punto en la ruta
@@ -732,6 +884,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
             : `✅ Publicación "${pub.title}" creada. Aparecerá en el mapa.`
         );
         this.resetForm();
+        this.closeFormPanel();
         setTimeout(() => this.successMessage.set(null), 5000);
       }
     });

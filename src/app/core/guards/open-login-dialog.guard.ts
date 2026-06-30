@@ -6,11 +6,13 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { LoginDialogComponent } from '../../login/login-dialog';
-import { LOGIN_DIALOG_CONFIG } from '../constants/dialog.constants';
+import { LOGIN_DIALOG_CONFIG, withResponsiveDialogLayout } from '../constants/dialog.constants';
+import { ResponsiveService } from '../responsive/responsive.service';
 
 export const openLoginDialogGuard: CanActivateFn = () => {
   const dialog = inject(MatDialog);
   const router = inject(Router);
+  const responsiveService = inject(ResponsiveService);
 
   // Evitar múltiples instancias si el guard se llama varias veces
   const alreadyOpen = dialog.openDialogs.some(
@@ -18,7 +20,9 @@ export const openLoginDialogGuard: CanActivateFn = () => {
   );
 
   if (!alreadyOpen) {
-    dialog.open(LoginDialogComponent, LOGIN_DIALOG_CONFIG);
+    const responsiveState = responsiveService.state();
+    const compactViewport = responsiveState.isMobile || responsiveState.isTablet;
+    dialog.open(LoginDialogComponent, withResponsiveDialogLayout(LOGIN_DIALOG_CONFIG, compactViewport));
   }
 
   return router.createUrlTree(['/']);

@@ -9,7 +9,8 @@ import { CurrentUserService } from '../core/services/current-user.service';
 import { SlicePipe } from '@angular/common';
 import { WelcomeDialogComponent } from '../shared/welcome-dialog/welcome-dialog';
 import { MatDialog } from '@angular/material/dialog';
-import { WELCOME_DIALOG_CONFIG } from '../core/constants/dialog.constants';
+import { WELCOME_DIALOG_CONFIG, withResponsiveDialogLayout } from '../core/constants/dialog.constants';
+import { ResponsiveService } from '../core/responsive/responsive.service';
 
 @Component({
   selector: 'app-home',
@@ -31,6 +32,7 @@ import { WELCOME_DIALOG_CONFIG } from '../core/constants/dialog.constants';
 export class HomeComponent {
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private responsiveService = inject(ResponsiveService);
 
   readonly currentUser = inject(CurrentUserService);
 
@@ -40,7 +42,9 @@ export class HomeComponent {
     const alreadyShown = sessionStorage.getItem('welcome-dialog-shown');
     if (!this.currentUser.user() && !alreadyShown) {
       sessionStorage.setItem('welcome-dialog-shown', '1');
-      this.dialog.open(WelcomeDialogComponent, WELCOME_DIALOG_CONFIG);
+      const responsiveState = this.responsiveService.state();
+      const compactViewport = responsiveState.isMobile || responsiveState.isTablet;
+      this.dialog.open(WelcomeDialogComponent, withResponsiveDialogLayout(WELCOME_DIALOG_CONFIG, compactViewport));
     }
   }
 

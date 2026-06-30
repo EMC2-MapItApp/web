@@ -49,3 +49,24 @@ export const DIALOG_CONFIG_WIDE: MatDialogConfig = {
   width: '520px',
   maxHeight: '90vh',
 };
+
+/**
+ * Devuelve configuración fullscreen para mobile/tablet sin alterar desktop.
+ *
+ * Se usa como capa común para que todos los diálogos mantengan coherencia
+ * responsive sin duplicar reglas en cada componente/guard.
+ */
+export function withResponsiveDialogLayout(
+  baseConfig: MatDialogConfig,
+  compactViewport: boolean,
+): MatDialogConfig {
+  if (!compactViewport) return baseConfig;
+
+  return {
+    ...baseConfig,
+    width: '100vw',
+    maxWidth: '100vw',
+    height: '100dvh',
+    maxHeight: '100dvh',
+  };
+}

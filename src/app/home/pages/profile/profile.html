@@ -19,7 +19,12 @@
   </header>
 
   <!-- ── Secciones ─────────────────────────────────────────────────────────── -->
-  <mat-accordion class="profile-accordion" multi>
+  <!--
+    `multi` es reactivo al viewport (allowMultiExpand):
+      · Desktop  → varias secciones abiertas a la vez.
+      · Compacto → una sección a la vez para reducir scroll.
+  -->
+  <mat-accordion class="profile-accordion" [multi]="allowMultiExpand()">
 
     <!-- Cuenta -->
     <mat-expansion-panel [expanded]="true">

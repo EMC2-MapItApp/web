@@ -2,7 +2,7 @@
  * @file profile.ts
  * @description Página de perfil del usuario activo.
  */
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,6 +20,7 @@ import { MainCategory, SubCategory } from '../../../core/models/category.model';
 import { DatePipe, SlicePipe } from '@angular/common';
 import { Publication } from '../../../core/models/publication.model';
 import { PublicationService } from '../../../core/services/publications.service';
+import { ResponsiveService } from '../../../core/responsive/responsive.service';
 
 const USER_TYPE_LABELS: Record<string, string> = {
   individual: 'Particular',
@@ -59,6 +60,33 @@ export class ProfilePageComponent {
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+
+  // ── Estado responsive ────────────────────────────────────────────────────────
+  // El componente NO calcula el viewport (nada de `window.innerWidth`).
+  // Solo consume el contrato `ResponsiveState` publicado por el servicio central,
+  // manteniendo una única fuente de verdad (principio de la arquitectura responsive).
+  private readonly responsive = inject(ResponsiveService);
+
+  /** Helpers reactivos derivados del estado responsive, para uso en la plantilla. */
+  readonly isMobile = this.responsive.isMobile;
+  readonly isTablet = this.responsive.isTablet;
+  readonly isDesktop = this.responsive.isDesktop;
+
+  /**
+   * Vista compacta (mobile o tablet).
+   *
+   * Se usa como criterio de comportamiento de UI: en pantallas reducidas el
+   * espacio vertical es escaso, por lo que conviene una experiencia más sobria.
+   */
+  readonly isCompactViewport = computed(() => this.isMobile() || this.isTablet());
+
+  /**
+   * Permite tener varias secciones del acordeón abiertas a la vez.
+   *
+   * - Desktop: se permite (comparación cómoda entre secciones).
+   * - Mobile/Tablet: se restringe a una sección para minimizar el scroll.
+   */
+  readonly allowMultiExpand = computed(() => !this.isCompactViewport());
 
   /** Publicaciones del usuario para el panel "Mis publicaciones". */
   myPublications = signal<Publication[]>([]);

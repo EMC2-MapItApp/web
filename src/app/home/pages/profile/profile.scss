@@ -1,18 +1,28 @@
 @use 'styles/variables' as v;
+@use 'styles/mixins' as m;
 
-.profile-page {
-  width: 100%;
-  max-width: 70%;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: v.$space-xl;
-}
+// .profile-page usa .page-main (styles.scss) para el contenedor centrado.
+// Solo se definen aquí estilos propios de la página.
 
 .profile-hero {
   display: flex;
   align-items: center;
   gap: v.$space-lg;
+
+  // Mobile: reducimos el avatar y compactamos separaciones para no robar
+  // espacio vertical a las secciones de contenido.
+  @include m.mobile {
+    gap: v.$space-md;
+
+    &__avatar {
+      width: 56px;
+      height: 56px;
+    }
+
+    &__initials {
+      font-size: 22px;
+    }
+  }
 
   &__avatar {
     width: 72px;
@@ -60,25 +70,10 @@
   }
 }
 
+// Estilos del acordeón centralizados en el mixin accordion-panel-title
+// (mismo mixin que usa .settings-accordion) para garantizar apariencia idéntica.
 .profile-accordion {
-  mat-expansion-panel-header mat-panel-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    font-size: v.$font-lg;
-
-    mat-icon {
-      color: var(--c-primary);
-      flex-shrink: 0;
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      line-height: 20px;
-      font-weight: normal;
-      font-family: 'Material Icons', sans-serif;
-    }
-  }
+  @include m.accordion-panel-title;
 }
 
 .info-list {
@@ -151,6 +146,13 @@
   button {
     font-size: v.$font-body;
   }
+
+  // Mobile: botón de acción a ancho completo para un objetivo táctil cómodo.
+  @include m.mobile {
+    button {
+      width: 100%;
+    }
+  }
 }
 
 .edit-form {
@@ -167,6 +169,13 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: v.$space-md;
+
+    // Vista compacta: los dos campos (ciudad/provincia) pasan a una columna
+    // para evitar inputs demasiado estrechos.
+    @include m.compact {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
   }
 }
 
@@ -181,6 +190,16 @@
   justify-content: flex-end;
   gap: v.$space-md;
   padding-top: v.$space-sm;
+
+  // Mobile: acciones apiladas y a ancho completo para facilitar el toque.
+  @include m.mobile {
+    flex-direction: column-reverse;
+    gap: v.$space-sm;
+
+    button {
+      width: 100%;
+    }
+  }
 }
 
 .level-card {
@@ -498,6 +517,16 @@
     button {
       border-radius: v.$radius-sm;
       font-weight: 600;
+    }
+
+    // Mobile: acciones apiladas a ancho completo (repetir / eliminar) para
+    // evitar botones comprimidos y mejorar la precisión táctil.
+    @include m.mobile {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
     }
   }
 }

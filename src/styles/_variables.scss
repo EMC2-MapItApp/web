@@ -45,3 +45,12 @@ $transition-slow: .25s ease;
 $bp-sm: 600px;
 $bp-md: 960px;
 $bp-lg: 1280px;
+
+// ── Breakpoints por clase de dispositivo ──────────────────────────────────────
+// Paridad estricta con `core/responsive/breakpoints.constants.ts` (SCREEN_BREAKPOINTS).
+// Regla del contrato responsive: los cortes en TS y SCSS deben coincidir para
+// evitar drift entre la lógica de comportamiento y el look & feel.
+$bp-mobile-max: 767px;   // 0–767   → mobile
+$bp-tablet-min: 768px;   // 768     → inicio tablet
+$bp-tablet-max: 1023px;  // 768–1023 → tablet
+$bp-desktop-min: 1024px; // 1024+   → desktop

@@ -79,6 +79,27 @@ body {
   }
 }
 
+// ── Contenedor de página centrado (compartido por profile, settings, etc.) ──────
+// Fuente única de verdad: mismo ancho, mismo centrado en todos los breakpoints.
+// Para añadir estilos específicos de una página usa la clase propia de esa página
+// junto a esta (ej. <div class="page-main profile-page">).
+.page-main {
+  width: 100%;
+  max-width: 70%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px; // $space-xl
+
+  // Mobile (≤767px, paridad con SCREEN_BREAKPOINTS.mobileMax):
+  // 70% sobre una pantalla de 375px = ~245px → demasiado estrecho.
+  // Se ocupa el 100% del área de contenido de .app-main, que ya aplica
+  // padding: 12px en mobile (home.scss), garantizando el margen lateral.
+  @media (max-width: 767px) {
+    max-width: 100%;
+  }
+}
+
 // ── Backdrop difuminado (dialogs) ─────────────────────────────────────────────
 .blurred-backdrop {
   backdrop-filter: blur(6px);

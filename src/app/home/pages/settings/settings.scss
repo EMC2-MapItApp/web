@@ -1,38 +1,18 @@
 @use 'styles/variables' as v;
+@use 'styles/mixins' as m;
 
-.settings-page {
-  width: 100%;
-  max-width: 70%;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: v.$space-xl;
-}
+// .settings-page usa .page-main (styles.scss) para el contenedor centrado.
+// Solo se definen aquí estilos propios de la página.
+.settings-page {}
 
 .settings-header {
   h2 { margin: 0; color: var(--c-text-primary); }
   p  { margin: 4px 0 0; color: var(--c-text-secondary); font-size: v.$font-md; }
 }
 
+// Estilos del acordeón desde mixin global — misma fuente que .profile-accordion.
 .settings-accordion {
-  mat-expansion-panel-header mat-panel-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    font-size: v.$font-lg;
-
-    mat-icon {
-      color: var(--c-primary);
-      flex-shrink: 0;
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      line-height: 20px;
-      font-weight: normal;
-      font-family: 'Material Icons', sans-serif;
-    }
-  }
+  @include m.accordion-panel-title;
 }
 
 .settings-section {

@@ -46,6 +46,14 @@
           }
         </a>
 
+
+        <a routerLink="create-publication" routerLinkActive="active-link">
+          <mat-icon>add_location_alt</mat-icon>
+          @if (!collapsed()) {
+          <span>Crear publicación</span>
+          }
+        </a>
+
         @if (currentUser.user()) {
         <!-- Solo para usuarios logados -->
         <a routerLink="profile" routerLinkActive="active-link">
@@ -55,19 +63,13 @@
           }
         </a>
 
-        <a routerLink="create-publication" routerLinkActive="active-link">
-          <mat-icon>add_location_alt</mat-icon>
-          @if (!collapsed()) {
-          <span>Crear publicación</span>
-          }
-        </a>
-
-        <a routerLink="dashboard" routerLinkActive="active-link">
+        <!-- Desactivar el enlace hasta que se implemente -->
+        <!-- <a routerLink="dashboard" routerLinkActive="active-link" >
           <mat-icon>dashboard</mat-icon>
           @if (!collapsed()) {
           <span>Dashboard</span>
           }
-        </a>
+        </a> -->
         <a routerLink="settings" routerLinkActive="active-link">
           <mat-icon>settings</mat-icon>
           @if (!collapsed()) {
@@ -89,13 +91,14 @@
           <span>Crear publicación</span>
           }
         </span>
-
+<!-- 
         <span class="menu-item menu-item--disabled" title="Inicia sesión para acceder">
           <mat-icon>dashboard</mat-icon>
           @if (!collapsed()) {
           <span>Dashboard</span>
           }
-        </span>
+        </span> -->
+
         <span class="menu-item menu-item--disabled" title="Inicia sesión para acceder">
           <mat-icon>settings</mat-icon>
           @if (!collapsed()) {

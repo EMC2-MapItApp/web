@@ -9,6 +9,8 @@
   align-items: center;
   gap: v.$space-lg;
 
+  padding-bottom: v.$space-lg;
+
   // Mobile: reducimos el avatar y compactamos separaciones para no robar
   // espacio vertical a las secciones de contenido.
   @include m.mobile {

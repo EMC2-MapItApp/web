@@ -33,7 +33,9 @@
           <mat-icon>person</mat-icon>
           <span>Cuenta</span>
         </mat-panel-title>
+        @if (!isMobile()) {
         <mat-panel-description>Datos personales y perfil</mat-panel-description>
+        }
       </mat-expansion-panel-header>
 
       @if (!editMode()) {
@@ -194,7 +196,9 @@
           <span class="panel-badge">{{ favoritesCount }}</span>
           }
         </mat-panel-title>
+        @if (!isMobile()) {
         <mat-panel-description>Tipos de publicaciones que ves primero</mat-panel-description>
+        }
       </mat-expansion-panel-header>
 
       <p class="profile-hint">Estos tipos de publicaciones se mostrarán primero al abrir el mapa.</p>
@@ -286,7 +290,9 @@
           <span class="panel-badge">{{ myPublications().length }}</span>
           }
         </mat-panel-title>
+        @if (!isMobile()) {
         <mat-panel-description>Gestiona publicaciones activas y finalizadas</mat-panel-description>
+        }
       </mat-expansion-panel-header>
 
       @if (loadingPublications()) {
@@ -341,7 +347,9 @@
           <mat-icon>trending_up</mat-icon>
           <span>Nivel y progreso</span>
         </mat-panel-title>
+        @if (!isMobile()) {
         <mat-panel-description>XP acumulada y nivel actual</mat-panel-description>
+        }
       </mat-expansion-panel-header>
 
       <div class="level-card">

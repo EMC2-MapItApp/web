@@ -1,64 +1,57 @@
-# Despliegue de Angular SPA en Cloudflare Pages
+# Problemas y Soluciones del Despliegue de MapItApp en Cloudflare
 
-# Despliegue de Angular SPA en Cloudflare Pages
-
-## 1. Introducción
-
-Al conectar un repositorio Angular a Cloudflare Pages, puede aparecer el mensaje:
-
-> "No se ha detectado ninguna configuración de Wrangler. Cloudflare intentará la configuración automática del proyecto."
-
-Esto es normal.  
-Wrangler solo se usa para Cloudflare Workers, no para Pages.  
-Las aplicaciones Angular **no necesitan Wrangler**, así que Cloudflare intentará detectar automáticamente:
-
-- comando de build  
-- directorio de salida  
-- dependencias
+Este documento recoge todos los problemas encontrados durante el despliegue de la aplicación Angular **MapItApp** en Cloudflare, junto con sus soluciones detalladas.
 
 ---
 
-## 1. Requisitos previos
+## 1. Interfaz unificada: Workers y Pages aparecen mezclados
 
-- Proyecto Angular ya creado (por ejemplo con `@angular/cli`)
-- Código en un repositorio Git (idealmente GitHub)
-- Cuenta en Cloudflare (gratuita)
-- Node.js y npm instalados en tu máquina local
+### Problema
+ Ya no aparecen separados en pestañas las implementaciones de Workers y Pages.  
 
----
+### Causa
+Cloudflare ha fusionado la interfaz y **no diferencia visualmente** entre Workers (backend serverless) y Pages (hosting estático).  
+Cloudflare Workers + Assets es la evolución de Pages. Cuando despliegas una web estática (Angular ASP) desde el dashboard de Workers y Pages, se crea como un Worker con Assets, no como una "Pages project" tradicional.
 
-## Conclusión sobre la selección de cuenta GitHub
+### Solución
+1. Entrar en **Workers y Pages** desde el menú lateral y tratarlo como un worker.
 
-Cloudflare Pages debe conectarse a la cuenta (personal u organización) donde esté el repositorio que se va a desplegar.  
-No existe ninguna diferencia técnica entre usar la cuenta personal o la organización: Cloudflare solo necesita acceso al repositorio.
+## 2. Versión de Node incompatible con Angular
 
-**Regla:**  
-- Si el repositorio Angular está en tu cuenta personal → selecciona tu cuenta personal.  
-- Si el repositorio Angular está en la organización → selecciona la organización.  
+### Problema
+La version actual probocaba este error:
 
-En este proyecto, como los repositorios del frontend y backend están agrupados dentro de la organización, se debe seleccionar **la organización** al conectar Cloudflare Pages.
+ - Node.js version v22.16.0 detected.
+ - The Angular CLI requires a minimum Node.js version of v22.22.3 or v24.15.0 or v26.0.0.
+ - Please update your Node.js version or visit https://nodejs.org/ for additional instructions.
 
----
+### Causa
+ El entorno de compilación (build system) de Cloudflare Workers + Pages necesita saber qué versión de Node.js usar, y por defecto puede no coincidir con lo que espera tu proyecto Angular.
 
-## Conclusión sobre el check “Crear repositorio Git privado”
+ ### Solución
+Crear en la raiz del proyecto .nvmrc con el la version en mi caso la 24. Es la forma más directa y funciona tanto para Workers con Assets como para Pages.
 
-La opción **“Crear repositorio Git privado”** crea un repositorio nuevo y vacío en GitHub, marcado como privado, dentro de la cuenta u organización seleccionada.
+## 3. Límites de presupuesto de bundle
 
-**Importante:**  
-- No convierte tu repositorio actual en privado.  
-- No modifica tu repositorio existente.  
-- No es necesario para desplegar un proyecto ya existente.  
-- Si se marca por error, Cloudflare creará un repositorio vacío que no sirve para desplegar tu Angular.
+### Problema
+Los limites iniciales son demasiado bajos.
+### Solución
+Aumentar los limites de bundle. Al aumentarlos y sincronizar el repositorio la plataforma no se actualizo y leyó los nuevos valores hasta que no eliminé la implantación y la desplegué de nuevo.
 
-**Regla:**  
-- Si ya tienes tu proyecto Angular en GitHub → **NO marcar esta opción**.  
-- Solo se usa cuando quieres crear un repositorio nuevo desde cero.
+## 4. No se muestra nada!!
 
-En este proyecto, como el repositorio Angular ya existe dentro de la organización, esta opción debe quedar **desmarcada**.
+### Problema
 
+Ya desplegado sin errores no muestra nada en la url.
 
-## 2. Preparar el proyecto Angular para producción
+### Solución
 
-1. Instalar dependencias:
-   ```bash
-   npm install
+Crear un wrangler.toml en la raiz del proyecto para darle a la plataforma las rutas de donde está el index.html.
+
+Se ha creado con este contenido: 
+name = "web"
+compatibility_date = "2024-09-23"
+
+[assets]
+directory = "./dist/mapit-app/browser"
+not_found_handling = "single-page-application"

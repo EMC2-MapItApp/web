@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, isDevMode, signal } from '@angular/core';
 import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../core/services/auth.service';
+
 
 @Component({
   selector: 'app-login-dialog',
@@ -27,21 +28,34 @@ import { AuthService } from '../core/services/auth.service';
 })
 export class LoginDialogComponent {
   readonly dialogRef = inject(MatDialogRef<LoginDialogComponent>);
-  private fb          = inject(FormBuilder);
-  private router      = inject(Router);
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
   private authService = inject(AuthService);
 
   hidePassword = true;
-  loading      = signal(false);
-  errorMsg     = signal<string | null>(null);
+  loading = signal(false);
+  errorMsg = signal<string | null>(null);
+
+
 
   loginForm = this.fb.group({
-    email:    ['eusebio.montero@gmail.com', [Validators.required, Validators.email]],
-    password: ['12345678', [Validators.required, Validators.minLength(6)]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
-  get emailCtrl()    { return this.loginForm.controls['email']; }
+  get emailCtrl() { return this.loginForm.controls['email']; }
   get passwordCtrl() { return this.loginForm.controls['password']; }
+
+
+  //si el entorno es de desarrollo, se precargan los datos de login para facilitar las pruebas
+  constructor() {
+    if (isDevMode()) {
+      this.loginForm.setValue({
+        email: 'eusebio.montero@gmail.com',
+        password: '12345678',
+      });
+    }
+  }
 
   goToRegister(): void {
     this.dialogRef.close();

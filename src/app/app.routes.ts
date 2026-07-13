@@ -9,11 +9,15 @@ import { openLoginDialogGuard } from './core/guards/open-login-dialog.guard';
 import { authDialogGuard } from './core/guards/auth-dialog.guard';
 import { openRegisterDialogGuard } from './core/guards/open-register-dialog.guard';
 import { loadUserOptionalGuard } from './core/guards/load-user-optional';
+import { VerifyEmailPageComponent } from './verify-email/verify-email-page';
 
 
 export const routes: Routes = [
   { path: 'login', canActivate: [openLoginDialogGuard], component: HomeComponent },
   { path: 'register', canActivate: [openRegisterDialogGuard], component: HomeComponent },
+  // Pagina real (no dialog): se llega aqui desde el enlace del correo de verificacion,
+  // sin contexto previo de la app.
+  { path: 'verify-email', component: VerifyEmailPageComponent },
   {
     path: '', component: HomeComponent,
     canActivate: [loadUserOptionalGuard],

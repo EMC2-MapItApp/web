@@ -1,8 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,6 +15,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { UserType } from '../core/models/user.model';
 import { AuthService } from '../core/services/auth.service';
 import { AuthRegisterRequest } from '../core/models/auth.model';
+import {
+  PasswordStrengthMeterComponent, PasswordStrengthScore,
+} from '../shared/password-strength-meter/password-strength-meter';
+import { CheckEmailDialogComponent } from '../shared/check-email-dialog/check-email-dialog';
+import { CHECK_EMAIL_DIALOG_CONFIG } from '../core/constants/dialog.constants';
+import type { ZxcvbnFactory as ZxcvbnFactoryType } from '@zxcvbn-ts/core';
 
 const ENTITY_TYPES = [
   { value: 'museum',      label: 'Museo' },
@@ -39,6 +46,7 @@ const USER_TYPE_MAP: Record<UserType, AuthRegisterRequest['userType']> = {
     MatDialogModule, MatFormFieldModule, MatInputModule,
     MatButtonModule, MatIconModule, MatSelectModule,
     MatStepperModule, MatProgressSpinnerModule, MatTooltipModule,
+    PasswordStrengthMeterComponent,
   ],
   templateUrl: './register-dialog.html',
   styleUrl: './register-dialog.scss',
@@ -48,6 +56,8 @@ export class RegisterDialogComponent {
   private fb          = inject(FormBuilder);
   private router      = inject(Router);
   private authService = inject(AuthService);
+  private matDialog    = inject(MatDialog);
+  private destroyRef    = inject(DestroyRef);
 
   selectedType        = signal<UserType | null>(null);
   hidePassword        = true;
@@ -55,6 +65,11 @@ export class RegisterDialogComponent {
   loading             = signal(false);
   errorMsg            = signal<string | null>(null);
   readonly entityTypes = ENTITY_TYPES;
+
+  /** Score de zxcvbn (0-4) para la contraseña actual. Null hasta que la libreria carga. */
+  passwordScore = signal<PasswordStrengthScore>(null);
+  private zxcvbnFactory: ZxcvbnFactoryType | null = null;
+  private zxcvbnLoadingPromise: Promise<void> | null = null;
 
   step1Form = this.fb.group({
     userType: ['' as UserType, Validators.required],
@@ -64,7 +79,7 @@ export class RegisterDialogComponent {
     {
       name:            ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
       email:           ['', [Validators.required, Validators.email]],
-      password:        ['', [Validators.required, Validators.minLength(6), Validators.maxLength(120)]],
+      password:        ['', [Validators.required, Validators.minLength(8), Validators.maxLength(72)]],
       passwordConfirm: ['', Validators.required],
     },
     { validators: this.passwordMatchValidator }
@@ -135,19 +150,63 @@ export class RegisterDialogComponent {
     this.errorMsg.set(null);
 
     this.authService.register(payload).subscribe({
-      next:  () => {
+      // El registro ya no autentica (Fase 1): en vez de cerrar como "logueado",
+      // se pide al usuario que confirme su email antes de poder iniciar sesión.
+      next: (res) => {
         this.loading.set(false);
-        this.dialogRef.close(true);
+        this.dialogRef.close();
+        this.matDialog.open(CheckEmailDialogComponent, {
+          ...CHECK_EMAIL_DIALOG_CONFIG,
+          data: { email: res.email },
+        });
       },
       error: (err) => {
         this.loading.set(false);
         this.errorMsg.set(
-          err.status === 409
-            ? 'Ya existe una cuenta con ese correo electrónico.'
-            : 'Error al crear la cuenta. Inténtalo de nuevo.'
+          err.status === 409 ? 'Ya existe una cuenta con ese correo electrónico.'
+          : err.error?.error?.code === 'WEAK_PASSWORD' ? 'La contraseña es demasiado débil.'
+          : 'Error al crear la cuenta. Inténtalo de nuevo.'
         );
       },
     });
+  }
+
+  /**
+   * Carga zxcvbn-ts de forma diferida (solo al primer foco en el campo password) y
+   * empieza a puntuar la contraseña en cada cambio. Memoizado: no se reimporta en
+   * foros repetidos.
+   */
+  onPasswordFocus(): void {
+    this.zxcvbnLoadingPromise ??= this.loadZxcvbn();
+  }
+
+  private async loadZxcvbn(): Promise<void> {
+    const [{ ZxcvbnFactory }, common, esEs] = await Promise.all([
+      import('@zxcvbn-ts/core'),
+      import('@zxcvbn-ts/language-common'),
+      import('@zxcvbn-ts/language-es-es'),
+    ]);
+
+    this.zxcvbnFactory = new ZxcvbnFactory({
+      dictionary: { ...common.dictionary, ...esEs.dictionary },
+      graphs: common.adjacencyGraphs,
+      translations: esEs.translations,
+    });
+
+    this.passwordCtrl.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(value => this.scorePassword(value));
+    this.scorePassword(this.passwordCtrl.value);
+  }
+
+  private scorePassword(password: string | null): void {
+    if (!this.zxcvbnFactory || !password) {
+      this.passwordScore.set(null);
+      return;
+    }
+    const { name, email } = this.step2Form.value;
+    const userInputs = [name, email].filter((v): v is string => !!v);
+    this.passwordScore.set(this.zxcvbnFactory.check(password, userInputs).score);
   }
 
   private passwordMatchValidator(group: AbstractControl) {

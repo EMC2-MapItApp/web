@@ -30,6 +30,12 @@
   --c-error-bg:       #fef2f2;
   --c-error-border:   #fecaca;
 
+  // Estados semanticos de validacion (barra de fuerza de password, futuros toasts/formularios)
+  --c-warning:        #f59e0b;
+  --c-warning-bg:     #fffbeb;
+  --c-success:        #16a34a;
+  --c-success-bg:     #f0fdf4;
+
   --c-close-btn:       #cbd5e1;
   --c-close-btn-hover: #64748b;
 }
@@ -65,6 +71,11 @@
   --c-error:          #f87171;
   --c-error-bg:       #450a0a;
   --c-error-border:   #7f1d1d;
+
+  --c-warning:        #fbbf24;
+  --c-warning-bg:     #451a03;
+  --c-success:        #4ade80;
+  --c-success-bg:     #052e16;
 
   --c-close-btn:       #475569;
   --c-close-btn-hover: #94a3b8;

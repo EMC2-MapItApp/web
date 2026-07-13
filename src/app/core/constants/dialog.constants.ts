@@ -35,6 +35,14 @@ export const AUTH_REQUIRED_DIALOG_CONFIG: MatDialogConfig = {
   width: '420px',
 };
 
+/** Configuración específica del diálogo "revisa tu correo" (Fase 1 auth, tras registro). */
+export const CHECK_EMAIL_DIALOG_CONFIG: MatDialogConfig = {
+  ...DIALOG_BASE,
+  panelClass: 'check-email-panel',
+  width: '420px',
+  disableClose: true,
+};
+
 /** Configuración base para todos los dialogs (deprecated, usar las específicas). */
 export const DIALOG_CONFIG: MatDialogConfig = {
   ...DIALOG_BASE,

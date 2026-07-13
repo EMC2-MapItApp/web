@@ -1,0 +1,32 @@
+<div class="verify-email-page">
+  <div class="verify-email-card">
+
+    @switch (state()) {
+      @case ('loading') {
+        <mat-spinner diameter="40" />
+        <h2 class="verify-email-card__title">Verificando tu correo…</h2>
+      }
+
+      @case ('success') {
+        <div class="verify-email-card__icon verify-email-card__icon--success">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <h2 class="verify-email-card__title">¡Correo verificado!</h2>
+        <p class="verify-email-card__subtitle">Ya puedes iniciar sesión en MapIt.</p>
+        <button mat-flat-button class="btn-primary" (click)="goToLogin()">Iniciar sesión</button>
+      }
+
+      @case ('error') {
+        <div class="verify-email-card__icon verify-email-card__icon--error">
+          <mat-icon>error_outline</mat-icon>
+        </div>
+        <h2 class="verify-email-card__title">Enlace inválido o caducado</h2>
+        <p class="verify-email-card__subtitle">
+          Vuelve a intentarlo desde el correo de verificación o solicita uno nuevo al iniciar sesión.
+        </p>
+        <button mat-flat-button class="btn-primary" (click)="goToLogin()">Ir a iniciar sesión</button>
+      }
+    }
+
+  </div>
+</div>

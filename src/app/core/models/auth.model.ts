@@ -19,8 +19,31 @@ export interface AuthLoginRequest {
   password: string;
 }
 
-/** Respuesta de los endpoints /auth/register y /auth/login */
+/** Respuesta del endpoint /auth/login */
 export interface AuthResponse {
   token: string;
   user:  MapItUser;
+}
+
+/**
+ * Respuesta de POST /auth/register (Fase 1 auth). Sin token: el registro ya no
+ * autentica, el usuario debe verificar su email antes de poder hacer login.
+ */
+export interface RegisterResponse {
+  email: string;
+}
+
+/** Payload para POST /auth/verify-email */
+export interface VerifyEmailRequest {
+  token: string;
+}
+
+/** Payload para POST /auth/resend-verification */
+export interface ResendVerificationRequest {
+  email: string;
+}
+
+/** Respuesta de POST /auth/resend-verification: mensaje generico, exista o no el email. */
+export interface ResendVerificationResponse {
+  message: string;
 }

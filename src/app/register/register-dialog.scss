@@ -52,6 +52,7 @@
 }
 
 .step-hint { margin: 0; font-size: v.$font-body; color: var(--c-text-secondary); }
+.step-hint--warning { font-size: v.$font-xs; color: var(--c-warning); }
 
 .type-selector {
   display: grid;

@@ -1,0 +1,57 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.check-email-dialog {
+  @include m.dialog-base;
+
+  &__icon {
+    @include m.icon-circle(v.$gradient-primary);
+  }
+
+  &__title {
+    margin: 0 0 v.$space-md;
+    font-size: v.$font-4xl;
+    font-weight: 800;
+    color: var(--c-text-primary);
+    letter-spacing: -0.3px;
+  }
+
+  &__subtitle {
+    margin: 0 0 28px;
+    font-size: v.$font-md;
+    color: var(--c-text-secondary);
+    line-height: 1.6;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-md;
+    width: 100%;
+
+    button {
+      height: 44px;
+      font-size: v.$font-md;
+      font-weight: 600;
+    }
+  }
+
+  &__hint {
+    margin: 20px 0 0;
+    font-size: v.$font-xs;
+    color: var(--c-text-muted);
+  }
+}
+
+.btn-login {
+  @include m.btn-primary;
+}
+
+.btn-resend {
+  border-color: var(--c-primary) !important;
+  color: var(--c-primary) !important;
+}
+
+.close-btn {
+  @include m.close-btn;
+}

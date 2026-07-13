@@ -80,8 +80,9 @@ export class LoginDialogComponent {
       error: (err) => {
         this.loading.set(false);
         this.errorMsg.set(
-          err.status === 401
-            ? 'Correo o contraseña incorrectos.'
+          err.status === 401 ? 'Correo o contraseña incorrectos.'
+          : err.status === 403 && err.error?.error?.code === 'EMAIL_NOT_VERIFIED'
+            ? 'Debes verificar tu correo antes de iniciar sesión.'
             : 'Error al iniciar sesión. Inténtalo de nuevo.'
         );
       },

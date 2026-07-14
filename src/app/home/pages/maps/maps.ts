@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, ViewChild, inject, signal, comput
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { GoogleMapsService } from '../../../core/services/google-maps.service';
 import { LocationService } from '../../../core/services/location.service';
 import { CategoryService } from '../../../core/services/category.service';
@@ -16,6 +17,7 @@ import { AuthRequiredDialogComponent } from '../../../shared/auth-required-dialo
 import { AUTH_REQUIRED_DIALOG_CONFIG, withResponsiveDialogLayout } from '../../../core/constants/dialog.constants';
 import { ThemeService } from '../../../core/services/theme.service';
 import { GeoIpService } from '../../../core/services/geo-ip.service';
+import { DeviceLocationService } from '../../../core/services/device-location.service';
 import { PublicationService } from '../../../core/services/publication.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ResponsiveService } from '../../../core/responsive/responsive.service';
@@ -48,8 +50,10 @@ export class MapsPageComponent implements AfterViewInit {
   private currentUser = inject(CurrentUserService);
   private dialog = inject(MatDialog);
   private geoIpService = inject(GeoIpService);
+  private deviceLocationService = inject(DeviceLocationService);
   private publicationService = inject(PublicationService);
   private responsiveService = inject(ResponsiveService);
+  private snackBar = inject(MatSnackBar);
 
   // ── Propiedades ──────────────────────────────────────────────────────────────
 
@@ -282,6 +286,12 @@ export class MapsPageComponent implements AfterViewInit {
       });
       this.infoWindow = new google.maps.InfoWindow({ headerDisabled: true });
 
+      // Control nativo "Usar mi ubicación", solo en dispositivos de input táctil.
+      if (this.deviceLocationService.isTouchPrimaryDevice()) {
+        const locationControl = this.mapsService.buildMyLocationControl(() => this.useMyLocation());
+        this.map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(locationControl);
+      }
+
       // Cargar localizaciones
       this.locationService.getAll().subscribe(locations => {
         this.allLocations = locations;
@@ -300,6 +310,36 @@ export class MapsPageComponent implements AfterViewInit {
         }
       });
     });
+  }
+
+  /** Centra el mapa en la posición real del dispositivo (GPS/Wi-Fi/celda). */
+  private useMyLocation(): void {
+    this.deviceLocationService.getCurrentPosition().subscribe({
+      next: ({ lat, lng }) => {
+        this.map.panTo({ lat, lng });
+        this.map.setZoom(15);
+      },
+      error: (error: { code: string }) => {
+        this.snackBar.open(this.resolveLocationErrorMessage(error.code), 'Cerrar', {
+          duration: 4000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
+      },
+    });
+  }
+
+  /** Traduce un código de error de geolocalización a un mensaje legible para el usuario. */
+  private resolveLocationErrorMessage(code: string): string {
+    switch (code) {
+      case 'PERMISSION_DENIED':
+        return 'Activa el permiso de ubicación en el navegador para usar esta función.';
+      case 'TIMEOUT':
+      case 'POSITION_UNAVAILABLE':
+        return 'No se pudo obtener tu ubicación. Inténtalo de nuevo.';
+      default:
+        return 'Tu navegador no soporta geolocalización.';
+    }
   }
 
   // ── Filtros ────────────────────────────────────────────────────────────────

@@ -28,4 +28,45 @@
   </div>
 
   <p class="welcome-dialog__hint">Cierra esta ventana para explorar el mapa</p>
+
+  @if (latestEntry(); as entry) {
+  <div class="welcome-dialog__changelog">
+    <h3 class="welcome-dialog__changelog-title">Nuevas funcionalidades:</h3>
+
+    <article class="changelog-entry">
+      <div class="changelog-entry__meta">
+        <span class="changelog-entry__badge changelog-entry__badge--{{ entry.type }}">
+          <mat-icon>{{ typeIcon(entry.type) }}</mat-icon>
+          {{ typeLabel(entry.type) }}
+        </span>
+        <span class="changelog-entry__date">{{ entry.date | date:'d MMM' }}</span>
+      </div>
+      <h4 class="changelog-entry__title">{{ entry.title }}</h4>
+      <p class="changelog-entry__description">{{ entry.description }}</p>
+    </article>
+
+    @if (expanded()) {
+    @for (extra of sameDayRest(); track extra.title) {
+    <article class="changelog-entry">
+      <div class="changelog-entry__meta">
+        <span class="changelog-entry__badge changelog-entry__badge--{{ extra.type }}">
+          <mat-icon>{{ typeIcon(extra.type) }}</mat-icon>
+          {{ typeLabel(extra.type) }}
+        </span>
+        <span class="changelog-entry__date">{{ extra.date | date:'d MMM' }}</span>
+      </div>
+      <h4 class="changelog-entry__title">{{ extra.title }}</h4>
+      <p class="changelog-entry__description">{{ extra.description }}</p>
+    </article>
+    }
+    }
+
+    <div class="welcome-dialog__changelog-links">
+      @if (sameDayRest().length > 0 && !expanded()) {
+      <button type="button" class="link-btn" (click)="showMore()">Ver más</button>
+      }
+      <button type="button" class="link-btn" (click)="goToAbout()">Ver todas</button>
+    </div>
+  </div>
+  }
 </div>

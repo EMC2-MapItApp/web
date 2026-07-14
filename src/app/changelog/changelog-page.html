@@ -1,0 +1,29 @@
+<div class="changelog-page">
+  <header class="changelog-header">
+    <a routerLink="/" class="changelog-header__back" title="Volver al mapa">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div>
+      <h1>Novedades</h1>
+      <p class="changelog-header__subtitle">
+        Historial completo de funcionalidades nuevas, mejoras y correcciones aplicadas en MapIt.
+      </p>
+    </div>
+  </header>
+
+  <div class="changelog-list">
+    @for (entry of entries(); track entry.date + entry.title) {
+      <article class="changelog-item">
+        <div class="changelog-item__meta">
+          <span class="changelog-item__badge changelog-item__badge--{{ entry.type }}">
+            <mat-icon>{{ typeIcon(entry.type) }}</mat-icon>
+            {{ typeLabel(entry.type) }}
+          </span>
+          <span class="changelog-item__date">{{ entry.date | date:'longDate' }}</span>
+        </div>
+        <h2 class="changelog-item__title">{{ entry.title }}</h2>
+        <p class="changelog-item__description">{{ entry.description }}</p>
+      </article>
+    }
+  </div>
+</div>

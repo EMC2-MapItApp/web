@@ -38,6 +38,11 @@
   color: var(--c-text-secondary);
   font-size: v.$font-xs;
 
+  &__links {
+    display: flex;
+    gap: v.$space-lg;
+  }
+
   &__link {
     color: var(--c-text-secondary);
     text-decoration: none;

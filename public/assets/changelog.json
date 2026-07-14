@@ -1,0 +1,38 @@
+[
+  {
+    "date": "2026-07-14",
+    "type": "feature",
+    "title": "Novedades y Acerca de",
+    "description": "Ahora puedes consultar una página con todas las novedades, mejoras y correcciones de MapIt, además de una sección para conocer mejor la app."
+  },
+  {
+    "date": "2026-07-14",
+    "type": "feature",
+    "title": "Restablecer contraseña",
+    "description": "Si olvidas tu contraseña, ahora puedes recuperarla mediante un enlace de un solo uso enviado a tu correo."
+  },
+  {
+    "date": "2026-07-14",
+    "type": "improvement",
+    "title": "Nick en el perfil",
+    "description": "Añade un nick público a tu perfil, visible junto a tus publicaciones y comentarios."
+  },
+  {
+    "date": "2026-07-10",
+    "type": "feature",
+    "title": "Registro más seguro",
+    "description": "El registro comprueba ahora la fortaleza de tu contraseña y verifica tu email antes de activar la cuenta."
+  },
+  {
+    "date": "2026-07-05",
+    "type": "fix",
+    "title": "Corrección de marcadores en el mapa",
+    "description": "Se corrigió un desajuste en la posición de algunos marcadores al acercar el zoom del mapa."
+  },
+  {
+    "date": "2026-06-28",
+    "type": "improvement",
+    "title": "Categorías más claras",
+    "description": "Los iconos y colores de categorías se muestran de forma más consistente en el mapa y en los filtros."
+  }
+]

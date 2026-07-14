@@ -28,6 +28,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MapSettingsService } from '../../../core/services/map-settings.service';
 import { ThemeService } from '../../../core/services/theme.service';
 import { GeoIpService } from '../../../core/services/geo-ip.service';
+import { DeviceLocationService } from '../../../core/services/device-location.service';
 import { PublicationService } from '../../../core/services/publications.service';
 import { ResponsiveService } from '../../../core/responsive/responsive.service';
 import html2canvas from 'html2canvas';
@@ -69,6 +70,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   private readonly themeService = inject(ThemeService);
 
   private readonly geoIpService = inject(GeoIpService);
+  private readonly deviceLocationService = inject(DeviceLocationService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly responsiveService = inject(ResponsiveService);
@@ -308,6 +310,12 @@ export class CreatePublicationPageComponent implements AfterViewInit {
         styles: this.mapSettingsService.mapStyles(),
       });
 
+      // Control nativo "Usar mi ubicación", solo en dispositivos de input táctil.
+      if (this.deviceLocationService.isTouchPrimaryDevice()) {
+        const locationControl = this.mapsService.buildMyLocationControl(() => this.useMyLocation());
+        this.map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(locationControl);
+      }
+
       // listener de click igual que antes
       this.map.addListener('click', (e: google.maps.MapMouseEvent) => {
         if (!e.latLng) return;
@@ -511,6 +519,36 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     if (this.marker) {
       this.marker.setMap(null);
       this.marker = null;
+    }
+  }
+
+  /** Centra el mapa en la posición real del dispositivo (GPS/Wi-Fi/celda). */
+  private useMyLocation(): void {
+    this.deviceLocationService.getCurrentPosition().subscribe({
+      next: ({ lat, lng }) => {
+        this.map.panTo({ lat, lng });
+        this.map.setZoom(15);
+      },
+      error: (error: { code: string }) => {
+        this.snackBar.open(this.resolveLocationErrorMessage(error.code), 'Cerrar', {
+          duration: 4000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
+      },
+    });
+  }
+
+  /** Traduce un código de error de geolocalización a un mensaje legible para el usuario. */
+  private resolveLocationErrorMessage(code: string): string {
+    switch (code) {
+      case 'PERMISSION_DENIED':
+        return 'Activa el permiso de ubicación en el navegador para usar esta función.';
+      case 'TIMEOUT':
+      case 'POSITION_UNAVAILABLE':
+        return 'No se pudo obtener tu ubicación. Inténtalo de nuevo.';
+      default:
+        return 'Tu navegador no soporta geolocalización.';
     }
   }
 

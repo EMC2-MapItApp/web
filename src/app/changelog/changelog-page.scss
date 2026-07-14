@@ -1,0 +1,116 @@
+@use '../../styles/variables' as v;
+@use '../../styles/mixins' as m;
+
+.changelog-page {
+  min-height: 100dvh;
+  box-sizing: border-box;
+  padding: v.$space-2xl v.$space-lg 60px;
+  max-width: 720px;
+  margin: 0 auto;
+  background: var(--c-bg);
+  color: var(--c-text-primary);
+
+  @include m.mobile {
+    padding: v.$space-xl v.$space-md 40px;
+  }
+}
+
+.changelog-header {
+  display: flex;
+  align-items: flex-start;
+  gap: v.$space-lg;
+  margin-bottom: v.$space-2xl;
+
+  &__back {
+    @include m.icon-wrap;
+    color: var(--c-text-secondary);
+    flex-shrink: 0;
+    margin-top: 2px;
+
+    &:hover { color: var(--c-primary); }
+  }
+
+  h1 {
+    margin: 0 0 v.$space-sm;
+    font-size: v.$font-4xl;
+    font-weight: 800;
+  }
+
+  &__subtitle {
+    margin: 0;
+    color: var(--c-text-secondary);
+    font-size: v.$font-md;
+    line-height: 1.6;
+    max-width: 60ch;
+  }
+}
+
+.changelog-list {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-lg;
+}
+
+.changelog-item {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: v.$radius-lg;
+  padding: v.$space-lg;
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: v.$space-sm;
+    margin-bottom: v.$space-sm;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: v.$radius-full;
+    font-size: v.$font-xs;
+    font-weight: 700;
+
+    mat-icon {
+      font-size: 13px;
+      width: 13px;
+      height: 13px;
+      line-height: 13px;
+    }
+
+    &--feature {
+      color: var(--c-primary);
+      background: var(--c-primary-hover-bg);
+    }
+
+    &--improvement {
+      color: var(--c-success);
+      background: var(--c-success-bg);
+    }
+
+    &--fix {
+      color: var(--c-warning);
+      background: var(--c-warning-bg);
+    }
+  }
+
+  &__date {
+    font-size: v.$font-xs;
+    color: var(--c-text-muted);
+  }
+
+  &__title {
+    margin: 0 0 v.$space-sm;
+    font-size: v.$font-lg;
+    font-weight: 700;
+  }
+
+  &__description {
+    margin: 0;
+    font-size: v.$font-sm;
+    color: var(--c-text-secondary);
+    line-height: 1.55;
+  }
+}

@@ -19,6 +19,8 @@ import { loadUserOptionalGuard } from './core/guards/load-user-optional';
 import { VerifyEmailPageComponent } from './verify-email/verify-email-page';
 import { ResetPasswordPageComponent } from './reset-password/reset-password-page';
 import { StackPageComponent } from './stack/stack-page';
+import { AboutPageComponent } from './about/about-page';
+import { ChangelogPageComponent } from './changelog/changelog-page';
 
 
 export const routes: Routes = [
@@ -31,6 +33,9 @@ export const routes: Routes = [
   { path: 'reset-password', component: ResetPasswordPageComponent },
   // Pagina publica de portfolio (stack tecnico), sin guard: accesible sin sesion.
   { path: 'stack', component: StackPageComponent },
+  // Paginas publicas "Acerca de" / historial de novedades, sin guard: accesibles sin sesion.
+  { path: 'about', component: AboutPageComponent },
+  { path: 'changelog', component: ChangelogPageComponent },
   {
     path: '', component: HomeComponent,
     canActivate: [loadUserOptionalGuard],

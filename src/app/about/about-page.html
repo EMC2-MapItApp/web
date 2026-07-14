@@ -1,0 +1,33 @@
+<div class="about-page">
+  <header class="about-header">
+    <a routerLink="/" class="about-header__back" title="Volver al mapa">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div>
+      <h1>Acerca de MapIt</h1>
+      <span class="about-header__version">Versión {{ version }}</span>
+      <p class="about-header__subtitle">
+        Descubre publicaciones y eventos cerca de ti, y únete a la comunidad para crear y
+        compartir tus propios mapas.
+      </p>
+    </div>
+  </header>
+
+  <section class="about-links">
+    <a routerLink="/changelog" class="about-link-card">
+      <mat-icon>new_releases</mat-icon>
+      <div>
+        <h2>Novedades</h2>
+        <p>Historial completo de funcionalidades nuevas, mejoras y correcciones.</p>
+      </div>
+    </a>
+
+    <a routerLink="/stack" class="about-link-card">
+      <mat-icon>web</mat-icon>
+      <div>
+        <h2>Stack técnico</h2>
+        <p>Qué usa MapIt y por qué, con enlaces directos al código en GitHub.</p>
+      </div>
+    </a>
+  </section>
+</div>

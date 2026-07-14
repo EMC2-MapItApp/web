@@ -107,6 +107,14 @@
         </span>
         }
 
+        <!-- Acerca de: visible siempre, con o sin sesión -->
+        <a routerLink="/about" routerLinkActive="active-link">
+          <mat-icon>info</mat-icon>
+          @if (!collapsed()) {
+          <span>Acerca de</span>
+          }
+        </a>
+
       </nav>
     </aside>
 
@@ -117,6 +125,9 @@
 
   <footer class="app-footer">
     <span>© 2026 MapIt</span>
-    <a routerLink="/stack" class="app-footer__link">Stack técnico</a>
+    <div class="app-footer__links">
+      <a routerLink="/stack" class="app-footer__link">Stack técnico</a>
+      <a routerLink="/about" class="app-footer__link">Acerca de</a>
+    </div>
   </footer>
 </div>

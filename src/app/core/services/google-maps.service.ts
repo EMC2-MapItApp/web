@@ -89,6 +89,27 @@ export class GoogleMapsService {
     };
   }
 
+  /**
+   * Crea un botón de control nativo de Google Maps ("Usar mi ubicación").
+   *
+   * @remarks
+   * Se registra vía `map.controls[position].push(...)`, no como overlay HTML del
+   * componente, para que Google lo apile junto al resto de controles (zoom, fullscreen)
+   * sin solapes y respetando su propio sistema de layout.
+   *
+   * @param onClick - Callback invocado al pulsar el control.
+   */
+  buildMyLocationControl(onClick: () => void): HTMLButtonElement {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.title = 'Usar mi ubicación';
+    button.setAttribute('aria-label', 'Usar mi ubicación');
+    button.className = 'gmaps-my-location-control';
+    button.innerHTML = '<span class="material-icons" aria-hidden="true">my_location</span>';
+    button.addEventListener('click', onClick);
+    return button;
+  }
+
   load(): Promise<void> {
     if (this.loadingPromise) {
       return this.loadingPromise;

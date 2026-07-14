@@ -111,6 +111,46 @@ body {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18) !important;
 }
 
+// ── Control nativo "Usar mi ubicación" (Google Maps) ──────────────────────────
+// Insertado vía map.controls[position].push(...), fuera del árbol de componentes
+// Angular: por eso vive en global styles y no en el styleUrl de cada página.
+.gmaps-my-location-control {
+  width: 40px;
+  height: 40px;
+  margin: 10px;
+  border: none;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+
+  .material-icons {
+    font-size: 20px;
+    color: #555;
+  }
+
+  &:hover .material-icons {
+    color: #1e293b;
+  }
+}
+
+[data-theme="dark"] .gmaps-my-location-control {
+  background: #1e293b;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+
+  .material-icons {
+    color: #cbd5e1;
+  }
+
+  &:hover .material-icons {
+    color: #f1f5f9;
+  }
+}
+
 // ── Google Maps InfoWindow – tema oscuro ──────────────────────────────────────
 [data-theme="dark"] {
   // Contenedor y todos sus divs directos

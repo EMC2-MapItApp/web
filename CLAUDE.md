@@ -55,7 +55,10 @@ src/app/
   `open-register-dialog.guard`) controlan el acceso a rutas y la apertura de diálogos de login/
   registro — login y registro **no son rutas de página**, son diálogos abiertos sobre `HomeComponent`
   (ver `app.routes.ts`: `/login` y `/register` activan un guard que abre el diálogo y quedan en el
-  mismo componente shell).
+  mismo componente shell). El flujo "olvidé mi contraseña" añade `forgot-password/` (diálogo,
+  abierto desde `login-dialog` vía `MatDialog`, sin ruta propia) y `reset-password/` (página real
+  con formulario de contraseña nueva, análoga a `verify-email/` — se llega desde el enlace del
+  correo, sin contexto previo del shell).
 - **Rutas hijas de `HomeComponent`** (`dashboard`, `profile`, `settings`, `create-publication`)
   requieren sesión vía `authDialogGuard`.
 

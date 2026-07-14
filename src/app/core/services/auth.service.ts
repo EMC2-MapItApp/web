@@ -6,6 +6,8 @@
  *   POST /auth/register            → registra usuario nuevo (Fase 1: no autentica, hay que verificar el email)
  *   POST /auth/verify-email        → confirma el email con el token recibido por correo
  *   POST /auth/resend-verification → reenvia el correo de verificacion
+ *   POST /auth/forgot-password     → solicita el restablecimiento de contraseña ("olvidé mi contraseña")
+ *   POST /auth/reset-password      → fija una contraseña nueva con el token recibido por correo
  *   POST /auth/login               → autentica usuario, devuelve token + usuario
  *
  * Tras un login exitoso:
@@ -18,7 +20,7 @@ import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   AuthLoginRequest, AuthRegisterRequest, AuthResponse,
-  RegisterResponse, ResendVerificationResponse,
+  ForgotPasswordResponse, RegisterResponse, ResendVerificationResponse,
 } from '../models/auth.model';
 import { MapItUser } from '../models/user.model';
 import { CurrentUserService } from './current-user.service';
@@ -54,6 +56,19 @@ export class AuthService {
   /** Solicita el reenvio del correo de verificacion. Siempre resuelve igual (anti-enumeración). */
   resendVerification(email: string): Observable<ResendVerificationResponse> {
     return this.http.post<ResendVerificationResponse>(`${this.base}/resend-verification`, { email });
+  }
+
+  /**
+   * Solicita el restablecimiento de contraseña ("olvidé mi contraseña"). A diferencia de
+   * {@link resendVerification}, el backend responde 404 si el email no existe.
+   */
+  forgotPassword(email: string): Observable<ForgotPasswordResponse> {
+    return this.http.post<ForgotPasswordResponse>(`${this.base}/forgot-password`, { email });
+  }
+
+  /** Fija una contraseña nueva a partir del token recibido por correo. */
+  resetPassword(token: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.base}/reset-password`, { token, newPassword });
   }
 
   /**

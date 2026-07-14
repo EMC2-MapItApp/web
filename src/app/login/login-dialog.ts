@@ -1,5 +1,5 @@
 import { Component, inject, isDevMode, signal } from '@angular/core';
-import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -8,6 +8,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../core/services/auth.service';
+import { ForgotPasswordDialogComponent } from '../forgot-password/forgot-password-dialog';
+import { FORGOT_PASSWORD_DIALOG_CONFIG } from '../core/constants/dialog.constants';
 
 /**
  * Diálogo de login, abierto sobre {@link HomeComponent} vía `openLoginDialogGuard` (nunca
@@ -36,6 +38,7 @@ export class LoginDialogComponent {
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private authService = inject(AuthService);
+  private matDialog = inject(MatDialog);
 
   hidePassword = true;
   loading = signal(false);
@@ -64,6 +67,11 @@ export class LoginDialogComponent {
   goToRegister(): void {
     this.dialogRef.close();
     this.router.navigate(['/register']);
+  }
+
+  openForgotPassword(): void {
+    this.dialogRef.close();
+    this.matDialog.open(ForgotPasswordDialogComponent, FORGOT_PASSWORD_DIALOG_CONFIG);
   }
 
   submit(): void {

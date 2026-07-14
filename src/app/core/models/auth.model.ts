@@ -47,3 +47,22 @@ export interface ResendVerificationRequest {
 export interface ResendVerificationResponse {
   message: string;
 }
+
+/**
+ * Payload para POST /auth/forgot-password ("olvidé mi contraseña"). A diferencia de
+ * resend-verification, el backend sí distingue si el email existe (404 si no).
+ */
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+/** Respuesta de POST /auth/forgot-password cuando el email existe. */
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+/** Payload para POST /auth/reset-password: token recibido por correo + contraseña nueva. */
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}

@@ -17,6 +17,7 @@ import { authDialogGuard } from './core/guards/auth-dialog.guard';
 import { openRegisterDialogGuard } from './core/guards/open-register-dialog.guard';
 import { loadUserOptionalGuard } from './core/guards/load-user-optional';
 import { VerifyEmailPageComponent } from './verify-email/verify-email-page';
+import { ResetPasswordPageComponent } from './reset-password/reset-password-page';
 import { StackPageComponent } from './stack/stack-page';
 
 
@@ -26,6 +27,8 @@ export const routes: Routes = [
   // Pagina real (no dialog): se llega aqui desde el enlace del correo de verificacion,
   // sin contexto previo de la app.
   { path: 'verify-email', component: VerifyEmailPageComponent },
+  // Idem: se llega aqui desde el enlace del correo de restablecimiento de contraseña.
+  { path: 'reset-password', component: ResetPasswordPageComponent },
   // Pagina publica de portfolio (stack tecnico), sin guard: accesible sin sesion.
   { path: 'stack', component: StackPageComponent },
   {

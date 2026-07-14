@@ -28,6 +28,10 @@ Este documento detalla las tareas necesarias para transformar nuestro sistema de
   - [ ] Diseñar plantilla HTML para el correo de verificación.
   - [ ] Crear endpoint `/api/auth/verify-email` que valide el token y active al usuario.
 - [ ] **Bloqueo del estado del usuario:** Impedir el login a usuarios cuyo `is_verified` sea `false`.
+- [x] **Recuperación de contraseña ("olvidé mi contraseña"):**
+  - [x] Colección/token de un solo uso para el reset (`PasswordResetToken`, expiración 15 min), mismo patrón que la verificación de email.
+  - [x] Endpoints `/api/v1/auth/forgot-password` (a diferencia de `resend-verification`, sí distingue si el email existe — 404 si no) y `/api/v1/auth/reset-password`.
+  - [x] Plantilla HTML del correo de restablecimiento.
 
 ### 🔹 Frontend / Mobile
 - [ ] **Carga diferida (Lazy Loading) de `zxcvbn`:** Configurar la importación asíncrona de la librería para que se descargue únicamente cuando el usuario haga foco (*focus*) en el campo de la contraseña, optimizando el tamaño inicial de la app.
@@ -35,6 +39,7 @@ Este documento detalla las tareas necesarias para transformar nuestro sistema de
 - [ ] **Deshabilitar botón de Registro:** El botón debe permanecer inactivo si el email no es válido o si la puntuación de la contraseña es insuficiente (inferior a 3 en la escala de 0-4).
 - [ ] **Pantalla de Espera de Verificación:** Redirigir al usuario tras el registro a una pantalla que le indique revisar su bandeja de entrada.
 - [ ] **Flujo de reenvío de enlace:** Añadir botón de "Reenviar correo de verificación" con *debounce* (espera de 60 segundos entre reenvíos).
+- [x] **Recuperación de contraseña:** Diálogo "¿Olvidaste tu contraseña?" (`forgot-password/`, abierto desde el login) y página real `reset-password/` con formulario de contraseña nueva + medidor de fuerza (reutiliza `PasswordStrengthMeterComponent`).
 
 ---
 

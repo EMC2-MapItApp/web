@@ -44,6 +44,8 @@
       }
     </mat-form-field>
 
+    <a class="forgot-password-link" (click)="openForgotPassword()" role="button">¿Olvidaste tu contraseña?</a>
+
     <button mat-flat-button type="submit" class="submit-btn" [disabled]="loading()">
       @if (loading()) { <mat-spinner diameter="20" /> } @else { Entrar }
     </button>

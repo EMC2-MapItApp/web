@@ -43,6 +43,13 @@ export const CHECK_EMAIL_DIALOG_CONFIG: MatDialogConfig = {
   disableClose: true,
 };
 
+/** Configuración específica del diálogo "olvidé mi contraseña" (Fase 1 auth). */
+export const FORGOT_PASSWORD_DIALOG_CONFIG: MatDialogConfig = {
+  ...DIALOG_BASE,
+  panelClass: 'forgot-password-panel',
+  width: '420px',
+};
+
 /** Configuración base para todos los dialogs (deprecated, usar las específicas). */
 export const DIALOG_CONFIG: MatDialogConfig = {
   ...DIALOG_BASE,

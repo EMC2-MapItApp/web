@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 
+/** Diálogo mostrado por {@link authDialogGuard} cuando una ruta protegida se visita sin sesión. */
 @Component({
   selector: 'app-auth-required-dialog',
   standalone: true,

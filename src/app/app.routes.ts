@@ -1,3 +1,10 @@
+/**
+ * @file app.routes.ts
+ * @description Rutas de la aplicación. `login`/`register` no son páginas propias: activan un
+ * guard que abre el diálogo correspondiente sobre {@link HomeComponent} y redirigen a `/`.
+ * `verify-email` y `stack` sí son páginas reales, pensadas para llegarse desde fuera de la app
+ * (enlace de correo / enlace de portfolio) sin contexto previo del shell.
+ */
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home';
 import { SettingsPageComponent } from './home/pages/settings/settings';

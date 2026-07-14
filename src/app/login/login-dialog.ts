@@ -9,7 +9,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../core/services/auth.service';
 
-
+/**
+ * Diálogo de login, abierto sobre {@link HomeComponent} vía `openLoginDialogGuard` (nunca
+ * navegado como página propia). En modo desarrollo precarga credenciales de prueba para agilizar
+ * el ciclo de prueba manual — gateado por {@link isDevMode}, no se ejecuta en el build de
+ * producción.
+ */
 @Component({
   selector: 'app-login-dialog',
   standalone: true,
@@ -47,12 +52,11 @@ export class LoginDialogComponent {
   get passwordCtrl() { return this.loginForm.controls['password']; }
 
 
-  //si el entorno es de desarrollo, se precargan los datos de login para facilitar las pruebas
   constructor() {
     if (isDevMode()) {
       this.loginForm.setValue({
-        email: 'eusebio.montero@gmail.com',
-        password: '12345678',
+        email: 'dev@mapit.local',
+        password: 'dev-password',
       });
     }
   }

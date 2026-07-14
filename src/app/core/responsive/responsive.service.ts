@@ -64,12 +64,6 @@ export class ResponsiveService {
                 distinctUntilChanged((a, b) => this.isSameState(a, b)),
             )
             .subscribe(next => this.state.set(next));
-
-            console.log('ResponsiveService initialized. Current state:', this.state());
-            console.log('Current device class:', this.deviceClass());
-            console.log('Is mobile:', this.isMobile());
-            console.log('Is tablet:', this.isTablet());
-            console.log('Is desktop:', this.isDesktop());
     }
 
     /**

@@ -20,7 +20,7 @@ de tocar login/registro para no duplicar trabajo ya planificado.
 ## Despliegue
 
 Se sirve como sitio estático en **Cloudflare** (Workers + Assets, no Angular Universal/SSR
-tradicional). Detalles y problemas ya resueltos en `docs/deploy-cloudflare.md`:
+tradicional). Detalles y problemas ya resueltos en `BITACORA.md`:
 - Node debe cumplir la versión fijada en `.nvmrc`/`.node-version` (Cloudflare falla el build si no coincide).
 - `wrangler.toml` apunta los assets a `./dist/mapit-app/browser` con `not_found_handling = "single-page-application"`.
 - Los límites de bundle en el dashboard de Cloudflare deben ampliarse manualmente si el build crece.

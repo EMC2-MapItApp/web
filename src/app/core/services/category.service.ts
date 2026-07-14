@@ -4,6 +4,14 @@ import { Observable, map, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { CategoryBreadcrumb, LocationType, MainCategory, SubCategory } from '../models/category.model';
 
+/**
+ * @file category.service.ts
+ * @description Obtiene el árbol de categorías (`GET /api/v1/categories/tree`) y lo cachea en
+ * memoria para resolver lookups síncronos (color/icono de un marker, breadcrumb) sin repetir la
+ * petición HTTP. La cache se llena en {@link CategoryService.getAll} — los métodos de lookup
+ * devuelven vacío/`undefined` si se llaman antes de esa primera carga.
+ */
+
 interface ApiLocationType {
   id: number;
   name: string;
@@ -32,6 +40,7 @@ export class CategoryService {
 
   constructor(private http: HttpClient) {}
 
+  /** Descarga el árbol completo y lo cachea para los métodos de lookup síncronos. */
   getAll(): Observable<MainCategory[]> {
     return this.http.get<ApiMainCategory[]>(this.baseUrl + '/tree').pipe(
       map(api => this.mapTree(api)),

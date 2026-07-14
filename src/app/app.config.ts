@@ -1,3 +1,8 @@
+/**
+ * @file app.config.ts
+ * @description Configuración raíz de la aplicación (providers globales): locale es-ES,
+ * estrategia de reuse de rutas, rutas y el cliente HTTP con el interceptor de auth.
+ */
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, LOCALE_ID } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { RouteReuseStrategy } from '@angular/router';

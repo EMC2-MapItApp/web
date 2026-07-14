@@ -148,12 +148,12 @@ pendiente de este repo.
 Sitio estático en **Cloudflare Workers + Assets** (no Pages tradicional, no Angular
 Universal/SSR). `wrangler.toml` sirve `./dist/mapit-app/browser` como SPA
 (`not_found_handling = "single-page-application"`). Problemas ya resueltos durante el despliegue
-(versión de Node, límites de bundle, ruta de assets): [docs/deploy-cloudflare.md](docs/deploy-cloudflare.md).
+(versión de Node, límites de bundle, ruta de assets): [BITACORA.md](BITACORA.md).
 
 ## Documentación adicional
 
 - [docs/STACK.md](docs/STACK.md) — stack y servicios en detalle, con el porqué de cada elección
-- [docs/deploy-cloudflare.md](docs/deploy-cloudflare.md) — despliegue en Cloudflare, problemas y soluciones
+- [BITACORA.md](BITACORA.md) — problemas reales encontrados durante el desarrollo/despliegue y cómo se resolvieron
 - [docs/responsive-architecture-portable.md](docs/responsive-architecture-portable.md) — arquitectura responsive
 - [docs/TareasLogin.md](docs/TareasLogin.md) — roadmap de evolución de auth
 - [CLAUDE.md](CLAUDE.md) — contexto de arquitectura para trabajar en el repo con Claude Code

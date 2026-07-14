@@ -57,7 +57,7 @@ usando piezas estándar de la industria en vez de atajos de proyecto de juguete.
 
 Problemas reales encontrados durante el despliegue (interfaz Workers/Pages fusionada, versión de
 Node incompatible, límites de bundle, pantalla en blanco) y su solución exacta:
-[docs/deploy-cloudflare.md](deploy-cloudflare.md).
+[BITACORA.md](../BITACORA.md).
 
 ## Control de versiones
 

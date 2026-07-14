@@ -10,8 +10,8 @@
  *   DEPORTES → CICLISMO → PROFESIONAL (una tienda de bicicletas)
  *
  * @remarks
- * Estos datos están hardcodeados de forma temporal.
- * En el futuro se obtendrán desde la base de datos a través de un endpoint REST.
+ * Se obtienen del backend en tiempo real vía {@link CategoryService.getAll} (`GET
+ * /api/v1/categories/tree`), no están hardcodeados en el cliente.
  */
 
 // ─────────────────────────────────────────────────────────────────────────────

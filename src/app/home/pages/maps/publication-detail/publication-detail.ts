@@ -92,7 +92,6 @@ export class PublicationDetailComponent implements OnChanges {
   fields: LocationFieldDef[] = [];
 
   ngOnChanges(): void {
-    console.log('PublicationDetailComponent.ngOnChanges, this.item', this.item);
     this.fields = this.fieldService.getFields(this.item.locationTypeId, this.context);
   }
 

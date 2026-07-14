@@ -7,6 +7,12 @@ import { TOKEN_KEY } from './auth.guard';
 import { AUTH_REQUIRED_DIALOG_CONFIG, withResponsiveDialogLayout } from '../constants/dialog.constants';
 import { ResponsiveService } from '../responsive/responsive.service';
 
+/**
+ * Protege rutas que requieren sesión (dashboard, profile, settings, create-publication). Sin
+ * token o sin usuario cargado, en vez de redirigir abre {@link AuthRequiredDialogComponent} sobre
+ * la ruta actual y bloquea la navegación (`return false`) — el usuario nunca ve una página vacía
+ * ni un salto de URL, solo un diálogo pidiendo login/registro.
+ */
 export const authDialogGuard: CanActivateFn = () => {
   const cu = inject(CurrentUserService);
   const dialog = inject(MatDialog);

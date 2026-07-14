@@ -837,7 +837,6 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
     const bounds = new google.maps.LatLngBounds();
     points.forEach(point => bounds.extend(point));
-    console.log('Calculated route extent:', bounds.toString());
     return bounds;
   }
 

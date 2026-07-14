@@ -1,4 +1,10 @@
-// load-user-optional.guard.ts
+/**
+ * @file load-user-optional.ts
+ * @description Guard de la ruta raíz (`HomeComponent`): resuelve el usuario actual sin bloquear
+ * el acceso a invitados. A diferencia de {@link authDialogGuard}, esta ruta es pública (el mapa
+ * es visible sin sesión) — el guard solo intenta poblar {@link CurrentUserService} de fondo
+ * cuando hay token, y siempre deja pasar la navegación.
+ */
 import { inject } from '@angular/core';
 import { CanActivateFn } from '@angular/router';
 import { catchError, map, of } from 'rxjs';

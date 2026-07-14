@@ -4,6 +4,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 
+/**
+ * Diálogo de bienvenida para visitantes anónimos, abierto una vez por sesión de navegador desde
+ * {@link HomeComponent} (marcado con `sessionStorage['welcome-dialog-shown']` para no repetirse
+ * en cada navegación dentro de la misma pestaña).
+ */
 @Component({
   selector: 'app-welcome-dialog',
   standalone: true,

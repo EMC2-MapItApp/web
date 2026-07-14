@@ -31,11 +31,19 @@
 .app-footer {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 12px;
   border-top: 1px solid var(--c-border);
   background: var(--c-surface);
   color: var(--c-text-secondary);
   font-size: v.$font-xs;
+
+  &__link {
+    color: var(--c-text-secondary);
+    text-decoration: none;
+
+    &:hover { color: var(--c-primary); }
+  }
 }
 
 .app-body {

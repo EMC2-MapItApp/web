@@ -1,0 +1,58 @@
+<div class="stack-page">
+  <header class="stack-header">
+    <a routerLink="/" class="stack-header__back" title="Volver al mapa">
+      <mat-icon>arrow_back</mat-icon>
+    </a>
+    <div>
+      <h1>Stack técnico</h1>
+      <p class="stack-header__subtitle">
+        Qué usa MapIt y por qué — con enlaces directos al código en GitHub.
+        Proyecto de portfolio: aplicación mínima pero real y desplegada en producción.
+      </p>
+    </div>
+  </header>
+
+  <section class="stack-repos">
+    <a [href]="webRepoUrl" target="_blank" rel="noopener" class="stack-repo-card">
+      <mat-icon>web</mat-icon>
+      <span>Frontend — EMC2-MapItApp/web</span>
+    </a>
+    <a [href]="backRepoUrl" target="_blank" rel="noopener" class="stack-repo-card">
+      <mat-icon>dns</mat-icon>
+      <span>Backend — EMC2-MapItApp/back</span>
+    </a>
+  </section>
+
+  @for (group of groups; track group.title) {
+    <section class="stack-group">
+      <h2 class="stack-group__title">
+        <mat-icon>{{ group.icon }}</mat-icon>
+        {{ group.title }}
+      </h2>
+
+      <div class="stack-items">
+        @for (item of group.items; track item.name) {
+          <article class="stack-item">
+            <h3 class="stack-item__name">{{ item.name }}</h3>
+            <p class="stack-item__why">{{ item.why }}</p>
+            @if (item.link) {
+              <a [href]="item.link.url" target="_blank" rel="noopener" class="stack-item__link">
+                <mat-icon>code</mat-icon>
+                {{ item.link.label }}
+              </a>
+            }
+          </article>
+        }
+      </div>
+    </section>
+  }
+
+  <footer class="stack-footer">
+    <p>
+      Detalle completo, incluido lo que deliberadamente no se usó y por qué:
+      <a [href]="webRepoUrl + '/blob/main_web/docs/STACK.md'" target="_blank" rel="noopener">STACK.md frontend</a>
+      ·
+      <a [href]="backRepoUrl + '/blob/main_back/docs/STACK.md'" target="_blank" rel="noopener">STACK.md backend</a>
+    </p>
+  </footer>
+</div>

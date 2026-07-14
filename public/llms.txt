@@ -1,0 +1,39 @@
+# MapIt
+
+> Plataforma de eventos y lugares locales geolocalizados, con un componente de gamificación
+> (niveles/XP/capacidades) en progreso. Proyecto personal de portfolio: aplicación mínima pero
+> real y desplegada en producción, no un mockup. Frontend Angular consumiendo una API REST propia
+> en Spring Boot + MongoDB.
+
+Este archivo sigue la convención [llms.txt](https://llmstxt.org/) para dar a agentes/LLMs un
+punto de entrada estructurado al proyecto, sin depender de renderizar el bundle de Angular (SPA
+sin SSR) ni de rastrear el repositorio completo.
+
+## Stack
+
+- Frontend: Angular 22 (standalone components + signals), TypeScript, Angular Material, Google
+  Maps JS API. Desplegado como sitio estático en Cloudflare Workers + Assets.
+- Backend: Java 21, Spring Boot 3.3, MongoDB Atlas, JWT propio (HMAC, sin librería externa).
+  Desplegado en Google Cloud Run vía GitHub Actions.
+- Detalle completo con el porqué de cada elección: [/stack](https://mapit-web.com/stack) (página
+  en la app) y los documentos de stack de cada repo enlazados abajo.
+
+## Repositorios
+
+- Frontend (este sitio): https://github.com/EMC2-MapItApp/web — [README](https://github.com/EMC2-MapItApp/web/blob/main_web/README.md), [STACK.md](https://github.com/EMC2-MapItApp/web/blob/main_web/docs/STACK.md)
+- Backend (API REST): https://github.com/EMC2-MapItApp/back — [README](https://github.com/EMC2-MapItApp/back/blob/main_back/README.md), [STACK.md](https://github.com/EMC2-MapItApp/back/blob/main_back/docs/STACK.md)
+
+## Páginas
+
+- [/](https://mapit-web.com/) — mapa interactivo, página principal de la app (pública, sin login).
+- [/stack](https://mapit-web.com/stack) — stack técnico y servicios usados, con enlaces directos
+  al código fuente en GitHub.
+
+## Notas para agentes
+
+- Es una SPA sin SSR: el HTML servido en `/` no contiene el contenido dinámico del mapa, que se
+  monta client-side. Para entender funcionalidad, preferir leer el código fuente en los repos de
+  arriba antes que rastrear el HTML renderizado.
+- La API backend es pública en `https://backend-931882563225.europe-southwest1.run.app/api/v1`;
+  los endpoints de solo lectura (`GET /categories/**`, `GET /publications`, `GET /users/**`,
+  `GET /geo/**`) no requieren autenticación.

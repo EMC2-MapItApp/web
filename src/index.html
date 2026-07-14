@@ -1,10 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>MapitApp</title>
+    <title>MapIt — plataforma de eventos y lugares locales geolocalizados</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="MapIt: plataforma de eventos y lugares locales geolocalizados. Angular 22 (standalone + signals) sobre Spring Boot 3.3 / Java 21 y MongoDB Atlas, desplegada en Cloudflare Workers y Google Cloud Run. Proyecto de portfolio open-source." />
+    <meta name="keywords" content="MapIt, Angular, Spring Boot, Java, MongoDB, Google Cloud Run, Cloudflare Workers, portfolio, mapa de eventos, geolocalización" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://mapit-web.com/" />
+
+    <!-- Open Graph / Twitter — mismos datos que meta description, para que enlaces compartidos
+         (y crawlers de IA que leen OG antes que renderizar JS) muestren un resumen correcto. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="MapIt — plataforma de eventos y lugares locales geolocalizados" />
+    <meta property="og:description" content="Angular 22 + Spring Boot 3.3 + MongoDB Atlas, desplegado en Cloudflare Workers y Google Cloud Run. Proyecto de portfolio open-source — ver stack en /stack." />
+    <meta property="og:url" content="https://mapit-web.com/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="MapIt — plataforma de eventos y lugares locales geolocalizados" />
+    <meta name="twitter:description" content="Angular 22 + Spring Boot 3.3 + MongoDB Atlas, desplegado en Cloudflare Workers y Google Cloud Run." />
+
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,6 +28,27 @@
       rel="stylesheet"
     />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+
+    <!-- JSON-LD: le da a crawlers/agentes de IA una descripción estructurada del stack y los
+         repos sin depender de que ejecuten el bundle de Angular (la SPA no tiene SSR). -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "MapIt",
+        "applicationCategory": "SocialNetworkingApplication",
+        "operatingSystem": "Web",
+        "description": "Plataforma de eventos y lugares locales geolocalizados con componente de gamificación. Proyecto de portfolio open-source.",
+        "url": "https://mapit-web.com/",
+        "codeRepository": [
+          "https://github.com/EMC2-MapItApp/web",
+          "https://github.com/EMC2-MapItApp/back"
+        ],
+        "programmingLanguage": ["TypeScript", "Java"],
+        "softwareRequirements": "Angular 22, Spring Boot 3.3, MongoDB Atlas",
+        "isAccessibleForFree": true
+      }
+    </script>
   </head>
   <body>
     <app-root></app-root>

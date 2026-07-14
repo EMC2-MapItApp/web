@@ -12,6 +12,9 @@
       </div>
       <div class="profile-hero__info">
         <h2 class="page-header__title">{{ cu.userName() }}</h2>
+        @if (cu.user()?.nick) {
+        <p class="page-header__subtitle">&#64;{{ cu.user()?.nick }}</p>
+        }
         <p class="page-header__subtitle">{{ cu.user()?.email }}</p>
         <span class="profile-hero__badge">{{ typeEmoji }} {{ typeLabel }}</span>
       </div>
@@ -45,6 +48,13 @@
           <div class="info-item__text">
             <span class="info-item__label">Nombre</span>
             <span class="info-item__value">{{ cu.userName() }}</span>
+          </div>
+        </li>
+        <li class="info-item">
+          <span class="info-item__icon-wrap"><mat-icon class="info-item__icon">alternate_email</mat-icon></span>
+          <div class="info-item__text">
+            <span class="info-item__label">Nombre de usuario</span>
+            <span class="info-item__value">&#64;{{ cu.user()?.nick }}</span>
           </div>
         </li>
         <li class="info-item">
@@ -133,6 +143,21 @@
           <input matInput formControlName="name" type="text" />
           @if (editForm.controls['name'].hasError('required')) {
           <mat-error>El nombre es obligatorio</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="edit-form__field">
+          <mat-label>Nombre de usuario</mat-label>
+          <span matPrefix>&#64;&nbsp;</span>
+          <input matInput formControlName="nick" type="text" />
+          @if (editForm.controls['nick'].hasError('required')) {
+          <mat-error>El nombre de usuario es obligatorio</mat-error>
+          } @else if (editForm.controls['nick'].hasError('minlength')) {
+          <mat-error>Debe tener al menos 3 caracteres</mat-error>
+          } @else if (editForm.controls['nick'].hasError('pattern')) {
+          <mat-error>Solo letras, números, puntos, guiones y guiones bajos</mat-error>
+          } @else {
+          <mat-hint>Único en MapIt, se usa como identificador público</mat-hint>
           }
         </mat-form-field>
 

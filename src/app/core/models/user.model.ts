@@ -41,6 +41,8 @@ export interface MapItUser {
   id: string;
   /** Nombre visible en la aplicación. */
   name: string;
+  /** Nombre de usuario único (identificador público, alternativo al email). */
+  nick: string;
   /** Email de acceso. */
   email: string;
   /** Tipo de perfil: determina capacidades de publicación. */
@@ -81,6 +83,7 @@ export type UserMeResponse = MapItUser;
 /** Campos actualizables mediante PATCH /users/{id}. Todos opcionales. */
 export interface UpdateUserProfileRequest {
   name?:                   string;
+  nick?:                   string;
   avatarUrl?:              string;
   phone?:                  string;
   city?:                   string;

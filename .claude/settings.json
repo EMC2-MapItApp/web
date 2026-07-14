@@ -1,4 +1,5 @@
 {
+  "respectGitignore": true,
   "permissions": {
     "allow": [
       "Bash(npm test)",

@@ -187,6 +187,7 @@ export class ProfilePageComponent {
   /** Formulario de edición del perfil */
   editForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+    nick: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern(/^[A-Za-z0-9._-]+$/)]],
     avatarUrl: [''],
     phone: ['', Validators.maxLength(25)],
     city: ['', Validators.maxLength(100)],
@@ -201,6 +202,7 @@ export class ProfilePageComponent {
     if (!u) return;
     this.editForm.patchValue({
       name: u.name ?? '',
+      nick: u.nick ?? '',
       avatarUrl: u.avatarUrl ?? '',
       phone: u.phone ?? '',
       city: u.city ?? '',
@@ -224,6 +226,7 @@ export class ProfilePageComponent {
 
     this.userService.updateProfile({
       name: v.name || undefined,
+      nick: v.nick || undefined,
       avatarUrl: v.avatarUrl || undefined,
       phone: v.phone || undefined,
       city: v.city || undefined,
@@ -235,9 +238,12 @@ export class ProfilePageComponent {
         this.saving.set(false);
         this.editMode.set(false);
       },
-      error: () => {
+      error: (err) => {
         this.saving.set(false);
-        this.saveError.set('Error al guardar. Inténtalo de nuevo.');
+        this.saveError.set(
+          err.status === 409 ? 'Ese nombre de usuario ya está en uso.'
+          : 'Error al guardar. Inténtalo de nuevo.'
+        );
       },
     });
   }

@@ -11,8 +11,8 @@ import { Title } from '@angular/platform-browser';
 import { DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { ChangelogService } from '../core/services/changelog.service';
-import { ChangelogEntry, ChangelogEntryType } from '../core/models/changelog.model';
+import { ChangelogService } from '@core/services/changelog.service';
+import { ChangelogEntry, ChangelogEntryType } from '@core/models/changelog.model';
 
 const TYPE_ICON: Record<ChangelogEntryType, string> = {
   feature: 'auto_awesome',

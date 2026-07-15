@@ -1,5 +1,5 @@
-@use '../../styles/variables' as v;
-@use '../../styles/mixins' as m;
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
 
 // La página se renderiza dentro del shell de home (.app-main) igual que Ajustes:
 // el contenedor, la cabecera y las filas usan las mismas piezas globales

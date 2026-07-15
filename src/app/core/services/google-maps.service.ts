@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { environment } from '@env/environment';
 
 /**
  * Servicio encargado de gestionar la carga dinámica de la API de Google Maps.

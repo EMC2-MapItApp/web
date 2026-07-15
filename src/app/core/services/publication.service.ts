@@ -5,10 +5,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Publication, PublicationCreateRequest, PublicationEnrollmentResponse } from '../models/publication.model';
-import { environment } from '../../../environments/environment';
+import { EnrolledUser, Publication, PublicationCreateRequest, PublicationEnrollmentResponse } from '../models/publication.model';
+import { environment } from '@env/environment';
 import { CurrentUserService } from './current-user.service';
-import { EnrolledUser } from '../../home/pages/maps/publication-detail/publication-detail';
 
 @Injectable({ providedIn: 'root' })
 export class PublicationService {

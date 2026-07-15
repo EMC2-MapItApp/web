@@ -39,13 +39,38 @@ La API local que consume el frontend en dev es el backend en `http://localhost:8
 
 ## Arquitectura
 
+Organización **por feature/dominio** (guía de estilo moderna de Angular):
+
 ```
 src/app/
-  core/            # transversal: guards, interceptors, models, servicios de dominio, responsive
-  home/            # shell autenticado + páginas (maps, dashboard, profile, settings, create-publication)
-  login/, register/  # diálogos de auth
-  shared/          # componentes reutilizables (diálogos genéricos)
+  core/            # transversal singleton: guards, interceptors, models, servicios de dominio, responsive
+  layout/
+    home-shell/    # shell de la app (cabecera, sidebar, <router-outlet> de las páginas hijas)
+  features/        # un directorio por dominio funcional
+    auth/          # login-dialog, register-dialog, forgot-password-dialog, check-email-dialog,
+                   # password-strength-meter, verify-email-page, reset-password-page
+    maps/          # página del mapa (ruta raíz) + publication-detail
+    publications/  # create-publication
+    dashboard/, profile/, settings/
+    info/          # páginas informativas: about, changelog, stack
+  shared/          # UI reutilizada entre features (auth-required-dialog, welcome-dialog)
 ```
+
+Criterio para decidir dónde va algo nuevo: `core` si es lógica transversal sin UI (servicios,
+guards, modelos); `features/<dominio>` si pertenece a un dominio concreto (aunque sea un diálogo
+o un componente pequeño — p. ej. `password-strength-meter` vive en `auth` porque solo auth lo
+usa); `shared` solo cuando lo consumen **varias** features; `layout` para shells/estructura.
+
+**Path aliases** (`tsconfig.json`): `@core/*`, `@shared/*`, `@features/*`, `@layout/*`, `@env/*`.
+Usarlos siempre en imports entre capas; los imports relativos solo son aceptables dentro de la
+misma feature o dentro de `core`. Para SCSS existe el equivalente en
+`angular.json > stylePreprocessorOptions` — importar con `@use 'styles/variables'`, nunca rutas
+relativas `../../styles/`.
+
+**Lazy loading**: todas las páginas se cargan con `loadComponent` en `app.routes.ts`; solo
+`HomeShellComponent` es eager. Los diálogos que abren los guards (`open-login-dialog.guard`,
+`open-register-dialog.guard`, `auth-dialog.guard`) se importan con `await import(...)` dentro del
+guard para quedar fuera del bundle inicial — mantener ese patrón en guards/diálogos nuevos.
 
 - **Auth**: JWT guardado en `localStorage` bajo `TOKEN_KEY` (`core/guards/auth.guard.ts`).
   `authInterceptor` (`core/interceptors/auth.interceptor.ts`) añade el header
@@ -53,13 +78,13 @@ src/app/
   cabecera (rutas públicas). Varios guards (`auth.guard`, `auth-dialog.guard`,
   `load-user-optional`, `load-user.guard`, `open-login-dialog.guard`,
   `open-register-dialog.guard`) controlan el acceso a rutas y la apertura de diálogos de login/
-  registro — login y registro **no son rutas de página**, son diálogos abiertos sobre `HomeComponent`
+  registro — login y registro **no son rutas de página**, son diálogos abiertos sobre `HomeShellComponent`
   (ver `app.routes.ts`: `/login` y `/register` activan un guard que abre el diálogo y quedan en el
   mismo componente shell). El flujo "olvidé mi contraseña" añade `forgot-password/` (diálogo,
   abierto desde `login-dialog` vía `MatDialog`, sin ruta propia) y `reset-password/` (página real
   con formulario de contraseña nueva, análoga a `verify-email/` — se llega desde el enlace del
   correo, sin contexto previo del shell).
-- **Rutas hijas de `HomeComponent`**: `dashboard`, `profile`, `settings` y `create-publication`
+- **Rutas hijas de `HomeShellComponent`**: `dashboard`, `profile`, `settings` y `create-publication`
   requieren sesión vía `authDialogGuard`; las páginas informativas (`about`, `changelog`, `stack`)
   también son hijas del shell pero **sin guard** (accesibles sin sesión). Solo `verify-email` y
   `reset-password` quedan fuera del shell — se llega a ellas desde el enlace de un correo, sin
@@ -71,7 +96,7 @@ Toda página nueva de la app (plantilla) debe seguir el patrón de Ajustes/Acerc
 Stack; una página fuera de este patrón se percibe como ajena a la app (ya pasó con las primeras
 versiones de about/changelog/stack y hubo que rehacerlas):
 
-- **Ruta hija del shell**: declararla como hija de `HomeComponent` en `app.routes.ts` para
+- **Ruta hija del shell**: declararla como hija de `HomeShellComponent` en `app.routes.ts` para
   heredar cabecera, sidebar, footer y el contenedor `.app-main`. Añadir `authDialogGuard` solo si
   requiere sesión. Nada de rutas standalone salvo el caso "se llega desde un correo".
 - **Cabecera**: clases globales `.page-header` + `.page-header__title` / `__subtitle`
@@ -84,7 +109,7 @@ versiones de about/changelog/stack y hubo que rehacerlas):
 - **Colores**: solo variables de tema `--c-*` (`_themes.scss`) — así el modo oscuro queda
   cubierto sin trabajo extra. Nunca hex hardcodeados.
 - Efecto colateral conocido: cualquier página del shell muestra el welcome-dialog a invitados
-  una vez por sesión (`home.ts`), también si aterrizan directamente en ella desde fuera.
+  una vez por sesión (`home-shell.ts`), también si aterrizan directamente en ella desde fuera.
 
 ### Responsive — arquitectura obligatoria para toda UI nueva
 

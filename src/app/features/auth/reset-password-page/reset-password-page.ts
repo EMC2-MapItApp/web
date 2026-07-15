@@ -14,10 +14,10 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { AuthService } from '../core/services/auth.service';
+import { AuthService } from '@core/services/auth.service';
 import {
   PasswordStrengthMeterComponent, PasswordStrengthScore,
-} from '../shared/password-strength-meter/password-strength-meter';
+} from '../password-strength-meter/password-strength-meter';
 import type { ZxcvbnFactory as ZxcvbnFactoryType } from '@zxcvbn-ts/core';
 
 type ResetPasswordState = 'form' | 'success' | 'error';

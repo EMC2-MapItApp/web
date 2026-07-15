@@ -4,8 +4,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { ChangelogService } from '../../core/services/changelog.service';
-import { ChangelogEntry, ChangelogEntryType } from '../../core/models/changelog.model';
+import { ChangelogService } from '@core/services/changelog.service';
+import { ChangelogEntry, ChangelogEntryType } from '@core/models/changelog.model';
 
 const TYPE_ICON: Record<ChangelogEntryType, string> = {
   feature: 'auto_awesome',
@@ -21,7 +21,7 @@ const TYPE_LABEL: Record<ChangelogEntryType, string> = {
 
 /**
  * Diálogo de bienvenida para visitantes anónimos, abierto una vez por sesión de navegador desde
- * {@link HomeComponent} (marcado con `sessionStorage['welcome-dialog-shown']` para no repetirse
+ * {@link HomeShellComponent} (marcado con `sessionStorage['welcome-dialog-shown']` para no repetirse
  * en cada navegación dentro de la misma pestaña).
  */
 @Component({

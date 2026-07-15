@@ -110,6 +110,16 @@ export interface Publication {
   occupiedSlots?: number;
 }
 
+/**
+ * Forma mínima de un usuario inscrito en la publicación.
+ * Compatible con User (legacy) y PublicationEnrollment.
+ */
+export interface EnrolledUser {
+  userId: string;
+  userName: string;
+  enrolledAt: string;
+}
+
 export interface PublicationEnrollmentResponse {
   publicationId: number;
   userId: string;

@@ -5,15 +5,15 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { CurrentUserService } from '../core/services/current-user.service';
+import { CurrentUserService } from '@core/services/current-user.service';
 import { SlicePipe } from '@angular/common';
-import { WelcomeDialogComponent } from '../shared/welcome-dialog/welcome-dialog';
+import { WelcomeDialogComponent } from '@shared/welcome-dialog/welcome-dialog';
 import { MatDialog } from '@angular/material/dialog';
-import { WELCOME_DIALOG_CONFIG, withResponsiveDialogLayout } from '../core/constants/dialog.constants';
-import { ResponsiveService } from '../core/responsive/responsive.service';
+import { WELCOME_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
+import { ResponsiveService } from '@core/responsive/responsive.service';
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-home-shell',
   standalone: true,
   imports: [
     RouterOutlet,
@@ -26,10 +26,10 @@ import { ResponsiveService } from '../core/responsive/responsive.service';
     MatButtonModule,
     SlicePipe
   ],
-  templateUrl: './home.html',
-  styleUrls: ['./home.scss']
+  templateUrl: './home-shell.html',
+  styleUrls: ['./home-shell.scss']
 })
-export class HomeComponent {
+export class HomeShellComponent {
   private router = inject(Router);
   private dialog = inject(MatDialog);
   private responsiveService = inject(ResponsiveService);

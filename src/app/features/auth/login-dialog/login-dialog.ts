@@ -7,12 +7,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { AuthService } from '../core/services/auth.service';
-import { ForgotPasswordDialogComponent } from '../forgot-password/forgot-password-dialog';
-import { FORGOT_PASSWORD_DIALOG_CONFIG } from '../core/constants/dialog.constants';
+import { AuthService } from '@core/services/auth.service';
+import { ForgotPasswordDialogComponent } from '../forgot-password-dialog/forgot-password-dialog';
+import { FORGOT_PASSWORD_DIALOG_CONFIG } from '@core/constants/dialog.constants';
 
 /**
- * Diálogo de login, abierto sobre {@link HomeComponent} vía `openLoginDialogGuard` (nunca
+ * Diálogo de login, abierto sobre {@link HomeShellComponent} vía `openLoginDialogGuard` (nunca
  * navegado como página propia). En modo desarrollo precarga credenciales de prueba para agilizar
  * el ciclo de prueba manual — gateado por {@link isDevMode}, no se ejecuta en el build de
  * producción.

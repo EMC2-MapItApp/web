@@ -92,7 +92,7 @@ propia app.
 
 - **Mapa** (`home/pages/maps`) — vista principal de la app, siempre visible incluso sin sesión.
 - **Auth** — login y registro son **diálogos**, no rutas de página propia (se abren sobre el
-  shell `HomeComponent`); `/verify-email` sí es una página real porque se llega desde fuera de la
+  shell `HomeShellComponent`); `/verify-email` sí es una página real porque se llega desde fuera de la
   app (enlace del correo).
 - **Crear publicación**, **perfil**, **ajustes** — requieren sesión (`authDialogGuard`).
 - **Tema claro/oscuro** — `ThemeService`, variables CSS (`--c-*`) en `src/styles/_themes.scss`.

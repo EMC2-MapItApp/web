@@ -12,14 +12,14 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { UserType } from '../core/models/user.model';
-import { AuthService } from '../core/services/auth.service';
-import { AuthRegisterRequest } from '../core/models/auth.model';
+import { UserType } from '@core/models/user.model';
+import { AuthService } from '@core/services/auth.service';
+import { AuthRegisterRequest } from '@core/models/auth.model';
 import {
   PasswordStrengthMeterComponent, PasswordStrengthScore,
-} from '../shared/password-strength-meter/password-strength-meter';
-import { CheckEmailDialogComponent } from '../shared/check-email-dialog/check-email-dialog';
-import { CHECK_EMAIL_DIALOG_CONFIG } from '../core/constants/dialog.constants';
+} from '../password-strength-meter/password-strength-meter';
+import { CheckEmailDialogComponent } from '../check-email-dialog/check-email-dialog';
+import { CHECK_EMAIL_DIALOG_CONFIG } from '@core/constants/dialog.constants';
 import type { ZxcvbnFactory as ZxcvbnFactoryType } from '@zxcvbn-ts/core';
 
 const ENTITY_TYPES = [

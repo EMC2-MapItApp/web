@@ -11,20 +11,11 @@
  * con la forma mínima necesaria y delega el schema al servicio.
  */
 import { Component, EventEmitter, Input, OnChanges, Output, inject } from '@angular/core';
-import { CategoryBreadcrumb } from '../../../../core/models/category.model';
-import { FieldContext, LocationFieldDef } from '../../../../core/models/location-field.model';
-import { LocationFieldService } from '../../../../core/services/location-field.service';
-import { CurrentUserService } from '../../../../core/services/current-user.service';
-
-/**
- * Forma mínima de un usuario inscrito en la publicación.
- * Compatible con User (legacy) y PublicationEnrollment.
- */
-export interface EnrolledUser {
-  userId: string;
-  userName: string;
-  enrolledAt: string;
-}
+import { CategoryBreadcrumb } from '@core/models/category.model';
+import { FieldContext, LocationFieldDef } from '@core/models/location-field.model';
+import { LocationFieldService } from '@core/services/location-field.service';
+import { CurrentUserService } from '@core/services/current-user.service';
+import { EnrolledUser } from '@core/models/publication.model';
 
 /**
  * Forma mínima del objeto que recibe el componente.

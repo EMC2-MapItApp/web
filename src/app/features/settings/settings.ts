@@ -12,8 +12,8 @@ import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatIconModule} from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatDividerModule} from '@angular/material/divider';
-import {MapSettingsService} from '../../../core/services/map-settings.service';
-import {ThemeService} from '../../../core/services/theme.service';
+import {MapSettingsService} from '@core/services/map-settings.service';
+import {ThemeService} from '@core/services/theme.service';
 
 /** Componente de la página de Ajustes.
  * @remarks Actúa como contenedor de configuración. Delega toda la lógica de estado

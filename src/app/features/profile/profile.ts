@@ -13,14 +13,14 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { CurrentUserService } from '../../../core/services/current-user.service';
-import { UserService } from '../../../core/services/user.service';
-import { CategoryService } from '../../../core/services/category.service';
-import { MainCategory, SubCategory } from '../../../core/models/category.model';
+import { CurrentUserService } from '@core/services/current-user.service';
+import { UserService } from '@core/services/user.service';
+import { CategoryService } from '@core/services/category.service';
+import { MainCategory, SubCategory } from '@core/models/category.model';
 import { DatePipe, SlicePipe } from '@angular/common';
-import { Publication } from '../../../core/models/publication.model';
-import { PublicationService } from '../../../core/services/publications.service';
-import { ResponsiveService } from '../../../core/responsive/responsive.service';
+import { Publication } from '@core/models/publication.model';
+import { PublicationService } from '@core/services/publication.service';
+import { ResponsiveService } from '@core/responsive/responsive.service';
 
 const USER_TYPE_LABELS: Record<string, string> = {
   individual: 'Particular',

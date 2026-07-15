@@ -27,8 +27,10 @@ export class PublicationService {
 
     /**
      * Recupera una publicación por su identificador.
+     *
+     * El id es el ObjectId de Mongo (string), no un número.
      */
-    getById(id: number): Observable<Publication> {
+    getById(id: string): Observable<Publication> {
         return this.http.get<Publication>(`${this.baseUrl}/${id}`);
     }
 

@@ -168,6 +168,11 @@ export class PublicationDetailComponent implements OnChanges {
     return (this.item.requiredLevel ?? 0) > 0;
   }
 
+  /** true si el detalle tiene una captura de mapa de ruta asociada. */
+  get hasRouteCapture(): boolean {
+    return !!this.item.metadata?.['routeMapCapture'];
+  }
+
   /** Máximo de plazas configurado (metadata.slots). null si no existe límite. */
   get maxSlots(): number | null {
     const raw = this.item.metadata?.['slots'];

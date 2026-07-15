@@ -350,8 +350,8 @@
 
           <div class="activity-item__actions">
             <button mat-stroked-button type="button" (click)="repeatPublication(publication)">
-              <mat-icon>content_copy</mat-icon>
-              Repetir publicación
+              <mat-icon>{{ isFinished(publication) ? 'content_copy' : 'edit' }}</mat-icon>
+              {{ isFinished(publication) ? 'Repetir publicación' : 'Editar' }}
             </button>
             <button mat-stroked-button type="button" class="btn-delete-activity"
               (click)="deletePublication(publication)">

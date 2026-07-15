@@ -164,14 +164,8 @@
 }
 
 .required-badge {
-  display: inline-block;
   margin-left: 4px;
-  padding: 1px 5px;
-  border-radius: v.$radius-sm;
-  background: #fee2e2;
   color: var(--c-error);
-  font-size: 10px;
-  font-weight: 700;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

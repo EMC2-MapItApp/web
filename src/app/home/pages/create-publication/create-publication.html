@@ -10,12 +10,17 @@
       <!-- ── Cabecera fija ─────────────────────────────────────────────────── -->
       <header class="page-header">
         <h2 class="page-header__title">
-          <mat-icon>{{ isRepeatMode() ? 'content_copy' : 'add_location_alt' }}</mat-icon>
-          {{ isRepeatMode() ? 'Repetir publicación' : 'Nueva publicación' }}
+          <mat-icon>{{ isEditingActive() ? 'edit' : isRepeatMode() ? 'content_copy' : 'add_location_alt' }}</mat-icon>
+          {{ isEditingActive() ? 'Editar publicación' : isRepeatMode() ? 'Repetir publicación' : 'Nueva publicación' }}
         </h2>
         <p class="page-header__subtitle">
-          {{ isRepeatMode() ? 'Hemos cargado los datos de una publicación anterior para que la edites y repitas.' :
-          'Crea un evento y fija su ubicación en el mapa.' }}
+          @if (isEditingActive()) {
+          Estás editando esta publicación. Al guardar se creará como una nueva convocatoria con estos datos.
+          } @else if (isRepeatMode()) {
+          Hemos cargado los datos de una publicación anterior para que la edites y repitas.
+          } @else {
+          Crea un evento y fija su ubicación en el mapa.
+          }
         </p>
       </header>
 
@@ -431,9 +436,9 @@
         <mat-icon>refresh</mat-icon>
         Limpiar
       </button>
-      <!-- Botón principal: Crear/Repetir publicación (disabled si faltan datos obligatorios) -->
+      <!-- Botón principal: Crear/Editar/Repetir publicación (disabled si faltan datos obligatorios) -->
       <button class="btn btn--primary" (click)="submitForm()" [disabled]="!canSubmit" type="button">
-        <mat-icon>{{ isRepeatMode() ? 'content_copy' : 'add_location_alt' }}</mat-icon>
+        <mat-icon>{{ isEditingActive() ? 'save' : isRepeatMode() ? 'content_copy' : 'add_location_alt' }}</mat-icon>
         {{ submitButtonText }}
       </button>
     </div>

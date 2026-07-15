@@ -25,6 +25,13 @@
     padding: 16px;
   }
 
+  // Sin captura de ruta: una sola columna a ancho completo, sin hueco vacío
+  &.detail--no-capture {
+    @media (min-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
   &__content {
     display: flex;
     flex-direction: column;

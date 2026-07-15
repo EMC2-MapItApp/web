@@ -31,6 +31,8 @@ import { GeoIpService } from '../../../core/services/geo-ip.service';
 import { DeviceLocationService } from '../../../core/services/device-location.service';
 import { PublicationService } from '../../../core/services/publications.service';
 import { ResponsiveService } from '../../../core/responsive/responsive.service';
+import { LocationService } from '../../../core/services/location.service';
+import { MapLocation } from '../../../core/models/location.model';
 import html2canvas from 'html2canvas';
 
 /**
@@ -59,6 +61,9 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   /** Servicio de almacenamiento en memoria para publicaciones */
   private readonly pubService = inject(PublicationService);
 
+  /** Servicio que expone el resto de publicaciones para pintarlas como POIs en el mapa */
+  private readonly locationService = inject(LocationService);
+
   /** Servicio de usuario actual (usado para validaciones de tipo PARTICULAR) */
   readonly cu = inject(CurrentUserService);
 
@@ -77,6 +82,12 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   /** Indica si el formulario está en modo repetición de actividad. */
   isRepeatMode = signal(false);
+
+  /**
+   * True si se llegó desde una publicación todavía activa (no caducada) para editarla.
+   * Solo afecta al texto de la UI: en ambos casos `submitForm()` crea una publicación nueva.
+   */
+  isEditingActive = signal(false);
 
   routeMapCapture = signal<string | null>(null);
 
@@ -105,6 +116,21 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   /** Marcador actual en el mapa (null si no hay ubicación seleccionada) */
   marker: google.maps.Marker | null = null;
+
+  /** Halo que resalta la publicación en foco (recién creada o en edición). */
+  private highlightMarker: google.maps.Marker | null = null;
+
+  /**
+   * Id de la publicación en foco (recién creada o cargada para editar/repetir).
+   * Se excluye de los markers POI planos porque ya se muestra resaltada aparte.
+   */
+  private focusedPublicationId = signal<number | null>(null);
+
+  /** Última lista de publicaciones ajenas cargada para pintarlas como POIs no interactivos. */
+  private otherLocations: MapLocation[] = [];
+
+  /** Markers POI (no interactivos, sin listeners) del resto de publicaciones. */
+  private poiMarkers: google.maps.Marker[] = [];
 
   // ── Categorías ─────────────────────────────────────────────────────────────
   /** Lista completa de categorías principales */
@@ -262,6 +288,13 @@ export class CreatePublicationPageComponent implements AfterViewInit {
         ));
       }
     });
+
+    // Repinta los POIs (sin fetch) cuando cambia la publicación en foco, para
+    // que no se dupliquen con el marcador resaltado en el mismo punto.
+    effect(() => {
+      this.focusedPublicationId();
+      if (this.map) this.renderPoiMarkers();
+    });
   }
 
   /** Muestra el formulario en mobile/tablet desde el botón flotante. */
@@ -279,7 +312,8 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    * Etiqueta del botón principal según modo del formulario.
    */
   get submitButtonText(): string {
-    return this.isRepeatMode() ? 'Repetir publicación' : 'Crear publicación';
+    if (!this.isRepeatMode()) return 'Crear publicación';
+    return this.isEditingActive() ? 'Guardar cambios' : 'Repetir publicación';
   }
 
 
@@ -322,33 +356,96 @@ export class CreatePublicationPageComponent implements AfterViewInit {
         if (this.isAddingRoute) {
           this.addRoutePoint(e.latLng);
         } else {
+          // Nuevo punto elegido a mano: ya no es la publicación en foco.
+          this.focusedPublicationId.set(null);
+          this.clearHighlight();
           this.lat.set(e.latLng.lat());
           this.lng.set(e.latLng.lng());
           this.placeMarker(e.latLng);
         }
       });
 
+      this.loadOtherPublicationsAsPois();
       this.loadRepeatDraftFromQueryParams();
     });
+  }
+
+  /**
+   * Carga el resto de publicaciones activas y las pinta como markers POI:
+   * solo referencia visual, sin listeners de click/hover.
+   */
+  private loadOtherPublicationsAsPois(): void {
+    this.locationService.getAll().subscribe(locations => {
+      this.otherLocations = locations;
+      this.renderPoiMarkers();
+    });
+  }
+
+  /** Repinta los markers POI a partir de la última lista cargada, excluyendo la publicación en foco. */
+  private renderPoiMarkers(): void {
+    this.poiMarkers.forEach(marker => marker.setMap(null));
+    this.poiMarkers = [];
+
+    const focusedId = this.focusedPublicationId();
+    const isDark = this.themeService.isDark();
+
+    this.otherLocations
+      .filter(location => location.id !== focusedId)
+      .forEach(location => {
+        const color = this.categoryService.resolveColor(location.locationTypeId);
+        const icon = this.categoryService.resolveIcon(location.locationTypeId);
+        const marker = new google.maps.Marker({
+          position: { lat: location.lat, lng: location.lng },
+          map: this.map,
+          icon: this.mapsService.buildMarkerIcon(color, icon, 26, isDark),
+          clickable: false,
+          zIndex: 1,
+        });
+        this.poiMarkers.push(marker);
+      });
+  }
+
+  /** Resalta con un halo la ubicación de la publicación en foco (recién creada o en edición). */
+  private setHighlight(position: google.maps.LatLng): void {
+    this.clearHighlight();
+    this.highlightMarker = new google.maps.Marker({
+      position,
+      map: this.map,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 22,
+        fillColor: this.selectedMain()?.color ?? '#3f51b5',
+        fillOpacity: 0.22,
+        strokeColor: this.selectedMain()?.color ?? '#3f51b5',
+        strokeWeight: 2,
+        strokeOpacity: 0.55,
+      },
+      clickable: false,
+      zIndex: 5,
+    });
+  }
+
+  /** Elimina el halo de resaltado si existe. */
+  private clearHighlight(): void {
+    if (this.highlightMarker) {
+      this.highlightMarker.setMap(null);
+      this.highlightMarker = null;
+    }
   }
 
   /**
   * Carga un borrador desde una publicación existente si llega `repeatFrom` en query params.
    */
   private loadRepeatDraftFromQueryParams(): void {
+    // El id es un ObjectId de Mongo (string hexadecimal), no un número: no se
+    // puede validar con Number()/Number.isFinite (siempre daría NaN).
     const repeatFromRaw = this.route.snapshot.queryParamMap.get('repeatFrom');
     if (!repeatFromRaw) {
       this.isRepeatMode.set(false);
       return;
     }
 
-    const publicationId = Number(repeatFromRaw);
-    if (!Number.isFinite(publicationId)) {
-      this.isRepeatMode.set(false);
-      return;
-    }
-
-    this.pubService.getById(publicationId).subscribe({
+    this.pubService.getById(repeatFromRaw).subscribe({
       next: publication => {
         this.applyRepeatDraft(publication);
       },
@@ -370,6 +467,11 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    */
   private applyRepeatDraft(publication: Publication): void {
     this.isRepeatMode.set(true);
+    this.focusedPublicationId.set(publication.id);
+
+    const finished = publication.active === false ||
+      (!!publication.endDate && new Date(publication.endDate).getTime() <= Date.now());
+    this.isEditingActive.set(!finished);
 
     this.title = publication.title;
     this.description = publication.description ?? '';
@@ -397,6 +499,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
       this.lng.set(publication.lng);
       const point = new google.maps.LatLng(publication.lat, publication.lng);
       this.placeMarker(point);
+      this.setHighlight(point);
       this.map.panTo(point);
     }
 
@@ -520,6 +623,8 @@ export class CreatePublicationPageComponent implements AfterViewInit {
       this.marker.setMap(null);
       this.marker = null;
     }
+    this.clearHighlight();
+    this.focusedPublicationId.set(null);
   }
 
   /** Centra el mapa en la posición real del dispositivo (GPS/Wi-Fi/celda). */
@@ -1012,21 +1117,34 @@ export class CreatePublicationPageComponent implements AfterViewInit {
       },
     }).subscribe({
       next: pub => {
-        this.snackBar.open(
-          this.isRepeatMode() ? 'Publicación repetida correctamente' : 'Publicación creada correctamente',
-          'Cerrar',
-          {
-            duration: 3500,
-            horizontalPosition: 'center',
-            verticalPosition: 'top',
-          }
-        );
+        const snackText = this.isEditingActive()
+          ? 'Cambios guardados correctamente'
+          : this.isRepeatMode() ? 'Publicación repetida correctamente' : 'Publicación creada correctamente';
+        this.snackBar.open(snackText, 'Cerrar', {
+          duration: 3500,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
         this.successMessage.set(
-          this.isRepeatMode()
-            ? `✅ Publicación "${pub.title}" repetida. Aparecerá en el mapa.`
-            : `✅ Publicación "${pub.title}" creada. Aparecerá en el mapa.`
+          this.isEditingActive()
+            ? `✅ Cambios guardados en "${pub.title}". Aparecerá en el mapa.`
+            : this.isRepeatMode()
+              ? `✅ Publicación "${pub.title}" repetida. Aparecerá en el mapa.`
+              : `✅ Publicación "${pub.title}" creada. Aparecerá en el mapa.`
         );
-        this.resetForm();
+
+        // La publicación creada se queda resaltada en su ubicación; solo se
+        // resetean los campos del formulario para poder iniciar otra.
+        const createdPosition = this.marker?.getPosition() ?? null;
+        this.focusedPublicationId.set(pub.id);
+        if (createdPosition) {
+          this.setHighlight(createdPosition);
+          this.map.panTo(createdPosition);
+        }
+        this.resetFormFields();
+        this.clearRepeatFromQueryParam();
+        this.loadOtherPublicationsAsPois();
+
         this.closeFormPanel();
         setTimeout(() => this.successMessage.set(null), 5000);
       }
@@ -1035,10 +1153,18 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   /**
    * Resetea todos los campos del formulario a sus valores iniciales.
-   * Limpia la ubicación y deselecciona todas las categorías.
+   * Limpia también la ubicación y deselecciona todas las categorías.
    */
   resetForm(): void {
+    this.resetFormFields();
+    this.clearLocation();
+    this.clearRepeatFromQueryParam();
+  }
+
+  /** Resetea los campos de contenido del formulario, sin tocar la ubicación fijada en el mapa. */
+  private resetFormFields(): void {
     this.isRepeatMode.set(false);
+    this.isEditingActive.set(false);
     this.title = '';
     this.description = '';
     this.directions = '';
@@ -1051,11 +1177,13 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     this.slots = null;
     // this.price = 0;
     this.requiredLevel = 0;
-    this.clearLocation();
     this.clearRoute();
     this.selectedMain.set(null);
     this.selectedSub.set(null);
+  }
 
+  /** Quita el query param `repeatFrom` de la URL sin recargar la página. */
+  private clearRepeatFromQueryParam(): void {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { repeatFrom: null },

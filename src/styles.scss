@@ -151,6 +151,15 @@ body {
   }
 }
 
+// ── Google Maps InfoWindow – comportamiento común ─────────────────────────────
+// Google fuerza `overflow: scroll` en el wrapper del contenido, lo que hace que
+// el navegador reserve y pinte siempre las pistas de scrollbar (barras blancas
+// a la derecha y abajo en Windows). Con `auto`, las scrollbars solo aparecen
+// cuando el contenido realmente desborda.
+.gm-style .gm-style-iw-d {
+  overflow: auto !important;
+}
+
 // ── Google Maps InfoWindow – tema oscuro ──────────────────────────────────────
 [data-theme="dark"] {
   // Contenedor y todos sus divs directos
@@ -169,6 +178,13 @@ body {
   .gm-style .gm-style-iw-tc::after,
   .gm-style .gm-style-iw-t::after {
     background: #1e293b !important;
+  }
+
+  // Cabecera del botón cerrar y contenedor de la cola (versión moderna del InfoWindow)
+  .gm-style .gm-style-iw-chr,
+  .gm-style .gm-style-iw-tc {
+    background: #1e293b !important;
+    background-color: #1e293b !important;
   }
 
   // Textos
@@ -194,7 +210,20 @@ body {
     filter: invert(1) brightness(0.85) !important;
   }
 
-  // Scrollbar interna
+  // Scrollbar interna (solo visible si el contenido desborda): pista y esquina
+  // oscuras. `color-scheme` + `scrollbar-color` cubren las scrollbars nativas
+  // que los pseudo-elementos -webkit no alcanzan.
+  .gm-style .gm-style-iw-c {
+    color-scheme: dark;
+  }
+  .gm-style .gm-style-iw-d {
+    scrollbar-color: #475569 #1e293b;
+  }
+  .gm-style .gm-style-iw-d::-webkit-scrollbar,
+  .gm-style .gm-style-iw-d::-webkit-scrollbar-track,
+  .gm-style .gm-style-iw-d::-webkit-scrollbar-corner {
+    background: #1e293b !important;
+  }
   .gm-style .gm-style-iw-d::-webkit-scrollbar-thumb {
     background: #475569 !important;
   }

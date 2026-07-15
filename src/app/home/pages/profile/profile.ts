@@ -167,9 +167,10 @@ export class ProfilePageComponent {
   }
 
   /**
-  * Inicia el flujo de repetir publicación.
+  * Inicia el flujo de editar/repetir publicación (según {@link isFinished}).
    *
-  * Navega a crear publicación indicando el id origen para precargar los datos.
+  * Navega a crear publicación indicando el id origen para precargar los datos
+  * (salvo la fecha); el mapa resalta la ubicación de esa publicación.
    */
   repeatPublication(publication: Publication): void {
     this.router.navigate(['/create-publication'], {

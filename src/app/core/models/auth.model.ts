@@ -13,10 +13,13 @@ export interface AuthRegisterRequest {
     userType: 'PARTICULAR' | 'PROFESSIONAL' | 'ENTITY';
 }
 
-/** Payload para POST /auth/login */
+/**
+ * Payload para POST /auth/login. `identifier` acepta tanto un email como un nick
+ * prefijado con `@` (p.ej. `@ana`); el backend decide cuál de los dos es.
+ */
 export interface AuthLoginRequest {
-  email:    string;
-  password: string;
+  identifier: string;
+  password:   string;
 }
 
 /** Respuesta del endpoint /auth/login */

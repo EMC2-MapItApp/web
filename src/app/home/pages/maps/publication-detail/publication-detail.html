@@ -1,4 +1,4 @@
-<div class="detail" [style.--accent]="accentColor">
+<div class="detail" [class.detail--no-capture]="!hasRouteCapture" [style.--accent]="accentColor">
   <!-- ── Sección IZQUIERDA: Contenido principal ─────────────────── -->
   <div class="detail__content">
 
@@ -190,15 +190,16 @@
 </div>
 
   </div><!-- /detail__content -->
+
+  @if (hasRouteCapture) {
   <!-- Separador CENTRAL (solo en desktop) -->
   <div class="detail__separator"></div>
 
   <!-- ── Sección DERECHA: Captura del Mapa ─────────────────────── -->
-  @if (item.metadata?.['routeMapCapture']; as capture) {
   <div class="detail__map-section">
     <div class="route-capture">
       <h3>Captura de la ruta</h3>
-      <img [src]="capture" alt="Captura del mapa con la ruta" class="route-capture__image" />
+      <img [src]="item.metadata!['routeMapCapture']" alt="Captura del mapa con la ruta" class="route-capture__image" />
     </div>
   </div>
   }

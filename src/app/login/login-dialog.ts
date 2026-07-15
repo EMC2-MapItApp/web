@@ -47,18 +47,18 @@ export class LoginDialogComponent {
 
 
   loginForm = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
+    identifier: ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
-  get emailCtrl() { return this.loginForm.controls['email']; }
+  get identifierCtrl() { return this.loginForm.controls['identifier']; }
   get passwordCtrl() { return this.loginForm.controls['password']; }
 
 
   constructor() {
     if (isDevMode()) {
       this.loginForm.setValue({
-        email: 'dev@mapit.local',
+        identifier: 'dev@mapit.local',
         password: 'dev-password',
       });
     }
@@ -80,11 +80,11 @@ export class LoginDialogComponent {
       return;
     }
 
-    const { email, password } = this.loginForm.value;
+    const { identifier, password } = this.loginForm.value;
     this.loading.set(true);
     this.errorMsg.set(null);
 
-    this.authService.login({ email: email!, password: password! }).subscribe({
+    this.authService.login({ identifier: identifier!, password: password! }).subscribe({
       next: () => {
         this.loading.set(false);
         this.dialogRef.close(true); // cierra y queda en el mapa

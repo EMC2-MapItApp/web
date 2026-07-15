@@ -1,51 +1,76 @@
 <div class="stack-page">
-  <header class="stack-header">
-    <a routerLink="/" class="stack-header__back" title="Volver al mapa">
-      <mat-icon>arrow_back</mat-icon>
-    </a>
-    <div>
-      <h1>Stack técnico</h1>
-      <p class="stack-header__subtitle">
-        Qué usa MapIt y por qué — con enlaces directos al código en GitHub.
-        Proyecto de portfolio: aplicación mínima pero real y desplegada en producción.
-      </p>
-    </div>
+
+  <header class="page-header stack-header">
+    <h2 class="page-header__title">Stack técnico</h2>
+    <p class="page-header__subtitle">
+      Qué usa MapIt y por qué — con enlaces directos al código en GitHub.
+      Proyecto de portfolio: aplicación mínima pero real y desplegada en producción.
+    </p>
   </header>
 
-  <section class="stack-repos">
-    <a [href]="webRepoUrl" target="_blank" rel="noopener" class="stack-repo-card">
-      <mat-icon>web</mat-icon>
-      <span>Frontend — EMC2-MapItApp/web</span>
-    </a>
-    <a [href]="backRepoUrl" target="_blank" rel="noopener" class="stack-repo-card">
-      <mat-icon>dns</mat-icon>
-      <span>Backend — EMC2-MapItApp/back</span>
-    </a>
-  </section>
+  <mat-accordion class="stack-accordion" multi>
 
-  @for (group of groups; track group.title) {
-    <section class="stack-group">
-      <h2 class="stack-group__title">
-        <mat-icon>{{ group.icon }}</mat-icon>
-        {{ group.title }}
-      </h2>
+    <mat-expansion-panel [expanded]="true">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>code</mat-icon>
+          <span>Repositorios</span>
+        </mat-panel-title>
+        <mat-panel-description>Código fuente en GitHub</mat-panel-description>
+      </mat-expansion-panel-header>
 
-      <div class="stack-items">
-        @for (item of group.items; track item.name) {
-          <article class="stack-item">
-            <h3 class="stack-item__name">{{ item.name }}</h3>
-            <p class="stack-item__why">{{ item.why }}</p>
-            @if (item.link) {
-              <a [href]="item.link.url" target="_blank" rel="noopener" class="stack-item__link">
-                <mat-icon>code</mat-icon>
-                {{ item.link.label }}
-              </a>
-            }
-          </article>
-        }
-      </div>
-    </section>
-  }
+      <nav class="stack-list">
+        <a [href]="webRepoUrl" target="_blank" rel="noopener" class="stack-item stack-item--link">
+          <span class="stack-item__icon-wrap">
+            <mat-icon class="stack-item__icon">web</mat-icon>
+          </span>
+          <div class="stack-item__text">
+            <span class="stack-item__label">Frontend — EMC2-MapItApp/web</span>
+          </div>
+          <mat-icon class="stack-item__external">open_in_new</mat-icon>
+        </a>
+
+        <a [href]="backRepoUrl" target="_blank" rel="noopener" class="stack-item stack-item--link">
+          <span class="stack-item__icon-wrap">
+            <mat-icon class="stack-item__icon">dns</mat-icon>
+          </span>
+          <div class="stack-item__text">
+            <span class="stack-item__label">Backend — EMC2-MapItApp/back</span>
+          </div>
+          <mat-icon class="stack-item__external">open_in_new</mat-icon>
+        </a>
+      </nav>
+    </mat-expansion-panel>
+
+    @for (group of groups; track group.title) {
+      <mat-expansion-panel [expanded]="true">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <mat-icon>{{ group.icon }}</mat-icon>
+            <span>{{ group.title }}</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="stack-list">
+          @for (item of group.items; track item.name) {
+            <article class="stack-item">
+              <div class="stack-item__text">
+                <span class="stack-item__label">{{ item.name }}</span>
+                <span class="stack-item__desc">{{ item.why }}</span>
+              </div>
+              @if (item.link) {
+                <a [href]="item.link.url" target="_blank" rel="noopener" class="stack-item__code-link">
+                  <mat-icon>code</mat-icon>
+                  {{ item.link.label }}
+                </a>
+              }
+            </article>
+          }
+        </div>
+      </mat-expansion-panel>
+    }
+
+  </mat-accordion>
 
   <footer class="stack-footer">
     <p>
@@ -55,4 +80,5 @@
       <a [href]="backRepoUrl + '/blob/main_back/docs/STACK.md'" target="_blank" rel="noopener">STACK.md backend</a>
     </p>
   </footer>
+
 </div>

@@ -1,29 +1,44 @@
 <div class="changelog-page">
-  <header class="changelog-header">
-    <a routerLink="/" class="changelog-header__back" title="Volver al mapa">
-      <mat-icon>arrow_back</mat-icon>
-    </a>
-    <div>
-      <h1>Novedades</h1>
-      <p class="changelog-header__subtitle">
-        Historial completo de funcionalidades nuevas, mejoras y correcciones aplicadas en MapIt.
-      </p>
-    </div>
+
+  <header class="page-header changelog-header">
+    <h2 class="page-header__title">Novedades</h2>
+    <p class="page-header__subtitle">
+      Historial completo de funcionalidades nuevas, mejoras y correcciones aplicadas en MapIt.
+    </p>
   </header>
 
-  <div class="changelog-list">
-    @for (entry of entries(); track entry.date + entry.title) {
-      <article class="changelog-item">
-        <div class="changelog-item__meta">
-          <span class="changelog-item__badge changelog-item__badge--{{ entry.type }}">
-            <mat-icon>{{ typeIcon(entry.type) }}</mat-icon>
-            {{ typeLabel(entry.type) }}
-          </span>
-          <span class="changelog-item__date">{{ entry.date | date:'longDate' }}</span>
-        </div>
-        <h2 class="changelog-item__title">{{ entry.title }}</h2>
-        <p class="changelog-item__description">{{ entry.description }}</p>
-      </article>
-    }
-  </div>
+  <mat-accordion class="changelog-accordion">
+    <mat-expansion-panel [expanded]="true">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>history</mat-icon>
+          <span>Historial</span>
+        </mat-panel-title>
+        <mat-panel-description>Todas las novedades publicadas</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="changelog-list">
+        @for (entry of entries(); track entry.date + entry.title) {
+          <article class="changelog-item">
+            <span class="changelog-item__icon-wrap">
+              <mat-icon class="changelog-item__icon">{{ typeIcon(entry.type) }}</mat-icon>
+            </span>
+            <div class="changelog-item__text">
+              <span class="changelog-item__title">{{ entry.title }}</span>
+              <span class="changelog-item__description">{{ entry.description }}</span>
+            </div>
+            <div class="changelog-item__meta">
+              <span class="changelog-item__badge changelog-item__badge--{{ entry.type }}">
+                {{ typeLabel(entry.type) }}
+              </span>
+              <span class="changelog-item__date">{{ entry.date | date:'longDate' }}</span>
+            </div>
+          </article>
+        }
+      </div>
+
+    </mat-expansion-panel>
+  </mat-accordion>
+
 </div>

@@ -1,33 +1,56 @@
 <div class="about-page">
-  <header class="about-header">
-    <a routerLink="/" class="about-header__back" title="Volver al mapa">
-      <mat-icon>arrow_back</mat-icon>
-    </a>
-    <div>
-      <h1>Acerca de MapIt</h1>
+
+  <header class="page-header about-header">
+    <h2 class="page-header__title">
+      Acerca de MapIt
       <span class="about-header__version">Versión {{ version }}</span>
-      <p class="about-header__subtitle">
-        Descubre publicaciones y eventos cerca de ti, y únete a la comunidad para crear y
-        compartir tus propios mapas.
-      </p>
-    </div>
+    </h2>
+    <p class="page-header__subtitle">
+      Descubre publicaciones y eventos cerca de ti, y únete a la comunidad para crear y
+      compartir tus propios mapas.
+    </p>
   </header>
 
-  <section class="about-links">
-    <a routerLink="/changelog" class="about-link-card">
-      <mat-icon>new_releases</mat-icon>
-      <div>
-        <h2>Novedades</h2>
-        <p>Historial completo de funcionalidades nuevas, mejoras y correcciones.</p>
-      </div>
-    </a>
+  <mat-accordion class="about-accordion">
+    <mat-expansion-panel [expanded]="true">
 
-    <a routerLink="/stack" class="about-link-card">
-      <mat-icon>web</mat-icon>
-      <div>
-        <h2>Stack técnico</h2>
-        <p>Qué usa MapIt y por qué, con enlaces directos al código en GitHub.</p>
-      </div>
-    </a>
-  </section>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>info</mat-icon>
+          <span>Proyecto</span>
+        </mat-panel-title>
+        <mat-panel-description>Novedades y stack técnico</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <nav class="about-list">
+        <a routerLink="/changelog" class="about-item">
+          <span class="about-item__icon-wrap">
+            <mat-icon class="about-item__icon">new_releases</mat-icon>
+          </span>
+          <div class="about-item__text">
+            <span class="about-item__label">Novedades</span>
+            <span class="about-item__desc">
+              Historial completo de funcionalidades nuevas, mejoras y correcciones.
+            </span>
+          </div>
+          <mat-icon class="about-item__chevron">chevron_right</mat-icon>
+        </a>
+
+        <a routerLink="/stack" class="about-item">
+          <span class="about-item__icon-wrap">
+            <mat-icon class="about-item__icon">web</mat-icon>
+          </span>
+          <div class="about-item__text">
+            <span class="about-item__label">Stack técnico</span>
+            <span class="about-item__desc">
+              Qué usa MapIt y por qué, con enlaces directos al código en GitHub.
+            </span>
+          </div>
+          <mat-icon class="about-item__chevron">chevron_right</mat-icon>
+        </a>
+      </nav>
+
+    </mat-expansion-panel>
+  </mat-accordion>
+
 </div>

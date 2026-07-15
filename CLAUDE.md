@@ -59,8 +59,32 @@ src/app/
   abierto desde `login-dialog` vía `MatDialog`, sin ruta propia) y `reset-password/` (página real
   con formulario de contraseña nueva, análoga a `verify-email/` — se llega desde el enlace del
   correo, sin contexto previo del shell).
-- **Rutas hijas de `HomeComponent`** (`dashboard`, `profile`, `settings`, `create-publication`)
-  requieren sesión vía `authDialogGuard`.
+- **Rutas hijas de `HomeComponent`**: `dashboard`, `profile`, `settings` y `create-publication`
+  requieren sesión vía `authDialogGuard`; las páginas informativas (`about`, `changelog`, `stack`)
+  también son hijas del shell pero **sin guard** (accesibles sin sesión). Solo `verify-email` y
+  `reset-password` quedan fuera del shell — se llega a ellas desde el enlace de un correo, sin
+  contexto previo de la app.
+
+### Páginas nuevas — patrón de integración en el shell
+
+Toda página nueva de la app (plantilla) debe seguir el patrón de Ajustes/Acerca de/Novedades/
+Stack; una página fuera de este patrón se percibe como ajena a la app (ya pasó con las primeras
+versiones de about/changelog/stack y hubo que rehacerlas):
+
+- **Ruta hija del shell**: declararla como hija de `HomeComponent` en `app.routes.ts` para
+  heredar cabecera, sidebar, footer y el contenedor `.app-main`. Añadir `authDialogGuard` solo si
+  requiere sesión. Nada de rutas standalone salvo el caso "se llega desde un correo".
+- **Cabecera**: clases globales `.page-header` + `.page-header__title` / `__subtitle`
+  (`styles.scss`) — no definir una cabecera propia por página.
+- **Secciones**: `mat-expansion-panel` (dentro de `mat-accordion`) con el mixin global
+  `accordion-panel-title` aplicado a la clase del acordeón de la página.
+- **Filas de contenido**: mixins globales `data-row` (esqueleto de fila: hover, separador,
+  radios) e `icon-wrap` (cajita del icono) de `src/styles/_mixins.scss`; ver `.poi-item`
+  (settings), `.about-item`, `.changelog-item`, `.stack-item` como referencia.
+- **Colores**: solo variables de tema `--c-*` (`_themes.scss`) — así el modo oscuro queda
+  cubierto sin trabajo extra. Nunca hex hardcodeados.
+- Efecto colateral conocido: cualquier página del shell muestra el welcome-dialog a invitados
+  una vez por sesión (`home.ts`), también si aterrizan directamente en ella desde fuera.
 
 ### Responsive — arquitectura obligatoria para toda UI nueva
 

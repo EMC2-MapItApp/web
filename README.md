@@ -97,7 +97,7 @@ propia app.
 - **Crear publicación**, **perfil**, **ajustes** — requieren sesión (`authDialogGuard`).
 - **Tema claro/oscuro** — `ThemeService`, variables CSS (`--c-*`) en `src/styles/_themes.scss`.
 - **Responsive** — mobile/tablet/desktop con una única fuente de verdad
-  (`core/responsive/responsive.service.ts`); ver [docs/responsive-architecture-portable.md](docs/responsive-architecture-portable.md).
+  (`core/responsive/responsive.service.ts`).
 
 ## Puesta en marcha local
 
@@ -147,14 +147,10 @@ pendiente de este repo.
 
 Sitio estático en **Cloudflare Workers + Assets** (no Pages tradicional, no Angular
 Universal/SSR). `wrangler.toml` sirve `./dist/mapit-app/browser` como SPA
-(`not_found_handling = "single-page-application"`). Problemas ya resueltos durante el despliegue
-(versión de Node, límites de bundle, ruta de assets): [BITACORA.md](BITACORA.md).
+(`not_found_handling = "single-page-application"`).
 
 ## Documentación adicional
 
 - [docs/STACK.md](docs/STACK.md) — stack y servicios en detalle, con el porqué de cada elección
-- [BITACORA.md](BITACORA.md) — problemas reales encontrados durante el desarrollo/despliegue y cómo se resolvieron
-- [docs/responsive-architecture-portable.md](docs/responsive-architecture-portable.md) — arquitectura responsive
-- [docs/TareasLogin.md](docs/TareasLogin.md) — roadmap de evolución de auth
 - [CLAUDE.md](CLAUDE.md) — contexto de arquitectura para trabajar en el repo con Claude Code
 - [public/llms.txt](public/llms.txt) (servido en [mapit-web.com/llms.txt](https://mapit-web.com/llms.txt)) — punto de entrada estructurado para agentes/LLMs ([convención llms.txt](https://llmstxt.org/))

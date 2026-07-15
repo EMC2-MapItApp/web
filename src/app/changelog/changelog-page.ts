@@ -1,15 +1,16 @@
 /**
  * @file changelog-page.ts
- * @description Página pública (sin login) con el historial completo de novedades y
- * correcciones, alimentada por {@link ChangelogService} (JSON estático en
- * `public/assets/changelog.json`). Accesible desde el enlace "Ver todas" del welcome-dialog y
- * desde `/about`.
+ * @description Página con el historial completo de novedades y correcciones, alimentada por
+ * {@link ChangelogService} (JSON estático en `public/assets/changelog.json`). Accesible desde
+ * el enlace "Ver todas" del welcome-dialog y desde `/about`. Se renderiza dentro del shell de
+ * home (ruta hija sin guard de login) para compartir el mismo marco visual que el resto de
+ * páginas de la app (Ajustes, Perfil).
  */
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { ChangelogService } from '../core/services/changelog.service';
 import { ChangelogEntry, ChangelogEntryType } from '../core/models/changelog.model';
 
@@ -28,7 +29,7 @@ const TYPE_LABEL: Record<ChangelogEntryType, string> = {
 @Component({
   selector: 'app-changelog-page',
   standalone: true,
-  imports: [RouterLink, DatePipe, MatIconModule],
+  imports: [DatePipe, MatIconModule, MatExpansionModule],
   templateUrl: './changelog-page.html',
   styleUrl: './changelog-page.scss',
 })

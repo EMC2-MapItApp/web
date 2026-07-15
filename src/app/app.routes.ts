@@ -2,8 +2,9 @@
  * @file app.routes.ts
  * @description Rutas de la aplicación. `login`/`register` no son páginas propias: activan un
  * guard que abre el diálogo correspondiente sobre {@link HomeComponent} y redirigen a `/`.
- * `verify-email` y `stack` sí son páginas reales, pensadas para llegarse desde fuera de la app
- * (enlace de correo / enlace de portfolio) sin contexto previo del shell.
+ * `verify-email` y `reset-password` sí son páginas standalone (fuera del shell), pensadas para
+ * llegarse desde el enlace de un correo sin contexto previo de la app. El resto de páginas
+ * (incluidas las informativas about/changelog/stack, sin guard) son hijas del shell de home.
  */
 import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home';
@@ -31,11 +32,6 @@ export const routes: Routes = [
   { path: 'verify-email', component: VerifyEmailPageComponent },
   // Idem: se llega aqui desde el enlace del correo de restablecimiento de contraseña.
   { path: 'reset-password', component: ResetPasswordPageComponent },
-  // Pagina publica de portfolio (stack tecnico), sin guard: accesible sin sesion.
-  { path: 'stack', component: StackPageComponent },
-  // Paginas publicas "Acerca de" / historial de novedades, sin guard: accesibles sin sesion.
-  { path: 'about', component: AboutPageComponent },
-  { path: 'changelog', component: ChangelogPageComponent },
   {
     path: '', component: HomeComponent,
     canActivate: [loadUserOptionalGuard],
@@ -45,6 +41,12 @@ export const routes: Routes = [
       { path: 'profile', component: ProfilePageComponent, canActivate: [authDialogGuard] },
       { path: 'settings', component: SettingsPageComponent, canActivate: [authDialogGuard] },
       { path: 'create-publication', component: CreatePublicationPageComponent, canActivate: [authDialogGuard] },
+      // Paginas informativas ("Acerca de", "Novedades", "Stack tecnico"): se renderizan
+      // dentro del shell (mismo marco visual que Ajustes) pero sin guard de login —
+      // siguen siendo accesibles sin sesion.
+      { path: 'about', component: AboutPageComponent },
+      { path: 'changelog', component: ChangelogPageComponent },
+      { path: 'stack', component: StackPageComponent },
     ]
   },
   { path: '**', redirectTo: '' }

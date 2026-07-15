@@ -135,3 +135,19 @@
   justify-content: center;
   flex-shrink: 0;
 }
+
+// ── Fila de lista de datos (Ajustes .poi-item, Acerca de .about-item, …) ──────
+// Esqueleto común de las filas icono + texto dentro de un panel: misma fuente
+// de verdad para que todas las páginas de la app compartan el mismo look.
+@mixin data-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--c-border-light);
+  transition: background v.$transition-fast;
+  border-radius: v.$radius-sm;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--c-surface-hover); }
+}

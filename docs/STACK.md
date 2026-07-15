@@ -1,6 +1,6 @@
 # Stack y servicios — Frontend (MapIt WEB)
 
-> Documento vivo, igual que `CLAUDE.md`. Actualízalo cuando cambie una pieza real del stack. La
+> Documento vivo. Actualizado cada vez que cambie una pieza real del stack. La
 > contraparte de este documento en el backend es
 > [`BACK/docs/STACK.md`](https://github.com/EMC2-MapItApp/back/blob/main_back/docs/STACK.md);
 > juntos cubren el sistema completo. Este mismo contenido se reutiliza (resumido, con enlaces
@@ -54,10 +54,6 @@ usando piezas estándar de la industria en vez de atajos de proyecto de juguete.
 |---|---|---|
 | [Cloudflare Workers + Assets](https://developers.cloudflare.com/workers/static-assets/) | Hosting del sitio estático (`mapit-web.com`) | Free tier generoso, CDN global incluido, sin servidor Node que mantener — la app es una SPA pura, no necesita SSR. Es la evolución de "Cloudflare Pages": el dashboard unificado crea un Worker con Assets aunque el proyecto sea solo estático. |
 | `wrangler.toml` | Config de despliegue | Necesario para indicarle a Cloudflare dónde están los assets compilados (`./dist/mapit-app/browser`) y que trate las rutas no encontradas como SPA (`not_found_handling = "single-page-application"`), si no la app despliega en blanco. |
-
-Problemas reales encontrados durante el despliegue (interfaz Workers/Pages fusionada, versión de
-Node incompatible, límites de bundle, pantalla en blanco) y su solución exacta:
-[BITACORA.md](../BITACORA.md).
 
 ## Control de versiones
 

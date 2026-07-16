@@ -136,6 +136,19 @@ body {
   &:hover .material-icons {
     color: #1e293b;
   }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &.is-locating .material-icons {
+    animation: gmaps-locating-spin 1s linear infinite;
+  }
+}
+
+@keyframes gmaps-locating-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 [data-theme="dark"] .gmaps-my-location-control {

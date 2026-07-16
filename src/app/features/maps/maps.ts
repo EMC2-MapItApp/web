@@ -143,6 +143,12 @@ export class MapsPageComponent implements AfterViewInit {
   private allLocations: MapLocation[] = [];
   private markers: google.maps.Marker[] = [];
 
+  /** Botón nativo "Usar mi ubicación", guardado para reflejar el estado de carga. */
+  private locationControlButton?: HTMLButtonElement;
+
+  /** true mientras hay una resolución de posición del dispositivo en vuelo. */
+  locating = signal(false);
+
 
   // ── Estado del panel de detalle ───────────────────────────────────────────
   /** Localización seleccionada al hacer click en un marker. null = panel cerrado. */
@@ -289,6 +295,7 @@ export class MapsPageComponent implements AfterViewInit {
       // Control nativo "Usar mi ubicación", solo en dispositivos de input táctil.
       if (this.deviceLocationService.isTouchPrimaryDevice()) {
         const locationControl = this.mapsService.buildMyLocationControl(() => this.useMyLocation());
+        this.locationControlButton = locationControl;
         this.map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(locationControl);
       }
 
@@ -312,14 +319,34 @@ export class MapsPageComponent implements AfterViewInit {
     });
   }
 
-  /** Centra el mapa en la posición real del dispositivo (GPS/Wi-Fi/celda). */
+  /**
+   * Centra el mapa en la posición real del dispositivo (GPS/Wi-Fi/celda).
+   *
+   * @remarks
+   * Si el permiso no estaba concedido, `getCurrentPosition()` dispara el diálogo nativo del SO
+   * y esta llamada espera su resultado (sin timeout, ver {@link DeviceLocationService}): en caso
+   * positivo centra el mapa con la posición real; en caso negativo cae a {@link fallbackToIpLocation}.
+   * El spinner (`locating`) solo cubre esta llamada — la acción de geolocalizar en sí — no el
+   * fallback por IP posterior, que es una operación aparte y no necesita ese feedback.
+   */
   private useMyLocation(): void {
+    if (this.locating()) return; // evita dobles pulsaciones que encolarían diálogos del SO
+
+    this.setLocating(true);
     this.deviceLocationService.getCurrentPosition().subscribe({
       next: ({ lat, lng }) => {
+        this.setLocating(false);
         this.map.panTo({ lat, lng });
         this.map.setZoom(15);
       },
       error: (error: { code: string }) => {
+        this.setLocating(false);
+
+        if (error.code === 'PERMISSION_DENIED') {
+          this.fallbackToIpLocation();
+          return;
+        }
+
         this.snackBar.open(this.resolveLocationErrorMessage(error.code), 'Cerrar', {
           duration: 4000,
           horizontalPosition: 'center',
@@ -329,11 +356,34 @@ export class MapsPageComponent implements AfterViewInit {
     });
   }
 
-  /** Traduce un código de error de geolocalización a un mensaje legible para el usuario. */
+  /**
+   * Centra el mapa por IP cuando no se ha concedido el permiso de geolocalización del
+   * dispositivo. Se ejecuta ya con el spinner apagado (ver {@link useMyLocation}): no es la
+   * acción de geolocalizar, es un fallback aparte.
+   */
+  private fallbackToIpLocation(): void {
+    this.snackBar.open(
+      'No se ha concedido acceso a la ubicación del dispositivo. Se usará tu ubicación aproximada por IP, que puede no ser exacta.',
+      'Cerrar',
+      { duration: 5000, horizontalPosition: 'center', verticalPosition: 'top' },
+    );
+
+    this.geoIpService.resolveCenter().subscribe(center => {
+      this.map.panTo({ lat: center.lat, lng: center.lng });
+      this.map.setZoom(12);
+    });
+  }
+
+  /** Refleja el estado de localización en curso en el signal y en el control nativo del mapa. */
+  private setLocating(value: boolean): void {
+    this.locating.set(value);
+    this.locationControlButton?.classList.toggle('is-locating', value);
+    this.locationControlButton?.toggleAttribute('disabled', value);
+  }
+
+  /** Traduce un código de error de geolocalización (no achacable a permiso) a un mensaje legible. */
   private resolveLocationErrorMessage(code: string): string {
     switch (code) {
-      case 'PERMISSION_DENIED':
-        return 'Activa el permiso de ubicación en el navegador para usar esta función.';
       case 'TIMEOUT':
       case 'POSITION_UNAVAILABLE':
         return 'No se pudo obtener tu ubicación. Inténtalo de nuevo.';

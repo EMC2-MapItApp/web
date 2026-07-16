@@ -68,10 +68,20 @@ export class DeviceLocationService {
     /**
      * Resuelve la posición actual del dispositivo vía GPS/Wi-Fi/celda.
      *
+     * @remarks
+     * No se fija un `timeout` nativo: un número de ms adivinado es justo lo que causaba el
+     * fallo original (el primer fix de GPS en frío tras conceder permiso puede tardar más de
+     * lo esperado, y algunas implementaciones descuentan el tiempo del diálogo de permisos).
+     * Sin `timeout` explícito, la Geolocation API espera indefinidamente a un resultado real
+     * (posición o error nativo) en vez de fallar por un plazo arbitrario.
+     * @param options - Ajustes de la petición nativa; por defecto alta precisión sin caché.
      * @returns Observable que emite una vez las coordenadas o falla con un
      * {@link DeviceLocationError} tipado (nunca lanza una excepción sin capturar).
      */
-    getCurrentPosition(): Observable<DeviceLocation> {
+    getCurrentPosition(options?: {
+        enableHighAccuracy?: boolean;
+        maximumAge?: number;
+    }): Observable<DeviceLocation> {
         return new Observable(subscriber => {
             if (!this.isSupported()) {
                 subscriber.error({ code: 'UNSUPPORTED' } satisfies DeviceLocationError);
@@ -89,7 +99,10 @@ export class DeviceLocationService {
                 error => {
                     subscriber.error({ code: this.mapGeolocationError(error) } satisfies DeviceLocationError);
                 },
-                { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 },
+                {
+                    enableHighAccuracy: options?.enableHighAccuracy ?? true,
+                    maximumAge: options?.maximumAge ?? 0,
+                },
             );
         });
     }

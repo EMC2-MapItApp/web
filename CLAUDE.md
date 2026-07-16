@@ -143,6 +143,12 @@ reglas que hay que respetar siempre:
 Las mismas convenciones que en el backend (`../BACK/CLAUDE.md`): SOLID, buenas prácticas, y
 comentarios/documentación en los bloques relevantes (no en lo obvio). Aquí además:
 
+- **Stack/arquitectura sincronizados**: `docs/STACK.md` (este repo) es pareja de
+  `../BACK/docs/STACK.md`, y ambos se resumen en
+  `src/app/features/info/stack/stack-page.data.ts` (página pública `/stack`). Si cambia una
+  decisión de stack o de arquitectura del backend (ver `../BACK/docs/ARQUITECTURA.md`),
+  reflejarla también aquí en el mismo cambio.
+
 - **Standalone components + signals** (no NgModules, no RxJS puro donde un signal basta — ver
   `ResponsiveService` como referencia de patrón: signal interno + `computed()` derivados +
   `toObservable()` solo para consumidores que lo necesiten en RxJS).

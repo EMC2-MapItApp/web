@@ -93,6 +93,22 @@ export const STACK_GROUPS: StackGroup[] = [
     ],
   },
   {
+    title: 'Arquitectura',
+    icon: 'hub',
+    items: [
+      {
+        name: 'Monolito modular por dominio',
+        why: 'Un solo desarrollador y tráfico de proyecto personal — dividir en microservicios ahora añadiría complejidad operativa (red, despliegues múltiples) sin ningún problema real que resolver. Los módulos ya se organizan por dominio de negocio, no por capa técnica, así que extraer uno como servicio el día que un criterio objetivo lo justifique es mecánico.',
+        link: { label: 'docs/ARQUITECTURA.md', url: `${BACK_REPO}/docs/ARQUITECTURA.md` },
+      },
+      {
+        name: 'Arquitectura hexagonal en geo/ y notifications/',
+        why: 'Piloto selectivo, no una regla global: los dos únicos puntos con una dependencia externa reemplazable (proveedor GeoIP, canal de notificación). El caso de uso depende de un puerto (interfaz); el proveedor concreto vive en un adaptador aparte, sustituible sin tocar el caso de uso.',
+        link: { label: 'GeoLocationProvider.java', url: `${BACK_REPO}/src/main/java/emc/mapIt/geo/GeoLocationProvider.java` },
+      },
+    ],
+  },
+  {
     title: 'Persistencia',
     icon: 'storage',
     items: [

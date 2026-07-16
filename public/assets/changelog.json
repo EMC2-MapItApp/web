@@ -2,6 +2,12 @@
   {
     "date": "2026-07-16",
     "type": "improvement",
+    "title": "Botón de ubicación más visible",
+    "description": "El botón para usar tu ubicación en el mapa ahora es más grande y muestra una animación clara mientras te localiza."
+  },
+  {
+    "date": "2026-07-16",
+    "type": "improvement",
     "title": "Nicks distinguen mayúsculas",
     "description": "Ahora tu nombre de usuario respeta las mayúsculas y minúsculas tal como lo escribes, así que @MapitUser y @mapituser se consideran usuarios diferentes."
   },

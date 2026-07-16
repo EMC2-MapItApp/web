@@ -114,22 +114,26 @@ body {
 // ── Control nativo "Usar mi ubicación" (Google Maps) ──────────────────────────
 // Insertado vía map.controls[position].push(...), fuera del árbol de componentes
 // Angular: por eso vive en global styles y no en el styleUrl de cada página.
+// Solo se crea en dispositivos táctiles (isTouchPrimaryDevice()), así que su tamaño está
+// pensado directamente para dedo/Android, no para ratón — de ahí que sea más grande que un
+// control de mapa "de escritorio" típico.
 .gmaps-my-location-control {
-  width: 40px;
-  height: 40px;
-  margin: 10px;
+  width: 52px;
+  height: 52px;
+  margin: 12px;
   border: none;
-  border-radius: 2px;
+  border-radius: 6px;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+  transition: box-shadow 0.2s ease;
 
   .material-icons {
-    font-size: 20px;
+    font-size: 28px;
     color: #555;
   }
 
@@ -141,8 +145,16 @@ body {
     cursor: default;
   }
 
-  &.is-locating .material-icons {
-    animation: gmaps-locating-spin 1s linear infinite;
+  // Más visible que un simple giro de icono: anillo de acento pulsante + color destacado,
+  // además de girar más rápido — tiene que notarse claramente que se está trabajando.
+  &.is-locating {
+    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.25), 0 2px 8px rgba(0, 0, 0, 0.4);
+    animation: gmaps-locating-pulse 1.2s ease-in-out infinite;
+
+    .material-icons {
+      color: #2563eb;
+      animation: gmaps-locating-spin 0.7s linear infinite;
+    }
   }
 }
 
@@ -151,9 +163,14 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes gmaps-locating-pulse {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.25), 0 2px 8px rgba(0, 0, 0, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0.12), 0 2px 8px rgba(0, 0, 0, 0.4); }
+}
+
 [data-theme="dark"] .gmaps-my-location-control {
   background: #1e293b;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
 
   .material-icons {
     color: #cbd5e1;
@@ -161,6 +178,14 @@ body {
 
   &:hover .material-icons {
     color: #f1f5f9;
+  }
+
+  &.is-locating {
+    box-shadow: 0 0 0 6px rgba(96, 165, 250, 0.3), 0 2px 8px rgba(0, 0, 0, 0.7);
+
+    .material-icons {
+      color: #60a5fa;
+    }
   }
 }
 

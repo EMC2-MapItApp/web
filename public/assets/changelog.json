@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-07-16",
+    "type": "improvement",
+    "title": "Nicks distinguen mayúsculas",
+    "description": "Ahora tu nombre de usuario respeta las mayúsculas y minúsculas tal como lo escribes, así que @MapitUser y @mapituser se consideran usuarios diferentes."
+  },
+  {
     "date": "2026-07-15",
     "type": "feature",
     "title": "Inicia sesión con tu nick",

@@ -470,7 +470,6 @@ export class MapsPageComponent implements AfterViewInit {
       const marker = new google.maps.Marker({
         position: { lat: location.lat, lng: location.lng },
         map: this.map,
-        title: location.name,
         icon: this.mapsService.buildMarkerIcon(color, icon, 36, isDark),
       });
 
@@ -529,6 +528,7 @@ export class MapsPageComponent implements AfterViewInit {
     const textColor = dark ? '#f1f5f9' : '#111827';
     const subColor = dark ? '#94a3b8' : '#888888';
     const descColor = dark ? '#cbd5e1' : '#555555';
+    const approxColor = dark ? '#fbbf24' : '#b45309';
 
     const bc = this.categoryService.resolveBreadcrumb(location.locationTypeId);
     const breadcrumb = bc
@@ -546,6 +546,13 @@ export class MapsPageComponent implements AfterViewInit {
        </span>`
       : '';
 
+    const approximateNotice = location.metadata?.['exactLocation'] === false
+      ? `<div style="margin-top:6px;font-size:11px;color:${approxColor};display:flex;align-items:center;gap:4px">
+         <span class="material-icons" style="font-size:14px">gps_not_fixed</span>
+         Esta ubicación es aproximada — zona de 5 km
+       </div>`
+      : '';
+
     return `
     <div style="max-width:220px;font-family:sans-serif;padding:4px">
       <strong style="font-size:14px;color:${textColor}">${location.name}</strong>
@@ -554,6 +561,7 @@ export class MapsPageComponent implements AfterViewInit {
         ? `<p style="margin:4px 0 0;color:${descColor};font-size:13px">${location.description}</p>`
         : ''}
       ${badge}
+      ${approximateNotice}
     </div>
   `;
   }

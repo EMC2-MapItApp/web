@@ -143,6 +143,8 @@
 }
 
 .profile-section__actions {
+  display: flex;
+  gap: v.$space-sm;
   padding-top: v.$space-md;
 
   button {
@@ -192,6 +194,7 @@
   justify-content: flex-end;
   gap: v.$space-md;
   padding-top: v.$space-sm;
+   padding-bottom: v.$space-sm;
 
   // Mobile: acciones apiladas y a ancho completo para facilitar el toque.
   @include m.mobile {
@@ -202,6 +205,30 @@
       width: 100%;
     }
   }
+}
+
+.reset-password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: v.$space-md;
+
+  &__field {
+    width: 100%;
+  }
+
+  &__hint {
+    font-size: v.$font-sm;
+    color: var(--c-text-muted);
+    margin: -4px 0 4px;
+    line-height: 1.4;
+  }
+}
+
+.reset-password-success {
+  color: var(--c-success, #22c55e);
+  font-size: v.$font-body;
+  margin: 0 0 8px;
 }
 
 .level-card {

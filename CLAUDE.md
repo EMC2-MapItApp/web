@@ -39,6 +39,27 @@ La API local que consume el frontend en dev es el backend en `http://localhost:8
 
 ## Arquitectura
 
+### Mobile-first — regla transversal, no negociable
+
+El framework es Angular, pero el uso real de la app es casi siempre desde **dispositivos
+móviles** (comunidades y grupos consultando/publicando eventos sobre el mapa desde el móvil, no
+desde escritorio). Esta es una decisión de arquitectura fija, no un detalle de una página
+concreta — aplica a **toda** interfaz y flujo nuevo:
+
+- **Mobile-first en diseño y maquetación**: layout, interacción y rendimiento se piensan primero
+  para pantalla pequeña; tablet/desktop son una adaptación posterior, nunca el punto de partida
+  (mobile → tablet → desktop, nunca al revés).
+- **Objetivos táctiles**: botones, FABs y controles con tamaño mínimo cómodo al tacto (≥44px);
+  ninguna funcionalidad crítica debe depender de `:hover` (es mejora progresiva para desktop, no
+  un requisito).
+- **Peso y rendimiento en red móvil**: mantener el lazy loading por ruta (ver más abajo), evitar
+  dependencias pesadas si existe alternativa ligera, vigilar el tamaño de bundle.
+- **Validar primero en mobile**: cualquier componente o página nueva se revisa primero en
+  viewport mobile (breakpoint 0-767, ver `ResponsiveService`) y después en tablet/desktop.
+- Esta prioridad se apoya en la arquitectura responsive ya existente (`ResponsiveService`,
+  breakpoints centralizados) — ver subsección "Responsive" más abajo, que la implementa a nivel
+  técnico.
+
 Organización **por feature/dominio** (guía de estilo moderna de Angular):
 
 ```
@@ -113,8 +134,9 @@ versiones de about/changelog/stack y hubo que rehacerlas):
 
 ### Responsive — arquitectura obligatoria para toda UI nueva
 
-Documento de referencia completo: `docs/responsive-architecture-portable.md`. Resumen de las
-reglas que hay que respetar siempre:
+Implementación técnica del principio mobile-first de la sección anterior. Documento de
+referencia completo: `docs/responsive-architecture-portable.md`. Resumen de las reglas que hay
+que respetar siempre:
 
 - **Fuente única de verdad**: `core/responsive/responsive.service.ts` (signal `state` +
   `state$`), construido sobre `BreakpointObserver` de Angular CDK y los breakpoints centralizados

@@ -51,4 +51,18 @@ export class UserService {
       tap(updated => this.cu.setUser(updated))
     );
   }
+
+  /**
+   * Cambia la contraseña del usuario autenticado.
+   * Requiere la contraseña actual para verificar la identidad.
+   */
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    const userId = this.cu.user()?.id;
+    if (!userId) throw new Error('No hay usuario autenticado');
+
+    return this.http.patch<void>(
+      `${this.baseUrlUsers}/${userId}/password`,
+      { currentPassword, newPassword }
+    );
+  }
 }

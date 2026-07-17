@@ -10,7 +10,7 @@ export interface AuthRegisterRequest {
   email:    string;
   password: string;
   /** El backend espera el enum en mayúsculas: PARTICULAR | PROFESSIONAL | ENTITY */
-    userType: 'PARTICULAR' | 'PROFESSIONAL' | 'ENTITY';
+  userType: 'PARTICULAR' | 'PROFESSIONAL' | 'ENTITY';
 }
 
 /**

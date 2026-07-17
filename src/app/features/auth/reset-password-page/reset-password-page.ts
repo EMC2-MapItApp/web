@@ -72,11 +72,10 @@ export class ResetPasswordPageComponent implements OnInit {
       return;
     }
     this.token = token;
-  }
-
-  /** Carga zxcvbn-ts de forma diferida (solo al primer foco en el campo password). */
-  onPasswordFocus(): void {
-    this.zxcvbnLoadingPromise ??= this.loadZxcvbn();
+    // Cargar zxcvbn de inmediato: si se esperaba al primer foco, el autorrelleno
+    // de gestores de contraseñas no dispara el evento y el botón quedaba
+    // permanentemente deshabilitado (passwordScore === null → (null ?? -1) < 3).
+    this.zxcvbnLoadingPromise = this.loadZxcvbn();
   }
 
   submit(): void {

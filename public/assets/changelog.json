@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-07-17",
+    "type": "feature",
+    "title": "Cambiar contraseña desde el perfil",
+    "description": "Ahora puedes cambiar tu contraseña directamente desde tu perfil, indicando la actual y eligiendo una nueva más segura."
+  },
+  {
     "date": "2026-07-16",
     "type": "improvement",
     "title": "Botón de ubicación más visible",

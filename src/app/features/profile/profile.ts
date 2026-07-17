@@ -2,7 +2,8 @@
  * @file profile.ts
  * @description Página de perfil del usuario activo.
  */
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -21,6 +22,10 @@ import { DatePipe, SlicePipe } from '@angular/common';
 import { Publication } from '@core/models/publication.model';
 import { PublicationService } from '@core/services/publication.service';
 import { ResponsiveService } from '@core/responsive/responsive.service';
+import {
+  PasswordStrengthMeterComponent, PasswordStrengthScore,
+} from '../auth/password-strength-meter/password-strength-meter';
+import type { ZxcvbnFactory as ZxcvbnFactoryType } from '@zxcvbn-ts/core';
 
 const USER_TYPE_LABELS: Record<string, string> = {
   individual: 'Particular',
@@ -47,6 +52,7 @@ const XP_PER_LEVEL = [0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200, 4000]
     MatFormFieldModule, MatInputModule,
     MatProgressSpinnerModule,
     MatExpansionModule, MatDividerModule,
+    PasswordStrengthMeterComponent,
   ],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
@@ -60,6 +66,7 @@ export class ProfilePageComponent {
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
   // ── Estado responsive ────────────────────────────────────────────────────────
   // El componente NO calcula el viewport (nada de `window.innerWidth`).
@@ -176,6 +183,150 @@ export class ProfilePageComponent {
     this.router.navigate(['/create-publication'], {
       queryParams: { repeatFrom: publication.id },
     });
+  }
+
+
+  // ── Resetear Contraseña ────────────────────────────────────────────────────────────
+
+  /** true = formulario de cambio de contraseña visible */
+  resetPasswordMode = signal(false);
+  resetPasswordSaving = signal(false);
+  resetPasswordError = signal<string | null>(null);
+  resetPasswordSuccess = signal(false);
+
+  /** Score de zxcvbn (0-4). Null hasta que la librería carga o el campo está vacío. */
+  readonly passwordScore = signal<PasswordStrengthScore>(null);
+  private zxcvbnFactory: ZxcvbnFactoryType | null = null;
+
+  /** Visibilidad de los campos de contraseña */
+  hideCurrentPassword = true;
+  hideNewPassword = true;
+  hideConfirmPassword = true;
+
+  resetPasswordForm = this.fb.group(
+    {
+      currentPassword: ['', [Validators.required]],
+      newPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(72)]],
+      confirmPassword: ['', [Validators.required]],
+    },
+    { validators: this._passwordsMatch }
+  );
+
+  get newPasswordCtrl() { return this.resetPasswordForm.controls['newPassword']; }
+  get confirmPasswordCtrl() { return this.resetPasswordForm.controls['confirmPassword']; }
+
+  private _passwordsMatch(group: import('@angular/forms').AbstractControl) {
+    const np = group.get('newPassword')?.value;
+    const cp = group.get('confirmPassword')?.value;
+    return np && cp && np !== cp ? { passwordsMismatch: true } : null;
+  }
+
+  openResetPassword(): void {
+    this.resetPasswordForm.reset();
+    this.resetPasswordError.set(null);
+    this.resetPasswordSuccess.set(false);
+    this.passwordScore.set(null);
+    this.hideCurrentPassword = true;
+    this.hideNewPassword = true;
+    this.hideConfirmPassword = true;
+    this.resetPasswordMode.set(true);
+    // Cerrar el formulario de edición de perfil si estuviera abierto
+    this.editMode.set(false);
+    // Cargar zxcvbn de inmediato para que el autorrelleno de gestores de
+    // contraseñas no deje el botón permanentemente deshabilitado.
+    this.loadZxcvbn();
+  }
+
+  cancelResetPassword(): void {
+    this.resetPasswordMode.set(false);
+    this.resetPasswordForm.reset();
+    this.resetPasswordError.set(null);
+    this.passwordScore.set(null);
+  }
+
+  saveResetPassword(): void {
+    if (this.resetPasswordForm.invalid || this.resetPasswordSaving()
+        || (this.passwordScore() ?? -1) < 3) {
+      this.resetPasswordForm.markAllAsTouched();
+      return;
+    }
+    const v = this.resetPasswordForm.value;
+    this.resetPasswordSaving.set(true);
+    this.resetPasswordError.set(null);
+
+    this.userService.changePassword(v.currentPassword!, v.newPassword!).subscribe({
+      next: () => {
+        this.resetPasswordSaving.set(false);
+        this.resetPasswordSuccess.set(true);
+        this.resetPasswordForm.reset();
+        this.passwordScore.set(null);
+        // Ocultar el formulario tras un breve instante para que el usuario vea el mensaje
+        setTimeout(() => {
+          this.resetPasswordMode.set(false);
+          this.resetPasswordSuccess.set(false);
+        }, 2000);
+      },
+      error: (err) => {
+        this.resetPasswordSaving.set(false);
+        const code = err.error?.error?.code as string | undefined;
+        if (err.status === 401) {
+          this.resetPasswordError.set('La contraseña actual no es correcta.');
+        } else if (code === 'WEAK_PASSWORD') {
+          this.resetPasswordError.set('La contraseña es demasiado débil. Prueba a alargarla o añadir más variedad.');
+        } else if (code === 'PASSWORD_POLICY_VIOLATION') {
+          this.resetPasswordError.set(
+            err.error?.error?.message ?? 'La nueva contraseña no cumple los requisitos de seguridad.'
+          );
+        } else if (err.status === 422) {
+          this.resetPasswordError.set(
+            err.error?.error?.message ?? 'La nueva contraseña no cumple los requisitos.'
+          );
+        } else {
+          this.resetPasswordError.set('Error al cambiar la contraseña. Inténtalo de nuevo.');
+        }
+      },
+    });
+  }
+
+  private async loadZxcvbn(): Promise<void> {
+    if (this.zxcvbnFactory) {
+      // Ya cargada; solo reconectar el listener al control actual
+      this.newPasswordCtrl.valueChanges
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(value => this.scorePassword(value));
+      this.scorePassword(this.newPasswordCtrl.value);
+      return;
+    }
+
+    const [{ ZxcvbnFactory }, common, esEs] = await Promise.all([
+      import('@zxcvbn-ts/core'),
+      import('@zxcvbn-ts/language-common'),
+      import('@zxcvbn-ts/language-es-es'),
+    ]);
+
+    this.zxcvbnFactory = new ZxcvbnFactory({
+      dictionary: { ...common.dictionary, ...esEs.dictionary },
+      graphs: common.adjacencyGraphs,
+      translations: esEs.translations,
+    });
+
+    this.newPasswordCtrl.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(value => this.scorePassword(value));
+    this.scorePassword(this.newPasswordCtrl.value);
+  }
+
+  private scorePassword(password: string | null): void {
+    if (!this.zxcvbnFactory || !password) {
+      this.passwordScore.set(null);
+      return;
+    }
+    const userInputs = [
+      this.cu.user()?.name ?? '',
+      this.cu.user()?.nick ?? '',
+      this.cu.user()?.email ?? '',
+    ].filter(Boolean);
+    this.passwordScore.set(this.zxcvbnFactory.check(password, userInputs).score);
   }
 
   // ── Modo edición ────────────────────────────────────────────────────────────

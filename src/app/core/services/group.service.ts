@@ -58,6 +58,7 @@ interface ApiGroupInvitation {
   groupDescription: string;
   groupCategoryId: string;
   groupMemberCount: number;
+  groupMembers: ApiGroupMember[];
   invitedUserId: string;
   invitedUserName: string;
   invitedUserNick: string;
@@ -134,15 +135,17 @@ export class GroupService {
   }
 
   /**
-   * Resuelve una invitación por id (pantalla del enlace de correo). `undefined` si no existe o no
-   * es tuya (404/403 del backend). Un 401 se relanza tal cual: significa que quien abre el enlace
-   * no tiene sesión iniciada en este navegador, caso que el componente debe distinguir de
-   * "invitación no disponible" para poder ofrecerle login en vez de un error genérico.
+   * Resuelve una invitación por id (pantalla del enlace de correo). `undefined` solo si no existe
+   * (404 del backend). 401 y 403 se relanzan tal cual: un 401 significa que quien abre el enlace
+   * no tiene sesión iniciada en este navegador; un 403 significa que sí hay sesión, pero de un
+   * usuario distinto al invitado (p. ej. otra cuenta ya logada en ese navegador). El componente
+   * distingue ambos casos de "invitación no disponible" para no confundir "no tienes sesión" con
+   * "la sesión activa no es la correcta".
    */
   getInvitationById(id: string): Observable<GroupInvitation | undefined> {
     return this.http.get<ApiGroupInvitation>(`${this.baseUrl}/invitations/${id}`).pipe(
       map(i => this.mapInvitation(i)),
-      catchError(err => err.status === 401 ? throwError(() => err) : of(undefined)),
+      catchError(err => (err.status === 401 || err.status === 403) ? throwError(() => err) : of(undefined)),
     );
   }
 
@@ -294,6 +297,7 @@ export class GroupService {
       groupDescription: api.groupDescription,
       groupCategoryId: api.groupCategoryId,
       groupMemberCount: api.groupMemberCount,
+      groupMembers: (api.groupMembers ?? []).map(m => this.mapMember(m)),
       invitedUserId: api.invitedUserId,
       invitedUserName: api.invitedUserName ?? '',
       invitedUserNick: api.invitedUserNick ?? '',

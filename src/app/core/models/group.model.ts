@@ -64,6 +64,8 @@ export interface GroupInvitation {
   groupDescription: string;
   groupCategoryId: string;
   groupMemberCount: number;
+  /** Miembros actuales del grupo, para mostrarlos en la pantalla de invitación. */
+  groupMembers: GroupMember[];
   invitedUserId: string;
   invitedUserName: string;
   invitedUserNick: string;

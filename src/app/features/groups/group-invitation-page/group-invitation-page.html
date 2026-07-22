@@ -18,7 +18,7 @@
           {{ inv.invitedByName }} te invita a unirte a este grupo en MapIt.
         </p>
 
-        <div class="invited-group">
+        <div class="invited-group" [style.--cat-color]="category()?.color">
           @if (category(); as cat) {
           <span class="invited-group__badge" [style.--cat-color]="cat.color">
             <span class="invited-group__badge-icon">{{ cat.icon }}</span>
@@ -31,6 +31,17 @@
             <mat-icon inline>group</mat-icon>
             {{ inv.groupMemberCount }} {{ inv.groupMemberCount === 1 ? 'miembro' : 'miembros' }}
           </p>
+
+          @if (inv.groupMembers.length > 0) {
+          <div class="invited-group__members">
+            @for (member of inv.groupMembers; track member.userId) {
+            <span class="member-chip" [class.member-chip--organizer]="member.role === 'organizer'">
+              <span class="member-chip__avatar">{{ member.name.charAt(0) }}</span>
+              <span class="member-chip__name">{{ member.name }}</span>
+            </span>
+            }
+          </div>
+          }
         </div>
 
         <div class="group-invitation-card__actions">
@@ -43,7 +54,7 @@
             <mat-spinner diameter="18" />
             } @else {
             <ng-container>
-              <mat-icon>check</mat-icon>
+              <mat-icon class="icon-nudge-check">check</mat-icon>
               Aceptar y unirme
             </ng-container>
             }
@@ -75,7 +86,7 @@
         </div>
         <h2 class="group-invitation-card__title">Inicia sesión para continuar</h2>
         <p class="group-invitation-card__subtitle">
-          Ya tienes cuenta en MapIt — inicia sesión para responder a esta invitación.
+          Inicia sesión con tu cuenta para aceptar o rechazar la invitación.
         </p>
 
         <form class="login-inline-form" [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
@@ -121,6 +132,24 @@
 
         <button mat-button type="button" class="go-to-app-link" (click)="goToApp()">
           Ir a la aplicación
+        </button>
+      }
+
+      @case ('wrong-account') {
+        <div class="group-invitation-card__icon group-invitation-card__icon--error">
+          <mat-icon>swap_horiz</mat-icon>
+        </div>
+        <h2 class="group-invitation-card__title">Esta invitación es para otra cuenta</h2>
+        <p class="group-invitation-card__subtitle">
+          @if (wrongAccountIdentifier(); as identifier) {
+            Has iniciado sesión como <strong>{{ identifier }}</strong>, pero esta invitación es para otra cuenta.
+          } @else {
+            Has iniciado sesión con una cuenta distinta a la invitada.
+          }
+          Cierra sesión e inicia con la cuenta a la que se envió el correo.
+        </p>
+        <button mat-flat-button class="btn-primary" type="button" (click)="logoutAndRelogin()">
+          Cerrar sesión y continuar
         </button>
       }
 

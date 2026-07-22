@@ -81,7 +81,7 @@
           <div class="group-card__actions">
             <button mat-stroked-button type="button" (click)="openNotifyOrganizer(group)">
               <mat-icon>mail</mat-icon>
-              Avisar al organizador
+              Contacta con el organizador
             </button>
             <button mat-stroked-button type="button" class="btn-delete-group"
               (click)="requestDeleteGroup(group, 'member')">
@@ -365,7 +365,7 @@
                     <mat-spinner diameter="14" />
                     } @else {
                     <span class="user-search__status">
-                      {{ editUserStatus(user, group) === 'member' ? 'Ya invitado' : editUserStatus(user, group) ===
+                      {{ editUserStatus(user, group) === 'member' ? 'Ya es miembro' : editUserStatus(user, group) ===
                       'pending' ? 'Pendiente' : 'Invitar' }}
                     </span>
                     }

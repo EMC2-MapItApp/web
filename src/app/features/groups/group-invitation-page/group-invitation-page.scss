@@ -13,6 +13,11 @@
 
 .group-invitation-card {
   @include m.glass-panel;
+  // El borde/sombra por defecto de glass-panel está pensado para vivir sobre un backdrop
+  // atenuado (diálogos) — en esta página, a pantalla completa sobre --c-bg, se funde con el
+  // fondo. Se sustituyen por un borde real y una sombra más marcada para que la tarjeta resalte.
+  border-color: var(--c-border-light);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14), 0 2px 8px rgba(15, 23, 42, 0.06);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -49,10 +54,43 @@
     width: 100%;
     margin-top: v.$space-lg;
 
+    // Mismo patrón de centrado icono+texto que .invitation-card__actions en groups-page.scss,
+    // para que los botones se vean iguales en ambas pantallas de invitación. Radio y alto se
+    // fijan aquí para los dos botones por igual — mat-stroked-button trae de fábrica un radio
+    // de píldora que no coincide con el de .btn-primary si solo se sobreescribe éste último.
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex: 1;
+      height: 44px;
+      border-radius: v.$radius-md !important;
+      font-size: v.$font-md;
+      font-weight: 600;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
     @include m.mobile {
       flex-direction: column-reverse;
     }
   }
+}
+
+// El glifo "check" de Material Icons no queda ópticamente centrado en su caja igual que
+// "close" — ajuste fino solo para este icono, no es un problema de layout del botón
+// (mismo ajuste que .icon-nudge-check en groups-page.scss).
+.icon-nudge-check {
+  transform: translateY(2px);
 }
 
 .invited-group {
@@ -60,8 +98,10 @@
   box-sizing: border-box;
   padding: v.$space-lg;
   border-radius: v.$radius-lg;
-  border: 1px solid color-mix(in srgb, var(--c-border-light) 78%, transparent);
-  background: var(--c-surface-alt);
+  border: px solid color-mix(in srgb, var(--c-border-light) 78%, transparent);
+  border-left: 5px solid var(--cat-color, var(--c-primary));
+  background: var(--c-surface);
+  box-shadow: 0 1px 12px rgba(15, 23, 42, 0.3);
   text-align: left;
   display: flex;
   flex-direction: column;
@@ -106,6 +146,62 @@
       font-size: 16px;
       width: 16px;
       height: 16px;
+    }
+  }
+
+  &__members {
+    margin: 8px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+}
+
+// Chip de miembro — mismo patrón visual que .member-chip en groups-page.scss.
+$member-chip-color: var(--c-text-secondary);
+
+.member-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 2px 4px;
+  border-radius: v.$radius-full;
+  background: var(--c-surface-alt);
+  border: 1px solid var(--c-border-light);
+  font-size: v.$font-xs;
+  font-weight: 500;
+  color: $member-chip-color;
+  max-width: 130px;
+
+  &__avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--c-surface-hover);
+    color: var(--c-text-muted);
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &--organizer {
+    background: color-mix(in srgb, var(--c-primary) 10%, var(--c-surface-alt));
+    border-color: color-mix(in srgb, var(--c-primary) 25%, var(--c-border-light));
+    color: var(--c-primary);
+
+    .member-chip__avatar {
+      background: color-mix(in srgb, var(--c-primary) 18%, var(--c-surface-alt));
+      color: var(--c-primary);
     }
   }
 }

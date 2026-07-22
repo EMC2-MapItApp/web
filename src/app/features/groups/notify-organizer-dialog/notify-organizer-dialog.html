@@ -1,0 +1,31 @@
+<div class="notify-organizer-dialog" (click)="$event.stopPropagation()">
+
+  <button class="close-btn" mat-icon-button (click)="dialogRef.close()" aria-label="Cerrar">
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <div class="notify-organizer-dialog__icon">
+    <mat-icon>mail</mat-icon>
+  </div>
+
+  <h2 class="notify-organizer-dialog__title">Avisar a {{ data.organizerName }}</h2>
+  <p class="notify-organizer-dialog__subtitle">Se enviará un correo al organizador de "{{ data.groupName }}".</p>
+
+  <form [formGroup]="form" (ngSubmit)="send()" novalidate>
+    <mat-form-field appearance="outline">
+      <mat-label>Mensaje</mat-label>
+      <textarea matInput formControlName="message" rows="4" maxlength="1000"
+        placeholder="Escribe tu mensaje para el organizador..."></textarea>
+      <mat-hint align="end">{{ messageCtrl.value?.length ?? 0 }}/1000</mat-hint>
+      @if (messageCtrl.hasError('required') && messageCtrl.touched) {
+      <mat-error>El mensaje no puede estar vacío</mat-error>
+      }
+    </mat-form-field>
+
+    <button mat-flat-button type="submit" class="submit-btn">
+      <mat-icon>send</mat-icon>
+      Enviar
+    </button>
+  </form>
+
+</div>

@@ -1,0 +1,140 @@
+<div class="group-invitation-page">
+  <div class="group-invitation-card">
+
+    @switch (state()) {
+      @case ('loading') {
+        <mat-spinner diameter="40" />
+        <h2 class="group-invitation-card__title">Cargando invitación…</h2>
+      }
+
+      @case ('invite') {
+        @let inv = invitation()!;
+
+        <div class="group-invitation-card__icon">
+          <mat-icon>mail</mat-icon>
+        </div>
+        <h2 class="group-invitation-card__title">Te han invitado a un grupo</h2>
+        <p class="group-invitation-card__subtitle">
+          {{ inv.invitedByName }} te invita a unirte a este grupo en MapIt.
+        </p>
+
+        <div class="invited-group">
+          @if (category(); as cat) {
+          <span class="invited-group__badge" [style.--cat-color]="cat.color">
+            <span class="invited-group__badge-icon">{{ cat.icon }}</span>
+            {{ cat.name }}
+          </span>
+          }
+          <h3 class="invited-group__name">{{ inv.groupName }}</h3>
+          <p class="invited-group__description">{{ inv.groupDescription }}</p>
+          <p class="invited-group__meta">
+            <mat-icon inline>group</mat-icon>
+            {{ inv.groupMemberCount }} {{ inv.groupMemberCount === 1 ? 'miembro' : 'miembros' }}
+          </p>
+        </div>
+
+        <div class="group-invitation-card__actions">
+          <button mat-stroked-button type="button" [disabled]="processing()" (click)="decline()">
+            <mat-icon>close</mat-icon>
+            Rechazar
+          </button>
+          <button mat-flat-button type="button" class="btn-primary" [disabled]="processing()" (click)="accept()">
+            @if (processing()) {
+            <mat-spinner diameter="18" />
+            } @else {
+            <ng-container>
+              <mat-icon>check</mat-icon>
+              Aceptar y unirme
+            </ng-container>
+            }
+          </button>
+        </div>
+      }
+
+      @case ('accepted') {
+        <div class="group-invitation-card__icon group-invitation-card__icon--success">
+          <mat-icon>check_circle</mat-icon>
+        </div>
+        <h2 class="group-invitation-card__title">¡Te has unido al grupo!</h2>
+        <p class="group-invitation-card__subtitle">Ya puedes verlo en tu lista de grupos.</p>
+        <button mat-flat-button class="btn-primary" (click)="goToGroups()">Ver mis grupos</button>
+      }
+
+      @case ('declined') {
+        <div class="group-invitation-card__icon">
+          <mat-icon>info</mat-icon>
+        </div>
+        <h2 class="group-invitation-card__title">Invitación rechazada</h2>
+        <p class="group-invitation-card__subtitle">No te has unido al grupo.</p>
+        <button mat-flat-button class="btn-primary" (click)="goToHome()">Ir a MapIt</button>
+      }
+
+      @case ('login-required') {
+        <div class="group-invitation-card__icon">
+          <mat-icon>lock</mat-icon>
+        </div>
+        <h2 class="group-invitation-card__title">Inicia sesión para continuar</h2>
+        <p class="group-invitation-card__subtitle">
+          Ya tienes cuenta en MapIt — inicia sesión para responder a esta invitación.
+        </p>
+
+        <form class="login-inline-form" [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
+          <mat-form-field appearance="outline">
+            <mat-label>Correo o nombre de usuario</mat-label>
+            <input matInput type="text" formControlName="identifier" autocomplete="username"
+                   placeholder="tu@email.com o @tunick" />
+            @if (identifierCtrl.hasError('required')) {
+              <mat-error>El correo o nombre de usuario es obligatorio</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Contraseña</mat-label>
+            <input
+              matInput
+              [type]="hidePassword ? 'password' : 'text'"
+              formControlName="password"
+              autocomplete="current-password"
+            />
+            <button mat-icon-button matSuffix type="button"
+                    (click)="hidePassword = !hidePassword"
+                    [attr.aria-label]="'Mostrar u ocultar contraseña'">
+              <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            @if (passwordCtrl.hasError('required')) {
+              <mat-error>La contraseña es obligatoria</mat-error>
+            }
+          </mat-form-field>
+
+          @if (loginError()) {
+            <p class="error-msg">{{ loginError() }}</p>
+          }
+
+          <button mat-flat-button type="submit" class="btn-primary" [disabled]="processing()">
+            @if (processing()) {
+              <mat-spinner diameter="20" />
+            } @else {
+              Iniciar sesión y responder
+            }
+          </button>
+        </form>
+
+        <button mat-button type="button" class="go-to-app-link" (click)="goToApp()">
+          Ir a la aplicación
+        </button>
+      }
+
+      @case ('error') {
+        <div class="group-invitation-card__icon group-invitation-card__icon--error">
+          <mat-icon>error_outline</mat-icon>
+        </div>
+        <h2 class="group-invitation-card__title">Invitación no disponible</h2>
+        <p class="group-invitation-card__subtitle">
+          El enlace es inválido, ha caducado o la invitación ya se ha resuelto.
+        </p>
+        <button mat-flat-button class="btn-primary" (click)="goToHome()">Ir a MapIt</button>
+      }
+    }
+
+  </div>
+</div>

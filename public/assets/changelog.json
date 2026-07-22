@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-07-22",
+    "type": "feature",
+    "title": "Grupos de usuarios",
+    "description": "Ahora puedes crear grupos en torno a un tema, invitar a otras personas por correo y gestionar quién forma parte de cada grupo."
+  },
+  {
     "date": "2026-07-17",
     "type": "feature",
     "title": "Cambiar contraseña desde el perfil",

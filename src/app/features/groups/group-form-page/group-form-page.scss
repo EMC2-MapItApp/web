@@ -1,0 +1,326 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+// .group-form-page usa .page-main (styles.scss) para el contenedor centrado.
+
+.group-form-header {
+  display: flex;
+  align-items: center;
+  gap: v.$space-md;
+
+  &__back {
+    flex-shrink: 0;
+  }
+}
+
+.group-form-hint {
+  color: var(--c-text-secondary);
+  font-size: v.$font-md;
+}
+
+.group-form {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-xl;
+}
+
+.group-form__section {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+  padding: v.$space-lg;
+  border: 1px solid color-mix(in srgb, var(--c-border-light) 78%, transparent);
+  border-radius: v.$radius-lg;
+  background: var(--c-surface-primary);
+}
+
+.group-form__section-title {
+  margin: 0;
+  font-size: v.$font-lg;
+  font-weight: 700;
+  color: var(--c-text-primary);
+}
+
+.group-form__section-hint {
+  margin: 0 0 4px;
+  font-size: v.$font-sm;
+  color: var(--c-text-secondary);
+}
+
+.group-form__field {
+  width: 100%;
+}
+
+.group-form__field-label {
+  display: block;
+  font-size: v.$font-sm;
+  font-weight: 600;
+  color: var(--c-text-secondary);
+  margin-bottom: 6px;
+}
+
+.group-form__field-error {
+  margin: 4px 0 0;
+  font-size: v.$font-sm;
+  color: var(--c-error);
+}
+
+// ── Selector de categoría (chips de selección única) ────────────────────────
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: v.$space-sm;
+}
+
+.category-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: v.$space-sm;
+  border-radius: v.$radius-md;
+  border: 2px solid var(--c-border-light);
+  background: var(--c-surface-alt);
+  color: var(--c-text-primary);
+  cursor: pointer;
+  transition: border-color v.$transition-fast, background v.$transition-fast;
+  min-height: 44px; // objetivo táctil mínimo
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--cat-color, var(--c-primary)) 50%, var(--c-border-light));
+  }
+
+  &--selected {
+    border-color: var(--cat-color, var(--c-primary));
+    background: color-mix(in srgb, var(--cat-color, var(--c-primary)) 14%, var(--c-surface-alt));
+  }
+
+  &__icon {
+    font-size: v.$font-2xl;
+  }
+
+  &__name {
+    font-size: v.$font-sm;
+    font-weight: 600;
+    text-align: center;
+  }
+}
+
+// ── Miembros actuales ────────────────────────────────────────────────────────
+.member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.member-row {
+  @include m.data-row;
+  gap: v.$space-sm;
+
+  &__avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e0e7ff;
+    color: var(--c-primary);
+    font-weight: 800;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__name {
+    flex: 1;
+    font-size: v.$font-md;
+    color: var(--c-text-primary);
+  }
+
+  &__role {
+    font-size: v.$font-xs;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: v.$radius-full;
+    background: var(--c-surface-alt);
+    color: var(--c-text-secondary);
+
+    &--organizer {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+  }
+}
+
+// ── Resultados de búsqueda ────────────────────────────────────────────────────
+.search-results {
+  list-style: none;
+  margin: v.$space-sm 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--c-border-light);
+  border-radius: v.$radius-md;
+  overflow: hidden;
+}
+
+.search-results__empty {
+  padding: v.$space-md;
+  font-size: v.$font-sm;
+  color: var(--c-text-muted);
+  font-style: italic;
+}
+
+.search-result-row {
+  display: flex;
+  align-items: center;
+  gap: v.$space-sm;
+  padding: v.$space-sm v.$space-md;
+  border-bottom: 1px solid var(--c-border-light);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      line-height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  &__avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--c-surface-alt);
+    color: var(--c-text-secondary);
+    font-weight: 800;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: v.$font-md;
+    color: var(--c-text-primary);
+    font-weight: 500;
+  }
+
+  &__nick {
+    font-size: v.$font-sm;
+    color: var(--c-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Mobile: fila apilada para que el botón "Invitar" no quede comprimido.
+  @include m.mobile {
+    flex-wrap: wrap;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// ── Cola de invitaciones ──────────────────────────────────────────────────────
+.invite-queue {
+  margin-top: v.$space-md;
+}
+
+.invite-queue__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$space-sm;
+}
+
+.invite-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 12px;
+  border-radius: v.$radius-full;
+  background: var(--c-surface-alt);
+  color: var(--c-text-primary);
+  font-size: v.$font-sm;
+  font-weight: 500;
+
+  &--sent {
+    background: color-mix(in srgb, var(--c-primary) 12%, var(--c-surface-alt));
+    color: var(--c-primary);
+    padding-right: 12px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &__remove {
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--c-text-muted);
+    transition: background v.$transition-fast, color v.$transition-fast;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    &:hover {
+      background: var(--c-surface-hover);
+      color: var(--c-error);
+    }
+  }
+}
+
+// ── Acciones ──────────────────────────────────────────────────────────────────
+.group-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: v.$space-md;
+
+  // Mobile: acciones apiladas y a ancho completo.
+  @include m.mobile {
+    flex-direction: column-reverse;
+
+    button {
+      width: 100%;
+    }
+  }
+}

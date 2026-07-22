@@ -45,6 +45,8 @@ export class AuthService {
    * @param payload - Datos de registro (name, email, password, userType)
    */
   register(payload: AuthRegisterRequest): Observable<RegisterResponse> {
+    console.log('Register payload:', payload);
+    console.log('Register URL:', `${this.base}/register`);
     return this.http.post<RegisterResponse>(`${this.base}/register`, payload);
   }
 

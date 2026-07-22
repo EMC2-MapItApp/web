@@ -79,6 +79,23 @@ body {
   }
 }
 
+// ── Badge de contador en paneles de acordeón ──────────────────────────────────
+// Usado en profile, groups, settings y cualquier página con mat-accordion.
+.panel-badge {
+  margin-left: 8px; // $space-sm
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px; // $radius-md
+  background: var(--c-primary);
+  color: #fff;
+  font-size: 11px; // $font-xs
+  font-weight: 700;
+}
+
 // ── Contenedor de página centrado (compartido por profile, settings, etc.) ──────
 // Fuente única de verdad: mismo ancho, mismo centrado en todos los breakpoints.
 // Para añadir estilos específicos de una página usa la clase propia de esa página

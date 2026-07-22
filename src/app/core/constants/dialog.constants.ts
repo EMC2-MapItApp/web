@@ -50,6 +50,20 @@ export const FORGOT_PASSWORD_DIALOG_CONFIG: MatDialogConfig = {
   width: '420px',
 };
 
+/** Configuración específica del diálogo "avisar al organizador" (Grupos). */
+export const NOTIFY_ORGANIZER_DIALOG_CONFIG: MatDialogConfig = {
+  ...DIALOG_BASE,
+  panelClass: 'notify-organizer-panel',
+  width: '420px',
+};
+
+/** Configuración del diálogo de confirmación genérico y reutilizable. */
+export const CONFIRM_DIALOG_CONFIG: MatDialogConfig = {
+  ...DIALOG_BASE,
+  panelClass: 'confirm-dialog-panel',
+  width: '420px',
+};
+
 /** Configuración base para todos los dialogs (deprecated, usar las específicas). */
 export const DIALOG_CONFIG: MatDialogConfig = {
   ...DIALOG_BASE,

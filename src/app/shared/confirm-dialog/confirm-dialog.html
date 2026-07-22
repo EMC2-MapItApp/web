@@ -1,0 +1,52 @@
+<div class="confirm-dialog" (click)="$event.stopPropagation()">
+
+  <button class="close-btn" mat-icon-button (click)="cancel()" aria-label="Cerrar">
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <div class="confirm-dialog__icon">
+    <mat-icon>{{ icon }}</mat-icon>
+  </div>
+
+  <h2 class="confirm-dialog__title">{{ title }}</h2>
+
+  @if (subtitle) {
+  <p class="confirm-dialog__subtitle">{{ subtitle }}</p>
+  }
+
+  @if (message) {
+  <p class="confirm-dialog__message">{{ message }}</p>
+  }
+
+  @if (preview) {
+  <div class="confirm-dialog__preview">
+    <p class="confirm-dialog__preview-title">{{ preview.title }}</p>
+    @if (preview.description) {
+    <p class="confirm-dialog__preview-description">{{ preview.description }}</p>
+    }
+  </div>
+  }
+
+  @if (warning) {
+  <p class="confirm-dialog__warning">
+    <mat-icon inline>warning</mat-icon>
+    {{ warning }}
+  </p>
+  }
+
+  <div class="confirm-dialog__actions">
+    <button mat-stroked-button type="button" (click)="cancel()">
+      @if (cancelIcon) {
+      <mat-icon>{{ cancelIcon }}</mat-icon>
+      }
+      {{ cancelText }}
+    </button>
+    <button mat-flat-button type="button" class="btn-accept" (click)="accept()">
+      @if (acceptIcon) {
+      <mat-icon>{{ acceptIcon }}</mat-icon>
+      }
+      {{ acceptText }}
+    </button>
+  </div>
+
+</div>

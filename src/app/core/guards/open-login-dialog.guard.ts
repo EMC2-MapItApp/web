@@ -8,7 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { LOGIN_DIALOG_CONFIG, withResponsiveDialogLayout } from '../constants/dialog.constants';
 import { ResponsiveService } from '../responsive/responsive.service';
 
-export const openLoginDialogGuard: CanActivateFn = async () => {
+export const openLoginDialogGuard: CanActivateFn = async (route) => {
   const dialog = inject(MatDialog);
   const router = inject(Router);
   const responsiveService = inject(ResponsiveService);
@@ -24,7 +24,13 @@ export const openLoginDialogGuard: CanActivateFn = async () => {
   if (!alreadyOpen) {
     const responsiveState = responsiveService.state();
     const compactViewport = responsiveState.isMobile || responsiveState.isTablet;
-    dialog.open(LoginDialogComponent, withResponsiveDialogLayout(LOGIN_DIALOG_CONFIG, compactViewport));
+    // returnUrl (p.ej. desde el enlace de invitación a un grupo): tras loguear,
+    // LoginDialogComponent navega ahí en vez de dejar al mapa como destino por defecto.
+    const returnUrl = route.queryParamMap.get('returnUrl');
+    dialog.open(LoginDialogComponent, {
+      ...withResponsiveDialogLayout(LOGIN_DIALOG_CONFIG, compactViewport),
+      data: { returnUrl },
+    });
   }
 
   return router.createUrlTree(['/']);

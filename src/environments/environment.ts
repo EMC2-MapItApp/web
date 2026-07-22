@@ -6,5 +6,6 @@ export const environment = {
   apiCategoriesUrl: 'http://localhost:8081/api/v1/categories',
   apiPublicationsUrl: 'http://localhost:8081/api/v1/publications',
   apiGeoUrl: 'http://localhost:8081/api/v1/geo',
+  apiGroupsUrl: 'http://localhost:8081/api/v1/groups',
   devSimIp: '',
 };

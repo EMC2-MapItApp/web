@@ -2,9 +2,10 @@
  * @file app.routes.ts
  * @description Rutas de la aplicación. `login`/`register` no son páginas propias: activan un
  * guard que abre el diálogo correspondiente sobre {@link HomeShellComponent} y redirigen a `/`.
- * `verify-email` y `reset-password` sí son páginas standalone (fuera del shell), pensadas para
- * llegarse desde el enlace de un correo sin contexto previo de la app. El resto de páginas
- * (incluidas las informativas about/changelog/stack, sin guard) son hijas del shell.
+ * `verify-email`, `reset-password` y `group-invitation` sí son páginas standalone (fuera del
+ * shell), pensadas para llegarse desde el enlace de un correo sin contexto previo de la app.
+ * El resto de páginas (incluidas las informativas about/changelog/stack, sin guard) son hijas
+ * del shell.
  *
  * Todas las páginas se cargan con `loadComponent` (lazy) salvo el shell, que es la ruta raíz
  * y siempre hace falta. Los diálogos que abren los guards también se importan dinámicamente
@@ -34,6 +35,12 @@ export const routes: Routes = [
     loadComponent: () => import('@features/auth/reset-password-page/reset-password-page')
       .then(m => m.ResetPasswordPageComponent)
   },
+  // Idem: se llega aqui desde el enlace del correo de invitacion a un grupo.
+  {
+    path: 'group-invitation',
+    loadComponent: () => import('@features/groups/group-invitation-page/group-invitation-page')
+      .then(m => m.GroupInvitationPageComponent)
+  },
   {
     path: '', component: HomeShellComponent,
     canActivate: [loadUserOptionalGuard],
@@ -56,6 +63,16 @@ export const routes: Routes = [
         path: 'settings',
         canActivate: [authDialogGuard],
         loadComponent: () => import('@features/settings/settings').then(m => m.SettingsPageComponent)
+      },
+      {
+        path: 'groups',
+        canActivate: [authDialogGuard],
+        loadComponent: () => import('@features/groups/groups-page/groups-page').then(m => m.GroupsPageComponent)
+      },
+      {
+        path: 'groups/:id/edit',
+        canActivate: [authDialogGuard],
+        loadComponent: () => import('@features/groups/group-form-page/group-form-page').then(m => m.GroupFormPageComponent)
       },
       {
         path: 'create-publication',

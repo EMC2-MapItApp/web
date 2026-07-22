@@ -84,24 +84,65 @@
 }
 
 // ── Título de panel accordion ─────────────────────────────────────────────────
+// Estilos elevados compartidos por todos los acordeones de la app
+// (groups, profile, settings, about, changelog, stack).
+// create-publication/.form-accordion NO usa este mixin — contexto distinto.
 @mixin accordion-panel-title {
+  // Cada panel como tarjeta elevada: cerrado queda atrás, abierto salta al frente.
+  mat-expansion-panel {
+    border-radius: v.$radius-lg !important;
+    border: 1px solid color-mix(in srgb, var(--c-border-light) 80%, transparent);
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
+    margin-bottom: v.$space-sm;
+    opacity: 0.88;
+    transition: box-shadow 200ms ease, opacity 200ms ease, border-color 200ms ease;
+
+    &.mat-expanded {
+      box-shadow: 0 8px 28px rgba(15, 23, 42, 0.13) !important;
+      border-color: color-mix(in srgb, var(--c-primary) 30%, var(--c-border-light));
+      opacity: 1;
+    }
+  }
+
+  // Header con radio completo, altura cómoda y tinte primario al expandir.
+  mat-expansion-panel-header {
+    border-radius: v.$radius-lg !important;
+    min-height: 62px !important;
+    padding: 0 v.$space-xl !important;
+
+    &.mat-expanded {
+      background: color-mix(in srgb, var(--c-primary) 7%, var(--c-surface-primary)) !important;
+    }
+  }
+
+  // Título en color primario, fuerte y prominente.
   mat-expansion-panel-header mat-panel-title {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-weight: 600;
-    font-size: v.$font-lg;
+    font-weight: 700;
+    font-size: v.$font-xl;
+    letter-spacing: -0.01em;
+    color: var(--c-primary);
 
     mat-icon {
       color: var(--c-primary);
       flex-shrink: 0;
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      line-height: 20px;
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
       font-weight: normal;
       font-family: 'Material Icons', sans-serif;
     }
+  }
+
+  // Descripción: itálica y color secundario para jerarquía clara.
+  mat-expansion-panel-header mat-panel-description {
+    color: var(--c-text-secondary);
+    font-size: v.$font-sm;
+    font-weight: 500;
+    font-style: italic;
   }
 }
 

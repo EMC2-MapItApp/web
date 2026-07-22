@@ -63,6 +63,16 @@
           }
         </a>
 
+        <a routerLink="groups" routerLinkActive="active-link" class="menu-item--with-badge">
+          <mat-icon>groups</mat-icon>
+          @if (!collapsed()) {
+          <span>Grupos</span>
+          }
+          @if (pendingGroupInvitations() > 0) {
+          <span class="menu-badge" [class.menu-badge--collapsed]="collapsed()">{{ pendingGroupInvitations() }}</span>
+          }
+        </a>
+
         <!-- Desactivar el enlace hasta que se implemente -->
         <!-- <a routerLink="dashboard" routerLinkActive="active-link" >
           <mat-icon>dashboard</mat-icon>
@@ -91,7 +101,14 @@
           <span>Crear publicación</span>
           }
         </span>
-<!-- 
+
+        <span class="menu-item menu-item--disabled" title="Inicia sesión para acceder">
+          <mat-icon>groups</mat-icon>
+          @if (!collapsed()) {
+          <span>Grupos</span>
+          }
+        </span>
+<!--
         <span class="menu-item menu-item--disabled" title="Inicia sesión para acceder">
           <mat-icon>dashboard</mat-icon>
           @if (!collapsed()) {

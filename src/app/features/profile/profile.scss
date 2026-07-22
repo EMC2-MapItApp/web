@@ -448,20 +448,7 @@
   color: var(--c-text-muted);
 }
 
-.panel-badge {
-  margin-left: v.$space-sm;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: v.$radius-md;
-  background: var(--c-primary);
-  color: #fff;
-  font-size: v.$font-xs;
-  font-weight: 700;
-}
+// .panel-badge movido a styles.scss (global) — compartido con groups y demás páginas.
 
 .activity-list {
   list-style: none;

@@ -1,5 +1,5 @@
 import { Component, inject, isDevMode, signal } from '@angular/core';
-import { MatDialog, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -39,6 +39,9 @@ export class LoginDialogComponent {
   private router = inject(Router);
   private authService = inject(AuthService);
   private matDialog = inject(MatDialog);
+  /** `returnUrl`: presente cuando el diálogo se abrió desde una página que necesitaba sesión
+   *  (p.ej. el enlace de invitación a un grupo) — ver {@link openLoginDialogGuard}. */
+  private data = inject<{ returnUrl?: string | null } | null>(MAT_DIALOG_DATA, { optional: true });
 
   hidePassword = true;
   loading = signal(false);
@@ -58,8 +61,8 @@ export class LoginDialogComponent {
   constructor() {
     if (isDevMode()) {
       this.loginForm.setValue({
-        identifier: 'dev@mapit.local',
-        password: 'dev-password',
+        identifier: '@admin',
+        password: 'admin-dev-ONLY-FOR-LOCAL',
       });
     }
   }
@@ -87,7 +90,10 @@ export class LoginDialogComponent {
     this.authService.login({ identifier: identifier!, password: password! }).subscribe({
       next: () => {
         this.loading.set(false);
-        this.dialogRef.close(true); // cierra y queda en el mapa
+        this.dialogRef.close(true);
+        if (this.data?.returnUrl) {
+          this.router.navigateByUrl(this.data.returnUrl);
+        } // sin returnUrl: cierra y queda en el mapa
       },
       error: (err) => {
         this.loading.set(false);

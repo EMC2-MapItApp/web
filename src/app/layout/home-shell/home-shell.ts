@@ -6,6 +6,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { CurrentUserService } from '@core/services/current-user.service';
+import { GroupService } from '@core/services/group.service';
 import { SlicePipe } from '@angular/common';
 import { WelcomeDialogComponent } from '@shared/welcome-dialog/welcome-dialog';
 import { MatDialog } from '@angular/material/dialog';
@@ -35,6 +36,10 @@ export class HomeShellComponent {
   private responsiveService = inject(ResponsiveService);
 
   readonly currentUser = inject(CurrentUserService);
+  private readonly groupService = inject(GroupService);
+
+  /** Invitaciones de grupo pendientes, para el badge del ítem "Grupos" del menú. */
+  readonly pendingGroupInvitations = this.groupService.pendingInvitationsCount;
 
   readonly collapsed = signal(true);
 

@@ -177,6 +177,34 @@
     cursor: not-allowed;
     user-select: none;
   }
+
+  // Ítem con badge (p.ej. "Grupos" con invitaciones pendientes): posiciona el badge
+  // en el sidenav expandido (fin de fila) y en el colapsado (esquina del icono).
+  &--with-badge {
+    position: relative;
+  }
+}
+
+.menu-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: v.$radius-full;
+  background: var(--c-error, #dc2626);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: auto;
+
+  &--collapsed {
+    position: absolute;
+    top: 2px;
+    right: 6px;
+    margin-left: 0;
+  }
 }
 
 @media (max-width: #{v.$bp-sm}) and (orientation: portrait) {
@@ -227,6 +255,15 @@
   .app-sidenav .menu a span,
   .app-sidenav .menu-item span {
     display: none;
+  }
+
+  // Icon-only en este breakpoint: el badge siempre va anclado a la esquina,
+  // independientemente del estado `collapsed()` del sidenav en desktop/tablet.
+  .app-sidenav .menu-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    margin-left: 0;
   }
 
   .app-body:not(.collapsed) .app-sidenav {

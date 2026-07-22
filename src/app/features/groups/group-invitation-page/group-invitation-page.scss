@@ -1,0 +1,235 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.group-invitation-page {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: v.$space-lg;
+  background: var(--c-bg);
+  box-sizing: border-box;
+}
+
+.group-invitation-card {
+  @include m.glass-panel;
+  // El borde/sombra por defecto de glass-panel está pensado para vivir sobre un backdrop
+  // atenuado (diálogos) — en esta página, a pantalla completa sobre --c-bg, se funde con el
+  // fondo. Se sustituyen por un borde real y una sombra más marcada para que la tarjeta resalte.
+  border-color: var(--c-border-light);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14), 0 2px 8px rgba(15, 23, 42, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: v.$space-2xl 28px;
+  width: 100%;
+  max-width: 460px;
+  box-sizing: border-box;
+
+  &__icon {
+    @include m.icon-circle(v.$gradient-primary);
+
+    &--success { background: var(--c-success); box-shadow: none; }
+    &--error   { background: var(--c-error);   box-shadow: none; }
+  }
+
+  &__title {
+    margin: v.$space-lg 0 v.$space-sm;
+    font-size: v.$font-3xl;
+    font-weight: 800;
+    color: var(--c-text-primary);
+  }
+
+  &__subtitle {
+    margin: 0 0 v.$space-lg;
+    font-size: v.$font-md;
+    color: var(--c-text-secondary);
+    line-height: 1.6;
+  }
+
+  &__actions {
+    display: flex;
+    gap: v.$space-md;
+    width: 100%;
+    margin-top: v.$space-lg;
+
+    // Mismo patrón de centrado icono+texto que .invitation-card__actions en groups-page.scss,
+    // para que los botones se vean iguales en ambas pantallas de invitación. Radio y alto se
+    // fijan aquí para los dos botones por igual — mat-stroked-button trae de fábrica un radio
+    // de píldora que no coincide con el de .btn-primary si solo se sobreescribe éste último.
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex: 1;
+      height: 44px;
+      border-radius: v.$radius-md !important;
+      font-size: v.$font-md;
+      font-weight: 600;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    @include m.mobile {
+      flex-direction: column-reverse;
+    }
+  }
+}
+
+// El glifo "check" de Material Icons no queda ópticamente centrado en su caja igual que
+// "close" — ajuste fino solo para este icono, no es un problema de layout del botón
+// (mismo ajuste que .icon-nudge-check en groups-page.scss).
+.icon-nudge-check {
+  transform: translateY(2px);
+}
+
+.invited-group {
+  width: 100%;
+  box-sizing: border-box;
+  padding: v.$space-lg;
+  border-radius: v.$radius-lg;
+  border: px solid color-mix(in srgb, var(--c-border-light) 78%, transparent);
+  border-left: 5px solid var(--cat-color, var(--c-primary));
+  background: var(--c-surface);
+  box-shadow: 0 1px 12px rgba(15, 23, 42, 0.3);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: v.$radius-full;
+    background: color-mix(in srgb, var(--cat-color, var(--c-primary)) 16%, var(--c-surface-primary));
+    color: var(--cat-color, var(--c-primary));
+    font-size: v.$font-xs;
+    font-weight: 700;
+    width: fit-content;
+  }
+
+  &__name {
+    margin: 6px 0 0;
+    font-size: v.$font-xl;
+    color: var(--c-text-primary);
+  }
+
+  &__description {
+    margin: 4px 0 0;
+    font-size: v.$font-md;
+    color: var(--c-text-primary);
+    line-height: 1.45;
+  }
+
+  &__meta {
+    margin: 8px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--c-text-secondary);
+    font-size: v.$font-sm;
+    font-weight: 500;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  &__members {
+    margin: 8px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+}
+
+// Chip de miembro — mismo patrón visual que .member-chip en groups-page.scss.
+$member-chip-color: var(--c-text-secondary);
+
+.member-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 2px 4px;
+  border-radius: v.$radius-full;
+  background: var(--c-surface-alt);
+  border: 1px solid var(--c-border-light);
+  font-size: v.$font-xs;
+  font-weight: 500;
+  color: $member-chip-color;
+  max-width: 130px;
+
+  &__avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--c-surface-hover);
+    color: var(--c-text-muted);
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &--organizer {
+    background: color-mix(in srgb, var(--c-primary) 10%, var(--c-surface-alt));
+    border-color: color-mix(in srgb, var(--c-primary) 25%, var(--c-border-light));
+    color: var(--c-primary);
+
+    .member-chip__avatar {
+      background: color-mix(in srgb, var(--c-primary) 18%, var(--c-surface-alt));
+      color: var(--c-primary);
+    }
+  }
+}
+
+.btn-primary {
+  @include m.btn-primary;
+  flex: 1;
+  height: 44px;
+  font-size: v.$font-md;
+  font-weight: 600;
+  border-radius: v.$radius-md;
+}
+
+.login-inline-form {
+  display: grid;
+  gap: 14px;
+  width: 100%;
+  margin-top: v.$space-sm;
+
+  mat-form-field { width: 100%; }
+
+  .btn-primary { width: 100%; }
+}
+
+.error-msg { @include m.error-box; margin: 0; }
+
+.go-to-app-link {
+  margin-top: v.$space-md;
+  color: var(--c-text-muted);
+  font-weight: 600;
+}

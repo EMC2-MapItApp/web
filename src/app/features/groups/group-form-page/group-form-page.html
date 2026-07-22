@@ -1,0 +1,176 @@
+<div class="group-form-page">
+
+  <header class="page-header group-form-header">
+    <button mat-icon-button type="button" class="group-form-header__back" (click)="cancel()" aria-label="Volver">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div>
+      <h2 class="page-header__title">{{ pageTitle() }}</h2>
+      <p class="page-header__subtitle">
+        @if (mode() === 'create') {
+        Define el tema del grupo e invita a los primeros miembros.
+        } @else {
+        Actualiza los datos del grupo o invita a nuevos miembros.
+        }
+      </p>
+    </div>
+  </header>
+
+  @if (loadingGroup()) {
+  <p class="group-form-hint">Cargando grupo...</p>
+  } @else {
+
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate class="group-form">
+
+    <!-- ── Datos básicos ─────────────────────────────────────────────────── -->
+    <section class="group-form__section">
+      <h3 class="group-form__section-title">Datos del grupo</h3>
+
+      <mat-form-field appearance="outline" class="group-form__field">
+        <mat-label>Nombre del grupo</mat-label>
+        <input matInput formControlName="name" maxlength="100" />
+        @if (nameCtrl.hasError('required') && nameCtrl.touched) {
+        <mat-error>El nombre es obligatorio</mat-error>
+        } @else if (nameCtrl.hasError('minlength')) {
+        <mat-error>Mínimo 3 caracteres</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="group-form__field">
+        <mat-label>Descripción</mat-label>
+        <textarea matInput formControlName="description" rows="3" maxlength="500"></textarea>
+        <mat-hint align="end">{{ descriptionCtrl.value?.length ?? 0 }}/500</mat-hint>
+        @if (descriptionCtrl.hasError('required') && descriptionCtrl.touched) {
+        <mat-error>La descripción es obligatoria</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="group-form__category-field">
+        <span class="group-form__field-label">Categoría</span>
+        <div class="category-grid">
+          @for (category of categories(); track category.id) {
+          <button type="button" class="category-chip" [style.--cat-color]="category.color"
+            [class.category-chip--selected]="isSelectedCategory(category.id)"
+            (click)="selectCategory(category.id)">
+            <span class="category-chip__icon">{{ category.icon }}</span>
+            <span class="category-chip__name">{{ category.name }}</span>
+          </button>
+          }
+        </div>
+        @if (categoryIdCtrl.hasError('required') && categoryIdCtrl.touched) {
+        <p class="group-form__field-error">Elige una categoría para el grupo</p>
+        }
+      </div>
+    </section>
+
+    <!-- ── Miembros actuales (solo edición) ─────────────────────────────────── -->
+    @if (mode() === 'edit' && currentMembers().length > 0) {
+    <section class="group-form__section">
+      <h3 class="group-form__section-title">Miembros actuales</h3>
+      <ul class="member-list">
+        @for (member of currentMembers(); track member.userId) {
+        <li class="member-row">
+          <span class="member-row__avatar">{{ member.name | slice:0:1 }}</span>
+          <span class="member-row__name">{{ member.name }}</span>
+          <span class="member-row__role" [class.member-row__role--organizer]="member.role === 'organizer'">
+            {{ member.role === 'organizer' ? 'Organizador' : 'Miembro' }}
+          </span>
+        </li>
+        }
+      </ul>
+    </section>
+    }
+
+    <!-- ── Buscar e invitar usuarios ─────────────────────────────────────── -->
+    <section class="group-form__section">
+      <h3 class="group-form__section-title">Invitar usuarios</h3>
+      <p class="group-form__section-hint">Busca por nombre de usuario o email.</p>
+
+      <mat-form-field appearance="outline" class="group-form__field">
+        <mat-label>Buscar usuarios</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [formControl]="searchCtrl" placeholder="nick o email..." />
+        @if (searching()) {
+        <mat-spinner matSuffix diameter="18" />
+        }
+      </mat-form-field>
+
+      @if (searchCtrl.value && searchCtrl.value.length >= 2 && !searching()) {
+      <ul class="search-results">
+        @if (searchResults().length === 0) {
+        <li class="search-results__empty">Sin resultados para "{{ searchCtrl.value }}".</li>
+        } @else {
+        @for (user of searchResults(); track user.id) {
+        <li class="search-result-row">
+          <span class="search-result-row__avatar">{{ user.name | slice:0:1 }}</span>
+          <div class="search-result-row__info">
+            <span class="search-result-row__name">{{ user.name }}</span>
+            <span class="search-result-row__nick">&#64;{{ user.nick }} · {{ user.email }}</span>
+          </div>
+          <button mat-stroked-button type="button" [disabled]="isAlreadyLinked(user) || invitingUserId() === user.id"
+            (click)="invite(user)">
+            @if (invitingUserId() === user.id) {
+            <mat-spinner diameter="16" />
+            } @else if (isAlreadyLinked(user)) {
+            <ng-container>
+              <mat-icon>check</mat-icon>
+              Invitado
+            </ng-container>
+            } @else {
+            <ng-container>
+              <mat-icon>person_add</mat-icon>
+              Invitar
+            </ng-container>
+            }
+          </button>
+        </li>
+        }
+        }
+      </ul>
+      }
+
+      @if (mode() === 'create' && queuedInvites().length > 0) {
+      <div class="invite-queue">
+        <span class="group-form__field-label">Se invitará a:</span>
+        <ul class="invite-queue__list">
+          @for (user of queuedInvites(); track user.id) {
+          <li class="invite-chip">
+            {{ user.name }}
+            <button type="button" class="invite-chip__remove" (click)="removeQueuedInvite(user)"
+              aria-label="Quitar invitación">
+              <mat-icon>close</mat-icon>
+            </button>
+          </li>
+          }
+        </ul>
+      </div>
+      }
+
+      @if (mode() === 'edit' && sentInvites().length > 0) {
+      <div class="invite-queue">
+        <span class="group-form__field-label">Invitaciones enviadas en esta sesión:</span>
+        <ul class="invite-queue__list">
+          @for (user of sentInvites(); track user.id) {
+          <li class="invite-chip invite-chip--sent">
+            <mat-icon>schedule</mat-icon>
+            {{ user.name }}
+          </li>
+          }
+        </ul>
+      </div>
+      }
+    </section>
+
+    <div class="group-form__actions">
+      <button mat-stroked-button type="button" (click)="cancel()" [disabled]="saving()">Cancelar</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+        @if (saving()) {
+        <mat-spinner diameter="18" />
+        } @else {
+        {{ mode() === 'create' ? 'Crear grupo' : 'Guardar cambios' }}
+        }
+      </button>
+    </div>
+  </form>
+  }
+</div>

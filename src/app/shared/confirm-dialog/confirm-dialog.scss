@@ -1,0 +1,110 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.confirm-dialog {
+  @include m.dialog-base;
+
+  &__icon {
+    @include m.icon-circle;
+  }
+
+  &__title {
+    margin: 0 0 v.$space-sm;
+    font-size: v.$font-4xl;
+    font-weight: 800;
+    color: var(--c-text-primary);
+    letter-spacing: -0.3px;
+  }
+
+  &__subtitle {
+    margin: 0 0 v.$space-sm;
+    font-size: v.$font-md;
+    color: var(--c-text-secondary);
+    line-height: 1.6;
+  }
+
+  &__message {
+    margin: 0 0 v.$space-lg;
+    font-size: v.$font-md;
+    color: var(--c-text-secondary);
+    line-height: 1.6;
+  }
+
+  &__preview {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 v.$space-lg;
+    padding: v.$space-md v.$space-lg;
+    border: 1px solid var(--c-border-light);
+    border-radius: v.$radius-md;
+    background: var(--c-surface-alt);
+    text-align: left;
+  }
+
+  &__preview-title {
+    margin: 0 0 4px;
+    font-size: v.$font-md;
+    font-weight: 700;
+    color: var(--c-text-primary);
+  }
+
+  &__preview-description {
+    margin: 0;
+    font-size: v.$font-sm;
+    color: var(--c-text-secondary);
+    line-height: 1.5;
+  }
+
+  &__warning {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 v.$space-lg;
+    padding: 10px 14px;
+    background: var(--c-warning-bg);
+    border: 1px solid color-mix(in srgb, var(--c-warning) 40%, transparent);
+    border-radius: v.$radius-md;
+    color: var(--c-warning);
+    font-size: v.$font-sm;
+    text-align: left;
+    width: 100%;
+    box-sizing: border-box;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: v.$space-md;
+    width: 100%;
+
+    button {
+      flex: 1;
+      height: 44px;
+      font-size: v.$font-md;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        line-height: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+.close-btn   { @include m.close-btn; }
+.btn-accept  { @include m.btn-primary; }

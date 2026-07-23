@@ -46,6 +46,14 @@ body {
 //}
 /* You can add global styles to this file, and also import other style files */
 
+// ── Ocultar el icono nativo "mostrar contraseña" de Edge/IE ───────────────────
+// Duplica visualmente el botón mostrar/ocultar propio de cada formulario
+// (mat-icon-button con visibility/visibility_off) si no se desactiva.
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
 //// ── Global page header (shared by profile, settings, etc.) ───────────────────
 //.page-header {
 //  &__title {

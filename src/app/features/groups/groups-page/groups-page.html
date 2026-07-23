@@ -202,14 +202,35 @@
               </ul>
               }
             </div>
+
+            <!-- Invitar por email a alguien sin cuenta todavía: independiente de la búsqueda de arriba. -->
+            <div class="invite-by-email">
+              <span class="invite-by-email__hint">
+                ¿No lo encuentras? Puede que no esté registrado. ¡Envíale una invitación!
+              </span>
+              <div class="invite-by-email__row">
+                <input class="field__input" type="email" [formControl]="createEmailInviteCtrl"
+                  placeholder="email@ejemplo.com" autocomplete="off"
+                  (keydown.enter)="$event.preventDefault(); submitCreateEmailInvite()" />
+                <button type="button" class="btn btn--ghost"
+                  [disabled]="createEmailInviteCtrl.invalid || !createEmailInviteCtrl.value"
+                  (click)="submitCreateEmailInvite()">
+                  <mat-icon>mail</mat-icon>
+                  Enviar invitación
+                </button>
+              </div>
+            </div>
           </div>
 
           @if (createQueuedInvites().length > 0) {
           <ul class="invite-queue__list">
-            @for (user of createQueuedInvites(); track user.id) {
-            <li class="invite-chip">
-              {{ user.name }}
-              <button type="button" class="invite-chip__remove" (click)="removeFromCreateQueue(user)"
+            @for (invite of createQueuedInvites(); track (invite.kind === 'user' ? invite.user.id : invite.email)) {
+            <li class="invite-chip" [class.invite-chip--pending-signup]="invite.kind === 'email'">
+              @if (invite.kind === 'email') {
+              <mat-icon class="invite-chip__icon">schedule</mat-icon>
+              }
+              {{ invite.kind === 'user' ? invite.user.name : invite.email }}
+              <button type="button" class="invite-chip__remove" (click)="removeFromCreateQueue(invite)"
                 aria-label="Quitar">
                 <mat-icon>close</mat-icon>
               </button>
@@ -316,12 +337,20 @@
                 } @else {
                 @for (inv of editPendingInvitations(); track inv.id) {
                 <div class="edit-member-row edit-member-row--pending">
-                  <span class="edit-member-row__avatar">{{ inv.invitedUserName.charAt(0) }}</span>
+                  @if (inv.invitedUserId) {
+                  <span class="edit-member-row__avatar">{{ inv.invitedUserName!.charAt(0) }}</span>
                   <div class="edit-member-row__info">
                     <span class="edit-member-row__name">{{ inv.invitedUserName }}</span>
                     <span class="edit-member-row__nick">&#64;{{ inv.invitedUserNick }}</span>
                   </div>
                   <span class="edit-member-row__badge edit-member-row__badge--pending">Pendiente</span>
+                  } @else {
+                  <span class="edit-member-row__avatar"><mat-icon>schedule</mat-icon></span>
+                  <div class="edit-member-row__info">
+                    <span class="edit-member-row__name">{{ inv.invitedEmail }}</span>
+                  </div>
+                  <span class="edit-member-row__badge edit-member-row__badge--pending">Pendiente de registro</span>
+                  }
                   <button type="button" class="edit-member-row__action edit-member-row__action--cancel"
                     [disabled]="editActionInProgressId() === inv.id"
                     (click)="$event.stopPropagation(); cancelEditInvitation(inv)"
@@ -375,6 +404,27 @@
                 </ul>
                 }
               </div>
+
+              <!-- Invitar por email a alguien sin cuenta todavía: independiente de la búsqueda de arriba. -->
+              <div class="invite-by-email">
+                <span class="invite-by-email__hint">
+                  ¿No lo encuentras? Puede que no esté registrado. ¡Envíale una invitación!
+                </span>
+                <div class="invite-by-email__row">
+                  <input class="field__input" type="email" [formControl]="editEmailInviteCtrl"
+                    placeholder="email@ejemplo.com" autocomplete="off"
+                    (keydown.enter)="$event.preventDefault(); submitEditEmailInvite(group)" />
+                  <button type="button" class="btn btn--ghost"
+                    [disabled]="editEmailInviteCtrl.invalid || !editEmailInviteCtrl.value || editInvitingEmail() === editEmailInviteCtrl.value"
+                    (click)="submitEditEmailInvite(group)">
+                    @if (editInvitingEmail() === editEmailInviteCtrl.value) {
+                    <mat-spinner diameter="14" />
+                    } @else {
+                    <ng-container><mat-icon>mail</mat-icon> Enviar invitación</ng-container>
+                    }
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div class="group-create-card__actions">
@@ -423,10 +473,15 @@
               <span class="member-chip__name">{{ member.name }}</span>
             </span>
             }
-            @for (invitee of group.pendingInvitees; track invitee.userId) {
+            @for (invitee of group.pendingInvitees; track (invitee.userId ?? invitee.email)) {
             <span class="member-chip member-chip--pending">
-              <span class="member-chip__avatar">{{ invitee.name.charAt(0) }}</span>
+              @if (invitee.userId) {
+              <span class="member-chip__avatar">{{ invitee.name!.charAt(0) }}</span>
               <span class="member-chip__name">{{ invitee.name }}</span>
+              } @else {
+              <span class="member-chip__avatar"><mat-icon>schedule</mat-icon></span>
+              <span class="member-chip__name">{{ invitee.email }}</span>
+              }
             </span>
             }
           </div>

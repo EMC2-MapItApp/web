@@ -39,6 +39,18 @@ export interface GroupMember {
   joinedAt: string;
 }
 
+/**
+ * Destinatario de una invitación pendiente a un grupo. Si todavía no está registrado (invitado
+ * por email, ver {@link GroupInvitation}), `userId`/`name`/`nick` son `null` y `email` lleva la
+ * dirección invitada.
+ */
+export interface PendingInvitee {
+  userId: string | null;
+  name: string | null;
+  nick: string | null;
+  email?: string | null;
+}
+
 /** Grupo de usuarios. */
 export interface Group {
   id: string;
@@ -47,7 +59,7 @@ export interface Group {
   categoryId: string;
   members: GroupMember[];
   /** Invitaciones pendientes — solo visibles para el organizador. */
-  pendingInvitees: { userId: string; name: string; nick: string }[];
+  pendingInvitees: PendingInvitee[];
   createdAt: string;
   updatedAt?: string;
 }
@@ -56,6 +68,10 @@ export interface Group {
  * Invitación pendiente (o resuelta) a un grupo.
  * Desnormaliza nombre/categoría del grupo y del emisor para no depender de otra
  * carga adicional al pintar la lista de invitaciones recibidas.
+ *
+ * Si la invitación fue creada por email y todavía no ha sido reclamada por un usuario
+ * registrado, `invitedUserId`/`invitedUserName`/`invitedUserNick` son `null` y `invitedEmail`
+ * lleva la dirección invitada.
  */
 export interface GroupInvitation {
   id: string;
@@ -66,9 +82,10 @@ export interface GroupInvitation {
   groupMemberCount: number;
   /** Miembros actuales del grupo, para mostrarlos en la pantalla de invitación. */
   groupMembers: GroupMember[];
-  invitedUserId: string;
-  invitedUserName: string;
-  invitedUserNick: string;
+  invitedUserId: string | null;
+  invitedUserName: string | null;
+  invitedUserNick: string | null;
+  invitedEmail?: string | null;
   invitedByUserId: string;
   invitedByName: string;
   status: GroupInvitationStatus;
@@ -94,7 +111,22 @@ export interface CreateGroupRequest {
   description: string;
   categoryId: string;
   inviteUserIds: string[];
+  /** Emails a invitar de inmediato — para quien no tenga cuenta todavía (ver `PendingInvitee`). */
+  inviteEmails: string[];
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cola de invitaciones en el formulario de creación de grupo
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Invitación en cola antes de crear el grupo: un usuario ya encontrado por búsqueda, o un email
+ * suelto (persona sin cuenta todavía). Se envían juntas al crear el grupo
+ * ({@link CreateGroupRequest.inviteUserIds}/`inviteEmails`).
+ */
+export type QueuedInvite =
+  | { kind: 'user'; user: GroupSearchUser }
+  | { kind: 'email'; email: string };
 
 /** Campos editables de un grupo existente. Todos opcionales (PATCH). */
 export interface UpdateGroupRequest {

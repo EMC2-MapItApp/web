@@ -694,6 +694,39 @@ $pending-chip-color: #92400e;
   }
 }
 
+// ── Invitar por email a alguien sin cuenta (independiente del buscador) ───────
+.invite-by-email {
+  margin-top: v.$space-sm;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__hint {
+    font-size: v.$font-sm;
+    color: var(--c-text-secondary);
+  }
+
+  &__row {
+    display: flex;
+    gap: v.$space-sm;
+
+    .field__input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .btn { flex-shrink: 0; }
+  }
+
+  @include m.mobile {
+    &__row {
+      flex-direction: column;
+
+      .btn { width: 100%; }
+    }
+  }
+}
+
 // ── Lista de miembros + pendientes en el formulario de edición ────────────────
 .edit-members {
   border: 1px solid var(--c-border-light);
@@ -892,4 +925,26 @@ $pending-chip-color: #92400e;
 
     &:hover { background: var(--c-surface-hover); }
   }
+
+  // Persona sin cuenta todavía: mismo ámbar que el resto de estados "pendiente".
+  &--pending-signup {
+    background: $pending-chip-bg;
+    border: 1px dashed $pending-chip-border;
+    color: $pending-chip-color;
+  }
+
+  &__icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
+}
+
+// Icono en vez de inicial de nombre (invitación por email sin reclamar todavía).
+.member-chip__avatar mat-icon,
+.edit-member-row__avatar mat-icon,
+.user-search__avatar mat-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
 }

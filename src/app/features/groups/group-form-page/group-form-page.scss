@@ -173,6 +173,61 @@
   font-style: italic;
 }
 
+// ── Invitar por email a alguien sin cuenta (independiente del buscador) ───────
+.invite-by-email {
+  margin-top: v.$space-sm;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__hint {
+    font-size: v.$font-sm;
+    color: var(--c-text-secondary);
+  }
+
+  &__row {
+    display: flex;
+    align-items: flex-start;
+    gap: v.$space-sm;
+  }
+
+  &__field {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__row button {
+    margin-top: 4px; // alinea con el mat-form-field, que lleva su propio padding interno
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-shrink: 0;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      line-height: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  @include m.mobile {
+    &__row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    &__row button {
+      width: 100%;
+      margin-top: 0;
+    }
+  }
+}
+
 .search-result-row {
   display: flex;
   align-items: center;
@@ -281,6 +336,19 @@
       width: 16px;
       height: 16px;
     }
+  }
+
+  // Persona sin cuenta todavía: mismo ámbar que "Pendiente" en groups-page.
+  &--pending-signup {
+    background: #fef3c7;
+    border: 1px dashed #fde68a;
+    color: #92400e;
+  }
+
+  &__icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
   }
 
   &__remove {

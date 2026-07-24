@@ -129,14 +129,40 @@
       </ul>
       }
 
+      <!-- Invitar por email a alguien sin cuenta todavía: independiente de la búsqueda de arriba. -->
+      <div class="invite-by-email">
+        <span class="invite-by-email__hint">
+          ¿No lo encuentras? Puede que no esté registrado. ¡Envíale una invitación!
+        </span>
+        <div class="invite-by-email__row">
+          <mat-form-field appearance="outline" class="invite-by-email__field">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" [formControl]="emailInviteCtrl" placeholder="email@ejemplo.com"
+              (keydown.enter)="$event.preventDefault(); submitEmailInvite()" />
+          </mat-form-field>
+          <button mat-stroked-button type="button"
+            [disabled]="emailInviteCtrl.invalid || !emailInviteCtrl.value || invitingEmail() === emailInviteCtrl.value"
+            (click)="submitEmailInvite()">
+            @if (invitingEmail() === emailInviteCtrl.value) {
+            <mat-spinner diameter="16" />
+            } @else {
+            <ng-container><mat-icon>mail</mat-icon> Enviar invitación</ng-container>
+            }
+          </button>
+        </div>
+      </div>
+
       @if (mode() === 'create' && queuedInvites().length > 0) {
       <div class="invite-queue">
         <span class="group-form__field-label">Se invitará a:</span>
         <ul class="invite-queue__list">
-          @for (user of queuedInvites(); track user.id) {
-          <li class="invite-chip">
-            {{ user.name }}
-            <button type="button" class="invite-chip__remove" (click)="removeQueuedInvite(user)"
+          @for (invite of queuedInvites(); track (invite.kind === 'user' ? invite.user.id : invite.email)) {
+          <li class="invite-chip" [class.invite-chip--pending-signup]="invite.kind === 'email'">
+            @if (invite.kind === 'email') {
+            <mat-icon class="invite-chip__icon">schedule</mat-icon>
+            }
+            {{ invite.kind === 'user' ? invite.user.name : invite.email }}
+            <button type="button" class="invite-chip__remove" (click)="removeQueuedInvite(invite)"
               aria-label="Quitar invitación">
               <mat-icon>close</mat-icon>
             </button>
@@ -150,10 +176,10 @@
       <div class="invite-queue">
         <span class="group-form__field-label">Invitaciones enviadas en esta sesión:</span>
         <ul class="invite-queue__list">
-          @for (user of sentInvites(); track user.id) {
+          @for (invitation of sentInvites(); track invitation.id) {
           <li class="invite-chip invite-chip--sent">
             <mat-icon>schedule</mat-icon>
-            {{ user.name }}
+            {{ invitation.invitedUserName ?? invitation.invitedEmail }}
           </li>
           }
         </ul>

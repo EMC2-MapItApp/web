@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-07-23",
+    "type": "feature",
+    "title": "Invitar por email a los grupos",
+    "description": "Ahora puedes invitar a personas a tus grupos escribiendo su correo, aunque todavía no tengan cuenta en la aplicación."
+  },
+  {
     "date": "2026-07-22",
     "type": "improvement",
     "title": "Invitaciones de grupo mejoradas",

@@ -39,6 +39,13 @@ interface ApiGroupMember {
   joinedAt: string;
 }
 
+interface ApiPendingInvitee {
+  userId: string | null;
+  name: string | null;
+  nick: string | null;
+  email: string | null;
+}
+
 interface ApiGroup {
   id: string;
   name: string;
@@ -46,7 +53,7 @@ interface ApiGroup {
   categoryId: string;
   organizerId: string;
   members: ApiGroupMember[];
-  pendingInvitees: { userId: string; name: string; nick: string }[];
+  pendingInvitees: ApiPendingInvitee[];
   createdAt: string;
   updatedAt: string | null;
 }
@@ -59,9 +66,10 @@ interface ApiGroupInvitation {
   groupCategoryId: string;
   groupMemberCount: number;
   groupMembers: ApiGroupMember[];
-  invitedUserId: string;
-  invitedUserName: string;
-  invitedUserNick: string;
+  invitedUserId: string | null;
+  invitedUserName: string | null;
+  invitedUserNick: string | null;
+  invitedEmail: string | null;
   invitedByUserId: string;
   invitedByName: string;
   status: 'PENDING' | 'ACCEPTED' | 'DECLINED';
@@ -195,15 +203,28 @@ export class GroupService {
   }
 
   /**
-   * Traduce el código de error de {@link inviteUser} a un mensaje concreto. El buscador de
-   * usuarios de la tarjeta no siempre sabe que alguien ya fue invitado (solo recuerda lo
-   * enviado en la sesión de edición actual, no invitaciones pendientes de sesiones previas),
-   * así que es el backend quien detecta el duplicado y hay que traducir su código a texto.
+   * Invita por email a alguien que puede no estar registrado todavía, a un grupo ya creado. Si
+   * el email ya pertenece a un usuario, el backend la resuelve como una invitación normal.
+   */
+  inviteUserByEmail(group: Group, email: string): Observable<GroupInvitation> {
+    return this.http.post<ApiGroupInvitation>(`${this.baseUrl}/${group.id}/invitations/by-email`, {
+      email,
+    }).pipe(
+      map(i => this.mapInvitation(i))
+    );
+  }
+
+  /**
+   * Traduce el código de error de {@link inviteUser}/{@link inviteUserByEmail} a un mensaje
+   * concreto. El buscador de usuarios de la tarjeta no siempre sabe que alguien ya fue invitado
+   * (solo recuerda lo enviado en la sesión de edición actual, no invitaciones pendientes de
+   * sesiones previas), así que es el backend quien detecta el duplicado y hay que traducir su
+   * código a texto.
    */
   inviteErrorMessage(err: { error?: { error?: { code?: string } } }): string {
     switch (err.error?.error?.code) {
       case 'ALREADY_MEMBER': return 'Este usuario ya pertenece a este grupo.';
-      case 'ALREADY_INVITED': return 'Ya se ha invitado a este usuario.';
+      case 'ALREADY_INVITED': return 'Ya se ha invitado a este usuario o email.';
       default: return 'No se pudo enviar la invitación. Inténtalo de nuevo.';
     }
   }
@@ -283,7 +304,12 @@ export class GroupService {
       description: api.description,
       categoryId: api.categoryId,
       members: api.members.map(m => this.mapMember(m)),
-      pendingInvitees: api.pendingInvitees ?? [],
+      pendingInvitees: (api.pendingInvitees ?? []).map(p => ({
+        userId: p.userId,
+        name: p.name,
+        nick: p.nick,
+        email: p.email,
+      })),
       createdAt: api.createdAt,
       updatedAt: api.updatedAt ?? undefined,
     };
@@ -299,8 +325,9 @@ export class GroupService {
       groupMemberCount: api.groupMemberCount,
       groupMembers: (api.groupMembers ?? []).map(m => this.mapMember(m)),
       invitedUserId: api.invitedUserId,
-      invitedUserName: api.invitedUserName ?? '',
-      invitedUserNick: api.invitedUserNick ?? '',
+      invitedUserName: api.invitedUserName,
+      invitedUserNick: api.invitedUserNick,
+      invitedEmail: api.invitedEmail,
       invitedByUserId: api.invitedByUserId,
       invitedByName: api.invitedByName,
       status: api.status.toLowerCase() as GroupInvitationStatus,

@@ -19,7 +19,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { GroupService } from '@core/services/group.service';
 import { CategoryService } from '@core/services/category.service';
-import { Group, GroupInvitation, GroupMember, GroupSearchUser } from '@core/models/group.model';
+import { Group, GroupInvitation, GroupMember, GroupSearchUser, QueuedInvite } from '@core/models/group.model';
 import { MainCategory } from '@core/models/category.model';
 import { ResponsiveService } from '@core/responsive/responsive.service';
 import { CONFIRM_DIALOG_CONFIG, NOTIFY_ORGANIZER_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
@@ -77,7 +77,7 @@ export class GroupsPageComponent {
   readonly createSaving = signal(false);
   readonly createSearching = signal(false);
   readonly createSearchResults = signal<GroupSearchUser[]>([]);
-  readonly createQueuedInvites = signal<GroupSearchUser[]>([]);
+  readonly createQueuedInvites = signal<QueuedInvite[]>([]);
 
   readonly createForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
@@ -86,6 +86,8 @@ export class GroupsPageComponent {
   });
 
   readonly createSearchCtrl = new FormControl('');
+  /** Invitar por email a alguien sin cuenta todavía — independiente del buscador de arriba. */
+  readonly createEmailInviteCtrl = new FormControl('', [Validators.email]);
 
   // ── Edición inline de grupo ────────────────────────────────────────────
 
@@ -98,6 +100,7 @@ export class GroupsPageComponent {
   readonly editPendingInvitations = signal<GroupInvitation[]>([]);
   readonly editLoadingInvitations = signal(false);
   readonly editInvitingUserId = signal<string | null>(null);
+  readonly editInvitingEmail = signal<string | null>(null);
   /** Id de miembro/invitado cuya acción de expulsión/cancelación está en curso. */
   readonly editActionInProgressId = signal<string | null>(null);
 
@@ -108,6 +111,8 @@ export class GroupsPageComponent {
   });
 
   readonly editSearchCtrl = new FormControl('');
+  /** Invitar por email a alguien sin cuenta todavía — independiente del buscador de arriba. */
+  readonly editEmailInviteCtrl = new FormControl('', [Validators.email]);
 
   readonly organizedGroups = computed(() =>
     this.myGroups().filter(g => this.groupService.getMyRole(g) === 'organizer')
@@ -191,6 +196,7 @@ export class GroupsPageComponent {
   openCreateForm(): void {
     this.createForm.reset();
     this.createSearchCtrl.reset();
+    this.createEmailInviteCtrl.reset();
     this.createQueuedInvites.set([]);
     this.createSearchResults.set([]);
     this.showCreateForm.set(true);
@@ -245,11 +251,13 @@ export class GroupsPageComponent {
   private submitCreateForm(): void {
     const { name, description, categoryId } = this.createForm.value;
     this.createSaving.set(true);
+    const queue = this.createQueuedInvites();
     this.groupService.createGroup({
       name: name!,
       description: description!,
       categoryId: categoryId!,
-      inviteUserIds: this.createQueuedInvites().map(u => u.id),
+      inviteUserIds: queue.filter(q => q.kind === 'user').map(q => q.user.id),
+      inviteEmails: queue.filter(q => q.kind === 'email').map(q => q.email),
     }).subscribe({
       next: (group) => {
         this.myGroups.update(list => [...list, group]);
@@ -274,17 +282,36 @@ export class GroupsPageComponent {
   }
 
   isAlreadyQueued(user: GroupSearchUser): boolean {
-    return this.createQueuedInvites().some(u => u.id === user.id);
+    return this.createQueuedInvites().some(q => q.kind === 'user' && q.user.id === user.id);
+  }
+
+  isEmailAlreadyQueued(email: string): boolean {
+    return this.createQueuedInvites().some(q => q.kind === 'email' && q.email.toLowerCase() === email.toLowerCase());
   }
 
   addToCreateQueue(user: GroupSearchUser): void {
     if (!this.isAlreadyQueued(user)) {
-      this.createQueuedInvites.update(list => [...list, user]);
+      this.createQueuedInvites.update(list => [...list, { kind: 'user', user }]);
     }
   }
 
-  removeFromCreateQueue(user: GroupSearchUser): void {
-    this.createQueuedInvites.update(list => list.filter(u => u.id !== user.id));
+  /** Encola una invitación por email (persona sin cuenta todavía) desde el mini-formulario dedicado. */
+  submitCreateEmailInvite(): void {
+    const email = this.createEmailInviteCtrl.value?.trim();
+    if (this.createEmailInviteCtrl.invalid || !email || this.isEmailAlreadyQueued(email)) return;
+
+    this.createQueuedInvites.update(list => [...list, { kind: 'email', email }]);
+    this.createEmailInviteCtrl.reset();
+  }
+
+  removeFromCreateQueue(invite: QueuedInvite): void {
+    this.createQueuedInvites.update(list => list.filter(q => !this.isSameQueuedInvite(q, invite)));
+  }
+
+  private isSameQueuedInvite(a: QueuedInvite, b: QueuedInvite): boolean {
+    if (a.kind === 'user' && b.kind === 'user') return a.user.id === b.user.id;
+    if (a.kind === 'email' && b.kind === 'email') return a.email === b.email;
+    return false;
   }
 
   // ── Edición inline ────────────────────────────────────────────────────────
@@ -296,6 +323,7 @@ export class GroupsPageComponent {
       categoryId: group.categoryId,
     });
     this.editSearchCtrl.reset();
+    this.editEmailInviteCtrl.reset();
     this.editSearchResults.set([]);
     this.editPendingInvitations.set([]);
     this.editingGroupId.set(group.id);
@@ -376,6 +404,26 @@ export class GroupsPageComponent {
     });
   }
 
+  /** Invita por email a alguien sin cuenta todavía, desde el mini-formulario dedicado. */
+  submitEditEmailInvite(group: Group): void {
+    const email = this.editEmailInviteCtrl.value?.trim();
+    if (this.editEmailInviteCtrl.invalid || !email) return;
+
+    this.editInvitingEmail.set(email);
+    this.groupService.inviteUserByEmail(group, email).subscribe({
+      next: (invitation) => {
+        this.editInvitingEmail.set(null);
+        this.editEmailInviteCtrl.reset();
+        this.editPendingInvitations.update(list => [...list, invitation]);
+        this.notify(`Invitación enviada a ${email}`);
+      },
+      error: (err) => {
+        this.editInvitingEmail.set(null);
+        this.notify(this.groupService.inviteErrorMessage(err));
+      },
+    });
+  }
+
   /** Cancela una invitación pendiente del grupo en edición. */
   cancelEditInvitation(inv: GroupInvitation): void {
     this.editActionInProgressId.set(inv.id);
@@ -383,7 +431,7 @@ export class GroupsPageComponent {
       next: () => {
         this.editPendingInvitations.update(list => list.filter(i => i.id !== inv.id));
         this.editActionInProgressId.set(null);
-        this.notify(`Invitación a ${inv.invitedUserName} cancelada`);
+        this.notify(`Invitación a ${inv.invitedUserName ?? inv.invitedEmail} cancelada`);
       },
       error: () => {
         this.editActionInProgressId.set(null);

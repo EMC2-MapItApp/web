@@ -24,7 +24,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GroupService } from '@core/services/group.service';
 import { CategoryService } from '@core/services/category.service';
-import { Group, GroupMember, GroupSearchUser } from '@core/models/group.model';
+import { Group, GroupInvitation, GroupMember, GroupSearchUser, QueuedInvite } from '@core/models/group.model';
 import { MainCategory } from '@core/models/category.model';
 import { ResponsiveService } from '@core/responsive/responsive.service';
 import { CONFIRM_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
@@ -76,10 +76,13 @@ export class GroupFormPageComponent {
   readonly searchResults = signal<GroupSearchUser[]>([]);
 
   /** Cola de invitaciones en modo creación (se envían junto con el grupo). */
-  readonly queuedInvites = signal<GroupSearchUser[]>([]);
-  /** Usuarios ya invitados en modo edición (invitación enviada de inmediato). */
-  readonly sentInvites = signal<GroupSearchUser[]>([]);
+  readonly queuedInvites = signal<QueuedInvite[]>([]);
+  /** Invitaciones ya enviadas en modo edición (invitación enviada de inmediato). */
+  readonly sentInvites = signal<GroupInvitation[]>([]);
   readonly invitingUserId = signal<string | null>(null);
+  readonly invitingEmail = signal<string | null>(null);
+  /** Invitar por email a alguien sin cuenta todavía — independiente del buscador de arriba. */
+  readonly emailInviteCtrl = this.fb.control('', [Validators.email]);
 
   private group: Group | null = null;
 
@@ -134,24 +137,32 @@ export class GroupFormPageComponent {
   /** Ya invitado (en cola o, en edición, ya enviado) o ya miembro del grupo. */
   isAlreadyLinked(user: GroupSearchUser): boolean {
     if (this.currentMembers().some(m => m.userId === user.id)) return true;
-    if (this.mode() === 'create') return this.queuedInvites().some(u => u.id === user.id);
-    return this.sentInvites().some(u => u.id === user.id);
+    if (this.mode() === 'create') return this.queuedInvites().some(q => q.kind === 'user' && q.user.id === user.id);
+    return this.sentInvites().some(i => i.invitedUserId === user.id);
+  }
+
+  isEmailAlreadyLinked(email: string): boolean {
+    const normalized = email.toLowerCase();
+    if (this.mode() === 'create') {
+      return this.queuedInvites().some(q => q.kind === 'email' && q.email.toLowerCase() === normalized);
+    }
+    return this.sentInvites().some(i => i.invitedEmail?.toLowerCase() === normalized);
   }
 
   invite(user: GroupSearchUser): void {
     if (this.isAlreadyLinked(user)) return;
 
     if (this.mode() === 'create') {
-      this.queuedInvites.update(list => [...list, user]);
+      this.queuedInvites.update(list => [...list, { kind: 'user', user }]);
       return;
     }
 
     if (!this.group) return;
     this.invitingUserId.set(user.id);
     this.groupService.inviteUser(this.group, user).subscribe({
-      next: () => {
+      next: (invitation) => {
         this.invitingUserId.set(null);
-        this.sentInvites.update(list => [...list, user]);
+        this.sentInvites.update(list => [...list, invitation]);
         this.notify(`Invitación enviada a ${user.name}`);
       },
       error: (err) => {
@@ -161,8 +172,41 @@ export class GroupFormPageComponent {
     });
   }
 
-  removeQueuedInvite(user: GroupSearchUser): void {
-    this.queuedInvites.update(list => list.filter(u => u.id !== user.id));
+  /** Invita por email a alguien sin cuenta todavía, desde el mini-formulario dedicado. */
+  submitEmailInvite(): void {
+    const email = this.emailInviteCtrl.value?.trim();
+    if (this.emailInviteCtrl.invalid || !email || this.isEmailAlreadyLinked(email)) return;
+
+    if (this.mode() === 'create') {
+      this.queuedInvites.update(list => [...list, { kind: 'email', email }]);
+      this.emailInviteCtrl.reset();
+      return;
+    }
+
+    if (!this.group) return;
+    this.invitingEmail.set(email);
+    this.groupService.inviteUserByEmail(this.group, email).subscribe({
+      next: (invitation) => {
+        this.invitingEmail.set(null);
+        this.emailInviteCtrl.reset();
+        this.sentInvites.update(list => [...list, invitation]);
+        this.notify(`Invitación enviada a ${email}`);
+      },
+      error: (err) => {
+        this.invitingEmail.set(null);
+        this.notify(this.groupService.inviteErrorMessage(err));
+      },
+    });
+  }
+
+  removeQueuedInvite(invite: QueuedInvite): void {
+    this.queuedInvites.update(list => list.filter(q => !this.isSameQueuedInvite(q, invite)));
+  }
+
+  private isSameQueuedInvite(a: QueuedInvite, b: QueuedInvite): boolean {
+    if (a.kind === 'user' && b.kind === 'user') return a.user.id === b.user.id;
+    if (a.kind === 'email' && b.kind === 'email') return a.email === b.email;
+    return false;
   }
 
   save(): void {
@@ -211,12 +255,14 @@ export class GroupFormPageComponent {
     const { name, description, categoryId } = this.form.value;
     this.saving.set(true);
 
+    const queue = this.queuedInvites();
     const request$ = this.mode() === 'create'
       ? this.groupService.createGroup({
           name: name!,
           description: description!,
           categoryId: categoryId!,
-          inviteUserIds: this.queuedInvites().map(u => u.id),
+          inviteUserIds: queue.filter(q => q.kind === 'user').map(q => q.user.id),
+          inviteEmails: queue.filter(q => q.kind === 'email').map(q => q.email),
         })
       : this.groupService.updateGroup(this.groupId!, {
           name: name!,

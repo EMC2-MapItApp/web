@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-07-24",
+    "type": "feature",
+    "title": "Mensajes a los miembros del grupo",
+    "description": "Ahora el organizador de un grupo puede enviar un correo con asunto y mensaje a todos los miembros o solo a los que elija."
+  },
+  {
     "date": "2026-07-23",
     "type": "feature",
     "title": "Invitar por email a los grupos",

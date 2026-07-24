@@ -57,6 +57,14 @@ export const NOTIFY_ORGANIZER_DIALOG_CONFIG: MatDialogConfig = {
   width: '420px',
 };
 
+/** Configuración específica del diálogo "contacta con todos" (Grupos). */
+export const CONTACT_MEMBERS_DIALOG_CONFIG: MatDialogConfig = {
+  ...DIALOG_BASE,
+  panelClass: 'contact-members-panel',
+  width: '480px',
+  maxHeight: '90vh',
+};
+
 /** Configuración del diálogo de confirmación genérico y reutilizable. */
 export const CONFIRM_DIALOG_CONFIG: MatDialogConfig = {
   ...DIALOG_BASE,

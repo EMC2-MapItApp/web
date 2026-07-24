@@ -271,9 +271,21 @@ export class GroupService {
     return this.http.delete<void>(`${this.baseUrl}/${groupId}/members/${userId}`);
   }
 
-  /** Envía un aviso al organizador de un grupo. */
-  notifyOrganizer(group: Group, message: string): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/${group.id}/notify-organizer`, { message });
+  /**
+   * Envía un aviso al organizador de un grupo. `subject` se muestra en el cuerpo del correo, no
+   * sustituye el asunto real del email (fijo, ver `EmailNotificationSender` en el backend).
+   */
+  notifyOrganizer(group: Group, subject: string, message: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${group.id}/notify-organizer`, { subject, message });
+  }
+
+  /**
+   * Envía un mensaje del organizador a los miembros del grupo. Solo puede invocarlo el
+   * organizador; `recipientUserIds` vacío significa "todos los miembros". `subject` se muestra
+   * en el cuerpo del correo, no sustituye el asunto real del email (fijo, ver backend).
+   */
+  contactMembers(group: Group, subject: string, message: string, recipientUserIds: string[]): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${group.id}/contact-members`, { subject, message, recipientUserIds });
   }
 
   // ── Helpers privados ─────────────────────────────────────────────────────

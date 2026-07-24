@@ -1,0 +1,67 @@
+<div class="contact-members-dialog" (click)="$event.stopPropagation()">
+
+  <button class="close-btn" mat-icon-button (click)="dialogRef.close()" aria-label="Cerrar">
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <div class="contact-members-dialog__icon">
+    <mat-icon>campaign</mat-icon>
+  </div>
+
+  <h2 class="contact-members-dialog__title">Contacta con todos</h2>
+  <p class="contact-members-dialog__subtitle">
+    Se enviará un correo a los miembros seleccionados de "{{ data.groupName }}".
+  </p>
+
+  <div class="member-select">
+    <mat-checkbox class="member-select__all" [checked]="allSelected()"
+      [indeterminate]="!allSelected() && !noneSelected()" (change)="toggleAll()">
+      Seleccionar todos ({{ selectedCount() }}/{{ data.members.length }})
+    </mat-checkbox>
+
+    <div class="member-select__list">
+      @for (member of data.members; track member.userId) {
+      <div class="member-row" (click)="toggleMember(member.userId)">
+        <mat-checkbox [checked]="isSelected(member.userId)"
+          (click)="$event.stopPropagation()" (change)="toggleMember(member.userId)" />
+        <span class="member-row__avatar">{{ member.name.charAt(0) }}</span>
+        <span class="member-row__info">
+          <span class="member-row__name">{{ member.name }}</span>
+          <span class="member-row__nick">&#64;{{ member.nick }}</span>
+        </span>
+      </div>
+      }
+    </div>
+
+    @if (noneSelected()) {
+    <p class="member-select__error">Selecciona al menos un miembro</p>
+    }
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="send()" novalidate>
+    <mat-form-field appearance="outline">
+      <mat-label>Asunto</mat-label>
+      <input matInput formControlName="subject" maxlength="200"
+        placeholder="Asunto del mensaje" />
+      @if (subjectCtrl.hasError('required') && subjectCtrl.touched) {
+      <mat-error>El asunto no puede estar vacío</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Mensaje</mat-label>
+      <textarea matInput formControlName="message" rows="4" maxlength="2000"
+        placeholder="Escribe tu mensaje para el grupo..."></textarea>
+      <mat-hint align="end">{{ messageCtrl.value?.length ?? 0 }}/2000</mat-hint>
+      @if (messageCtrl.hasError('required') && messageCtrl.touched) {
+      <mat-error>El mensaje no puede estar vacío</mat-error>
+      }
+    </mat-form-field>
+
+    <button mat-flat-button type="submit" class="submit-btn">
+      <mat-icon>send</mat-icon>
+      Enviar
+    </button>
+  </form>
+
+</div>

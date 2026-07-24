@@ -22,9 +22,10 @@ import { CategoryService } from '@core/services/category.service';
 import { Group, GroupInvitation, GroupMember, GroupSearchUser, QueuedInvite } from '@core/models/group.model';
 import { MainCategory } from '@core/models/category.model';
 import { ResponsiveService } from '@core/responsive/responsive.service';
-import { CONFIRM_DIALOG_CONFIG, NOTIFY_ORGANIZER_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
+import { CONFIRM_DIALOG_CONFIG, CONTACT_MEMBERS_DIALOG_CONFIG, NOTIFY_ORGANIZER_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
 import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/confirm-dialog/confirm-dialog';
-import { NotifyOrganizerDialogComponent } from '../notify-organizer-dialog/notify-organizer-dialog';
+import { NotifyOrganizerDialogComponent, NotifyOrganizerDialogResult } from '../notify-organizer-dialog/notify-organizer-dialog';
+import { ContactMembersDialogComponent, ContactMembersDialogResult } from '../contact-members-dialog/contact-members-dialog';
 
 @Component({
   selector: 'app-groups-page',
@@ -509,10 +510,32 @@ export class GroupsPageComponent {
       compactViewport,
     ));
 
-    dialogRef.afterClosed().subscribe((message: string | undefined) => {
-      if (!message) return;
-      this.groupService.notifyOrganizer(group, message).subscribe(() => {
+    dialogRef.afterClosed().subscribe((result: NotifyOrganizerDialogResult | undefined) => {
+      if (!result) return;
+      this.groupService.notifyOrganizer(group, result.subject, result.message).subscribe(() => {
         this.notify('Aviso enviado al organizador');
+      });
+    });
+  }
+
+  /** Envía un mensaje a los miembros seleccionados del grupo (por defecto, todos). Solo organizador. */
+  openContactMembers(group: Group): void {
+    const members = group.members.filter(m => m.role !== 'organizer');
+    if (members.length === 0) {
+      this.notify('Este grupo todavía no tiene miembros a los que contactar');
+      return;
+    }
+
+    const compactViewport = this.responsive.isMobile() || this.responsive.isTablet();
+    const dialogRef = this.dialog.open(ContactMembersDialogComponent, withResponsiveDialogLayout(
+      { ...CONTACT_MEMBERS_DIALOG_CONFIG, data: { groupName: group.name, members } },
+      compactViewport,
+    ));
+
+    dialogRef.afterClosed().subscribe((result: ContactMembersDialogResult | undefined) => {
+      if (!result) return;
+      this.groupService.contactMembers(group, result.subject, result.message, result.recipientUserIds).subscribe(() => {
+        this.notify('Mensaje enviado a los miembros seleccionados');
       });
     });
   }

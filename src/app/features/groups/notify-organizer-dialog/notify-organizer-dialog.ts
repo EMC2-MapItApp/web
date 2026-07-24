@@ -16,6 +16,11 @@ export interface NotifyOrganizerDialogData {
   organizerName: string;
 }
 
+export interface NotifyOrganizerDialogResult {
+  subject: string;
+  message: string;
+}
+
 @Component({
   selector: 'app-notify-organizer-dialog',
   standalone: true,
@@ -33,9 +38,11 @@ export class NotifyOrganizerDialogComponent {
   private readonly fb = inject(FormBuilder);
 
   readonly form = this.fb.group({
+    subject: ['', [Validators.required, Validators.maxLength(200)]],
     message: ['', [Validators.required, Validators.maxLength(1000)]],
   });
 
+  get subjectCtrl() { return this.form.controls['subject']; }
   get messageCtrl() { return this.form.controls['message']; }
 
   send(): void {
@@ -43,6 +50,10 @@ export class NotifyOrganizerDialogComponent {
       this.form.markAllAsTouched();
       return;
     }
-    this.dialogRef.close(this.form.value.message!);
+    const result: NotifyOrganizerDialogResult = {
+      subject: this.form.value.subject!,
+      message: this.form.value.message!,
+    };
+    this.dialogRef.close(result);
   }
 }

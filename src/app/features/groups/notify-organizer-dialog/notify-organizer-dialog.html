@@ -13,6 +13,15 @@
 
   <form [formGroup]="form" (ngSubmit)="send()" novalidate>
     <mat-form-field appearance="outline">
+      <mat-label>Asunto</mat-label>
+      <input matInput formControlName="subject" maxlength="200"
+        placeholder="Asunto del mensaje" />
+      @if (subjectCtrl.hasError('required') && subjectCtrl.touched) {
+      <mat-error>El asunto no puede estar vacío</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
       <mat-label>Mensaje</mat-label>
       <textarea matInput formControlName="message" rows="4" maxlength="1000"
         placeholder="Escribe tu mensaje para el organizador..."></textarea>

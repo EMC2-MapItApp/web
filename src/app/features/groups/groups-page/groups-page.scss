@@ -269,7 +269,10 @@ $pending-chip-color: #92400e;
       }
     }
 
+    // Mobile: acciones apiladas a ancho completo. flex-wrap evita que se compriman en línea
+    // cuando hay 3 botones (vista de organizador con "Contacta con todos").
     @include m.mobile {
+      flex-wrap: wrap;
       button { width: 100%; }
     }
   }

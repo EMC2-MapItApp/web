@@ -14,6 +14,7 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatDividerModule} from '@angular/material/divider';
 import {MapSettingsService} from '@core/services/map-settings.service';
 import {ThemeService} from '@core/services/theme.service';
+import {PushNotificationService} from '@core/services/push-notification.service';
 
 /** Componente de la página de Ajustes.
  * @remarks Actúa como contenedor de configuración. Delega toda la lógica de estado
@@ -42,4 +43,14 @@ export class SettingsPageComponent {
 
   readonly mapSettings = inject(MapSettingsService);
   readonly themeService = inject(ThemeService);
+  readonly pushNotifications = inject(PushNotificationService);
+
+  /** Activa/desactiva el push nativo del SO para este dispositivo. */
+  togglePushNotifications(): void {
+    if (this.pushNotifications.enabled()) {
+      this.pushNotifications.disable();
+    } else {
+      this.pushNotifications.enable();
+    }
+  }
 }

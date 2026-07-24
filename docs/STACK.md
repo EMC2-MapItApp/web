@@ -34,6 +34,13 @@ usando piezas estándar de la industria en vez de atajos de proyecto de juguete.
 |---|---|
 | [`@zxcvbn-ts`](https://github.com/zxcvbn-ts/zxcvbn) (`core` + `language-common` + `language-es-es`) | Mismo algoritmo y escala 0-4 que el `zxcvbn` Java del backend — el medidor de fuerza que ve el usuario en el registro coincide con lo que el servidor va a aceptar o rechazar. |
 
+## Notificaciones
+
+| Pieza | Por qué |
+|---|---|
+| [Web Push API](https://developer.mozilla.org/en-US/docs/Web/API/Push_API) + Service Worker dedicado (`public/push-sw.js`) | Notificaciones nativas del SO (desktop y móvil) sin empaquetar la app — el Service Worker solo escucha `push`/`notificationclick`, no cachea assets, así que no se usa `@angular/service-worker` (pensado para App Shell/offline, no para push). |
+| `PushProvider` (`core/notifications/`) | Abstracción propia sobre `navigator.serviceWorker`/`PushManager`: el resto de la app (campana, Ajustes) depende de esta interfaz, nunca de las APIs del navegador directamente. Prepara el terreno para añadir un `CapacitorPushProvider` (FCM/APNs) el día que se empaquete con Capacitor, cambiando solo el binding en `app.config.ts`. |
+
 ## Testing
 
 | Pieza | Por qué |

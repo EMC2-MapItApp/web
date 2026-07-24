@@ -59,6 +59,11 @@ export const STACK_GROUPS: StackGroup[] = [
         why: 'Fuente única de verdad (signal + BreakpointObserver) en vez de que cada componente calcule el viewport por su cuenta.',
         link: { label: 'responsive.service.ts:35', url: `${WEB_REPO}/src/app/core/responsive/responsive.service.ts#L35` },
       },
+      {
+        name: 'Web Push (VAPID) + Service Worker dedicado',
+        why: 'Notificaciones nativas del SO sin empaquetar la app. El canal vive detrás de una interfaz propia (PushProvider) para poder añadir Capacitor/FCM/APNs más adelante sin reescribir la app.',
+        link: { label: 'push-provider.ts', url: `${WEB_REPO}/src/app/core/notifications/push-provider.ts` },
+      },
     ],
   },
   {
@@ -103,8 +108,8 @@ export const STACK_GROUPS: StackGroup[] = [
       },
       {
         name: 'Arquitectura hexagonal en geo/ y notifications/',
-        why: 'Piloto selectivo, no una regla global: los dos únicos puntos con una dependencia externa reemplazable (proveedor GeoIP, canal de notificación). El caso de uso depende de un puerto (interfaz); el proveedor concreto vive en un adaptador aparte, sustituible sin tocar el caso de uso.',
-        link: { label: 'GeoLocationProvider.java', url: `${BACK_REPO}/src/main/java/emc/mapIt/geo/GeoLocationProvider.java` },
+        why: 'Piloto selectivo, no una regla global: los dos puntos con una dependencia externa reemplazable (proveedor GeoIP, canales de notificación). notifications/ ya tiene dos puertos en producción — NotificationSender (email) y PushSender (push nativo vía VAPID) — cada uno con su adaptador, sustituible sin tocar el caso de uso.',
+        link: { label: 'PushSender.java', url: `${BACK_REPO}/src/main/java/emc/mapIt/notifications/PushSender.java` },
       },
     ],
   },

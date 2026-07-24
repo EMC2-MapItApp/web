@@ -12,6 +12,8 @@ import { WelcomeDialogComponent } from '@shared/welcome-dialog/welcome-dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { WELCOME_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
 import { ResponsiveService } from '@core/responsive/responsive.service';
+import { PushNotificationService } from '@core/services/push-notification.service';
+import { NotificationBellComponent } from './notification-bell/notification-bell';
 
 @Component({
   selector: 'app-home-shell',
@@ -25,7 +27,8 @@ import { ResponsiveService } from '@core/responsive/responsive.service';
     MatListModule,
     MatIconModule,
     MatButtonModule,
-    SlicePipe
+    SlicePipe,
+    NotificationBellComponent
   ],
   templateUrl: './home-shell.html',
   styleUrls: ['./home-shell.scss']
@@ -37,6 +40,7 @@ export class HomeShellComponent {
 
   readonly currentUser = inject(CurrentUserService);
   private readonly groupService = inject(GroupService);
+  private readonly pushNotificationService = inject(PushNotificationService);
 
   /** Invitaciones de grupo pendientes, para el badge del ítem "Grupos" del menú. */
   readonly pendingGroupInvitations = this.groupService.pendingInvitationsCount;
@@ -88,7 +92,19 @@ export class HomeShellComponent {
     this.closeSidenav();
   }
 
-  logout(): void {
+  /**
+   * Da de baja la suscripción push de este dispositivo ANTES de borrar el token: si se borrara
+   * antes, la baja en el backend (`DELETE /push/subscriptions`, autenticada) fallaría en
+   * silencio con 401. Necesario para no dejar la suscripción "viva" en un dispositivo
+   * compartido, donde el siguiente usuario que la active se la robaría sin saberlo.
+   */
+  async logout(): Promise<void> {
+    try {
+      await this.pushNotificationService.disable();
+    } catch {
+      // Best-effort: un fallo al dar de baja el push no debe impedir cerrar sesión.
+    }
+
     localStorage.removeItem('token');
     this.currentUser.clear();
     this.router.navigate(['/']);

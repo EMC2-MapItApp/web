@@ -7,7 +7,8 @@
     <span class="spacer"></span>
 
     @if (currentUser.user()) {
-    <!-- Usuario logado: avatar + logout -->
+    <!-- Usuario logado: campana de notificaciones + avatar + logout -->
+    <app-notification-bell></app-notification-bell>
     <a routerLink="profile" class="header-avatar" [title]="currentUser.userName()">
       @if (currentUser.user()?.avatarUrl) {
       <img [src]="currentUser.user()?.avatarUrl" [alt]="currentUser.userName()" />

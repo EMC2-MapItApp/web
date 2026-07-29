@@ -603,6 +603,13 @@ export class MapsPageComponent implements AfterViewInit {
       clearPressTimer();
       stopPressFeedback();
     });
+
+    // El navegador sintetiza un `click` nativo tras el `touchend` (corto o largo). Si no se
+    // corta aquí, burbujea hasta `.maps-body` y `handleOutsidePanelClick` lo confunde con un
+    // "click fuera", cerrando el detalle justo después de que la pulsación larga lo abriera.
+    marker.addListener('click', (event: google.maps.MapMouseEvent) => {
+      event.domEvent?.stopPropagation();
+    });
   }
 
   /**

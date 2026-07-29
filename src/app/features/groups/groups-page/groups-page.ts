@@ -140,6 +140,7 @@ export class GroupsPageComponent {
     ).subscribe(results => {
       this.createSearching.set(false);
       this.createSearchResults.set(results);
+      console.log("Result ", results)
     });
 
     // Búsqueda para formulario de edición inline.

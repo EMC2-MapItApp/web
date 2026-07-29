@@ -192,8 +192,9 @@
                   (click)="!isAlreadyQueued(user) && addToCreateQueue(user)">
                   <span class="user-search__avatar">{{ user.name.charAt(0) }}</span>
                   <div class="user-search__info">
-                    <span class="user-search__name">{{ user.name }}</span>
+                    <span class="user-search__name">{{ user.name }}</span>                    
                     <span class="user-search__nick">&#64;{{ user.nick }}</span>
+                    <span class="user-search__mail">{{ user.email }}</span>
                   </div>
                   <span class="user-search__status">{{ isAlreadyQueued(user) ? 'Pendiente' : 'Invitar' }}</span>
                 </li>
@@ -387,8 +388,9 @@
                     (click)="inviteUserInEdit(user, group)">
                     <span class="user-search__avatar">{{ user.name.charAt(0) }}</span>
                     <div class="user-search__info">
-                      <span class="user-search__name">{{ user.name }}</span>
+                      <span class="user-search__name">{{ user.name }}</span>                    
                       <span class="user-search__nick">&#64;{{ user.nick }}</span>
+                        <span class="user-search__mail">{{ user.email }}</span>
                     </div>
                     @if (editInvitingUserId() === user.id) {
                     <mat-spinner diameter="14" />

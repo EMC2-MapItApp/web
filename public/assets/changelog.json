@@ -1,6 +1,12 @@
 [
   {
     "date": "2026-07-29",
+    "type": "improvement",
+    "title": "Feedback al pulsar puntos",
+    "description": "Al tocar un punto del mapa en el móvil verás una animación mientras mantienes la pulsación, para que sepas al instante que se ha registrado tu gesto."
+  },
+  {
+    "date": "2026-07-29",
     "type": "feature",
     "title": "Puntos del mapa en móvil",
     "description": "Ahora en dispositivos táctiles puedes ver la información de un punto con un toque corto y abrir su detalle manteniéndolo pulsado, además los puntos disponibles laten para que los localices más fácilmente."

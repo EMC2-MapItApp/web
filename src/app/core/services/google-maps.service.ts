@@ -55,19 +55,30 @@ export class GoogleMapsService {
 
   /**
    * Genera un icono SVG circular para marcadores del mapa.
-   * @param color - Color HEX de fondo del círculo.
-   * @param emoji - Emoji o texto centrado dentro del círculo.
-   * @param size  - Tamaño del icono en píxeles (por defecto 36).
-   * @param dark  - Si es `true`, añade sombra para mejorar visibilidad sobre mapa oscuro.
+   * @param color   - Color HEX de fondo del círculo.
+   * @param emoji   - Emoji o texto centrado dentro del círculo.
+   * @param size    - Tamaño del icono en píxeles (por defecto 36).
+   * @param dark    - Si es `true`, añade sombra para mejorar visibilidad sobre mapa oscuro.
+   * @param animate - Si es `true`, añade un anillo de pulso animado (SMIL, funciona embebido
+   *                  en el `<img>` del marker sin necesitar CSS) para indicar que el POI es
+   *                  interactivo — pensado para dispositivos táctiles, donde no hay hover que
+   *                  cumpla esa función.
    */
   buildMarkerIcon(
     color: string,
     emoji: string,
     size = 36,
     dark = false,
+    animate = false,
   ): { url: string; scaledSize: google.maps.Size; anchor: google.maps.Point } {
     const half = size / 2;
     const r    = half - 2;
+    // Margen extra para que el anillo pueda expandirse sin recortarse por el viewBox.
+    const pad    = animate ? Math.ceil(r * 1.7) : 0;
+    const canvas = size + pad * 2;
+    const cx     = canvas / 2;
+    const cy     = canvas / 2;
+
     const shadowFilter = dark
       ? `<defs>
          <filter id="s" x="-40%" y="-40%" width="180%" height="180%">
@@ -77,15 +88,24 @@ export class GoogleMapsService {
        </defs>`
       : '';
     const filterAttr = dark ? 'filter="url(#s)"' : '';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+
+    const pulseRing = (beginOffset: string): string => `
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" opacity="0.7">
+      <animate attributeName="r" from="${r}" to="${r * 2.8}" dur="1.6s" begin="${beginOffset}" repeatCount="indefinite" />
+      <animate attributeName="opacity" from="0.7" to="0" dur="1.6s" begin="${beginOffset}" repeatCount="indefinite" />
+    </circle>`;
+    const pulseRings = animate ? pulseRing('0s') + pulseRing('0.8s') : '';
+
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas}" height="${canvas}" viewBox="0 0 ${canvas} ${canvas}">
     ${shadowFilter}
-    <circle cx="${half}" cy="${half}" r="${r}" fill="${color}" stroke="white" stroke-width="2" ${filterAttr}/>
-    <text x="${half}" y="${half + 5}" text-anchor="middle" font-size="${Math.round(size * 0.44)}">${emoji}</text>
+    ${pulseRings}
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" stroke="white" stroke-width="2" ${filterAttr}/>
+    <text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="${Math.round(size * 0.44)}">${emoji}</text>
   </svg>`;
     return {
       url:        'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
-      scaledSize: new google.maps.Size(size, size),
-      anchor:     new google.maps.Point(half, half),
+      scaledSize: new google.maps.Size(canvas, canvas),
+      anchor:     new google.maps.Point(cx, cy),
     };
   }
 

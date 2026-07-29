@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-07-29",
+    "type": "feature",
+    "title": "Puntos del mapa en móvil",
+    "description": "Ahora en dispositivos táctiles puedes ver la información de un punto con un toque corto y abrir su detalle manteniéndolo pulsado, además los puntos disponibles laten para que los localices más fácilmente."
+  },
+  {
     "date": "2026-07-24",
     "type": "feature",
     "title": "Mensajes a los miembros del grupo",

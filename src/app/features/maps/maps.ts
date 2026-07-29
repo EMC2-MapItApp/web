@@ -42,6 +42,9 @@ import { ResponsiveService } from '@core/responsive/responsive.service';
 })
 export class MapsPageComponent implements AfterViewInit {
 
+  /** Umbral de pulsación larga (táctil) para abrir el detalle de un POI, en ms. */
+  private static readonly LONG_PRESS_MS = 1000;
+
   // ── Servicios ──────────────────────────────────────────────────────────────
   private mapsService = inject(GoogleMapsService);
   private mapSettingsService = inject(MapSettingsService);
@@ -257,9 +260,10 @@ export class MapsPageComponent implements AfterViewInit {
 
       this.panelVisible.set(!this.currentUser.isIndividual());
     });
-    // se suscribe al cambio de tema
+    // Se suscribe al cambio de tema y al login/logout (afecta a la animación de los POIs)
     effect(() => {
       this.themeService.isDark();
+      this.currentUser.user();
       if (this.map) this.renderMarkers(this.currentLocations);
     });
   }
@@ -463,6 +467,12 @@ export class MapsPageComponent implements AfterViewInit {
 
     const isDark = this.themeService.isDark();
 
+    // Dispositivos sin hover real (táctiles): el mouseover/mouseout de escritorio nunca
+    // llega a dispararse, así que el tooltip sustituye su gesto por pulsación corta y el
+    // detalle por pulsación larga (ver attachPressHandlers).
+    const canHover = this.responsiveService.state().hasHover;
+    const animatePois = !canHover && !!this.currentUser.user();
+
     locations.forEach(location => {
       const color = this.categoryService.resolveColor(location.locationTypeId);
       const icon = this.categoryService.resolveIcon(location.locationTypeId);
@@ -470,51 +480,105 @@ export class MapsPageComponent implements AfterViewInit {
       const marker = new google.maps.Marker({
         position: { lat: location.lat, lng: location.lng },
         map: this.map,
-        icon: this.mapsService.buildMarkerIcon(color, icon, 36, isDark),
+        icon: this.mapsService.buildMarkerIcon(color, icon, 36, isDark, animatePois),
       });
 
-      marker.addListener('click', () => {
-        const bc = this.categoryService.resolveBreadcrumb(location.locationTypeId);
-        if (!bc) return;
-        this.publicationService.getEnrollments(location.id).subscribe(users => {
-
-          // Actualizar estado local si el usuario actual está en la lista
-          const currentUserId = this.currentUser.user()?.id?.toString();
-          if (currentUserId && users.some(u => u.userId === currentUserId)) {
-            this.joinedByUserAndLocation.update(prev => ({
-              ...prev,
-              [this.buildJoinKey(location.id)]: true,
-            }));
-          }
-
-          this.selectedDetail.set({
-            id: location.id,
-            name: location.name,
-            description: location.description,
-            locationTypeId: location.locationTypeId,
-            metadata: location.metadata,
-            startDate: location.startDate,
-            endDate: location.endDate,
-            requiredLevel: location.requiredLevel,
-            publicationType: location.publicationType,
-            active: location.active,
-            occupiedSlots: location.occupiedSlots,
-            enrolledUsers: users,
-          });
-          this.selectedBreadcrumb.set(bc);
-          this.selectedContext.set(location.publicationType ?? 'place');
+      if (canHover) {
+        marker.addListener('click', () => this.openLocationDetail(location));
+        marker.addListener('mouseover', () => {
+          this.infoWindow.setContent(this.buildTooltipContent(location, color));
+          this.infoWindow.open({ map: this.map, anchor: marker });
         });
-      });
-
-
-      marker.addListener('mouseover', () => {
-        this.infoWindow.setContent(this.buildTooltipContent(location, color));
-        this.infoWindow.open({ map: this.map, anchor: marker });
-      });
-      marker.addListener('mouseout', () => this.infoWindow.close());
+        marker.addListener('mouseout', () => this.infoWindow.close());
+      } else {
+        this.attachPressHandlers(marker, location, color);
+      }
 
       this.markers.push(marker);
     });
+  }
+
+  /**
+   * Abre el panel de detalle de una localización, cargando primero sus apuntados.
+   *
+   * @remarks
+   * Compartido entre el click de escritorio y la pulsación larga táctil
+   * (ver {@link MapsPageComponent.attachPressHandlers}).
+   */
+  private openLocationDetail(location: MapLocation): void {
+    const bc = this.categoryService.resolveBreadcrumb(location.locationTypeId);
+    if (!bc) return;
+    this.publicationService.getEnrollments(location.id).subscribe(users => {
+
+      // Actualizar estado local si el usuario actual está en la lista
+      const currentUserId = this.currentUser.user()?.id?.toString();
+      if (currentUserId && users.some(u => u.userId === currentUserId)) {
+        this.joinedByUserAndLocation.update(prev => ({
+          ...prev,
+          [this.buildJoinKey(location.id)]: true,
+        }));
+      }
+
+      this.selectedDetail.set({
+        id: location.id,
+        name: location.name,
+        description: location.description,
+        locationTypeId: location.locationTypeId,
+        metadata: location.metadata,
+        startDate: location.startDate,
+        endDate: location.endDate,
+        requiredLevel: location.requiredLevel,
+        publicationType: location.publicationType,
+        active: location.active,
+        occupiedSlots: location.occupiedSlots,
+        enrolledUsers: users,
+      });
+      this.selectedBreadcrumb.set(bc);
+      this.selectedContext.set(location.publicationType ?? 'place');
+    });
+  }
+
+  /**
+   * Sustituye hover+click por pulsación corta/larga en dispositivos sin hover real.
+   *
+   * @remarks
+   * Un marker de Google Maps no distingue táctil de ratón por sí mismo, pero sí reenvía
+   * `mousedown`/`mouseup` para taps (el navegador los sintetiza a partir de
+   * `touchstart`/`touchend`). Medimos la duración entre ambos con un temporizador: por
+   * debajo de {@link MapsPageComponent.LONG_PRESS_MS} se interpreta como pulsación corta
+   * (tooltip, el equivalente táctil del hover) y por encima como pulsación larga (detalle,
+   * el equivalente táctil del click).
+   */
+  private attachPressHandlers(marker: google.maps.Marker, location: MapLocation, color: string): void {
+    let pressTimer: ReturnType<typeof setTimeout> | null = null;
+    let longPressTriggered = false;
+
+    const clearPressTimer = (): void => {
+      if (pressTimer) {
+        clearTimeout(pressTimer);
+        pressTimer = null;
+      }
+    };
+
+    marker.addListener('mousedown', () => {
+      longPressTriggered = false;
+      clearPressTimer();
+      pressTimer = setTimeout(() => {
+        longPressTriggered = true;
+        this.infoWindow.close();
+        this.openLocationDetail(location);
+      }, MapsPageComponent.LONG_PRESS_MS);
+    });
+
+    marker.addListener('mouseup', () => {
+      clearPressTimer();
+      if (!longPressTriggered) {
+        this.infoWindow.setContent(this.buildTooltipContent(location, color));
+        this.infoWindow.open({ map: this.map, anchor: marker });
+      }
+    });
+
+    marker.addListener('mouseout', clearPressTimer);
   }
 
   /**

@@ -471,16 +471,17 @@ export class MapsPageComponent implements AfterViewInit {
     // llega a dispararse, así que el tooltip sustituye su gesto por pulsación corta y el
     // detalle por pulsación larga (ver attachPressHandlers).
     const canHover = this.responsiveService.state().hasHover;
-    const animatePois = !canHover && !!this.currentUser.user();
+    const showPressFeedback = !canHover && !!this.currentUser.user();
 
     locations.forEach(location => {
       const color = this.categoryService.resolveColor(location.locationTypeId);
       const icon = this.categoryService.resolveIcon(location.locationTypeId);
+      const baseIcon = this.mapsService.buildMarkerIcon(color, icon, 36, isDark, false);
 
       const marker = new google.maps.Marker({
         position: { lat: location.lat, lng: location.lng },
         map: this.map,
-        icon: this.mapsService.buildMarkerIcon(color, icon, 36, isDark, animatePois),
+        icon: baseIcon,
       });
 
       if (canHover) {
@@ -491,7 +492,12 @@ export class MapsPageComponent implements AfterViewInit {
         });
         marker.addListener('mouseout', () => this.infoWindow.close());
       } else {
-        this.attachPressHandlers(marker, location, color);
+        // El icono animado solo se aplica mientras dura la pulsación (ver
+        // attachPressHandlers) — no se muestra de forma permanente.
+        const pressIcon = showPressFeedback
+          ? this.mapsService.buildMarkerIcon(color, icon, 36, isDark, true)
+          : null;
+        this.attachPressHandlers(marker, location, color, baseIcon, pressIcon);
       }
 
       this.markers.push(marker);
@@ -549,7 +555,13 @@ export class MapsPageComponent implements AfterViewInit {
    * (tooltip, el equivalente táctil del hover) y por encima como pulsación larga (detalle,
    * el equivalente táctil del click).
    */
-  private attachPressHandlers(marker: google.maps.Marker, location: MapLocation, color: string): void {
+  private attachPressHandlers(
+    marker: google.maps.Marker,
+    location: MapLocation,
+    color: string,
+    baseIcon: google.maps.Icon,
+    pressIcon: google.maps.Icon | null,
+  ): void {
     let pressTimer: ReturnType<typeof setTimeout> | null = null;
     let longPressTriggered = false;
 
@@ -560,11 +572,19 @@ export class MapsPageComponent implements AfterViewInit {
       }
     };
 
+    // El icono animado (pressIcon) solo está puesto entre mousedown y el
+    // mouseup/timeout que le sigue — nunca queda activo en reposo.
+    const stopPressFeedback = (): void => {
+      if (pressIcon) marker.setIcon(baseIcon);
+    };
+
     marker.addListener('mousedown', () => {
       longPressTriggered = false;
       clearPressTimer();
+      if (pressIcon) marker.setIcon(pressIcon);
       pressTimer = setTimeout(() => {
         longPressTriggered = true;
+        stopPressFeedback();
         this.infoWindow.close();
         this.openLocationDetail(location);
       }, MapsPageComponent.LONG_PRESS_MS);
@@ -573,12 +593,16 @@ export class MapsPageComponent implements AfterViewInit {
     marker.addListener('mouseup', () => {
       clearPressTimer();
       if (!longPressTriggered) {
+        stopPressFeedback();
         this.infoWindow.setContent(this.buildTooltipContent(location, color));
         this.infoWindow.open({ map: this.map, anchor: marker });
       }
     });
 
-    marker.addListener('mouseout', clearPressTimer);
+    marker.addListener('mouseout', () => {
+      clearPressTimer();
+      stopPressFeedback();
+    });
   }
 
   /**

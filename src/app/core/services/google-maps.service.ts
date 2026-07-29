@@ -60,9 +60,10 @@ export class GoogleMapsService {
    * @param size    - Tamaño del icono en píxeles (por defecto 36).
    * @param dark    - Si es `true`, añade sombra para mejorar visibilidad sobre mapa oscuro.
    * @param animate - Si es `true`, añade un anillo de pulso animado (SMIL, funciona embebido
-   *                  en el `<img>` del marker sin necesitar CSS) para indicar que el POI es
-   *                  interactivo — pensado para dispositivos táctiles, donde no hay hover que
-   *                  cumpla esa función.
+   *                  en el `<img>` del marker sin necesitar CSS) para indicar que el POI está
+   *                  siendo pulsado — pensado para dispositivos táctiles: se activa solo
+   *                  mientras dura la pulsación (ver `attachPressHandlers` en `maps.ts`), no
+   *                  de forma permanente, así que tiene que leerse de un vistazo.
    */
   buildMarkerIcon(
     color: string,
@@ -73,8 +74,9 @@ export class GoogleMapsService {
   ): { url: string; scaledSize: google.maps.Size; anchor: google.maps.Point } {
     const half = size / 2;
     const r    = half - 2;
+    const rMax = r * 3.6;
     // Margen extra para que el anillo pueda expandirse sin recortarse por el viewBox.
-    const pad    = animate ? Math.ceil(r * 1.7) : 0;
+    const pad    = animate ? Math.ceil(rMax - r) + 4 : 0;
     const canvas = size + pad * 2;
     const cx     = canvas / 2;
     const cy     = canvas / 2;
@@ -89,12 +91,14 @@ export class GoogleMapsService {
       : '';
     const filterAttr = dark ? 'filter="url(#s)"' : '';
 
+    // Duración corta y ondas solapadas para que se lean varios pulsos incluso en una
+    // pulsación breve, en vez de un único anillo apenas iniciado.
     const pulseRing = (beginOffset: string): string => `
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" opacity="0.7">
-      <animate attributeName="r" from="${r}" to="${r * 2.8}" dur="1.6s" begin="${beginOffset}" repeatCount="indefinite" />
-      <animate attributeName="opacity" from="0.7" to="0" dur="1.6s" begin="${beginOffset}" repeatCount="indefinite" />
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="${Math.max(3, r * 0.3)}" opacity="0.9">
+      <animate attributeName="r" from="${r}" to="${rMax}" dur="0.7s" begin="${beginOffset}" repeatCount="indefinite" />
+      <animate attributeName="opacity" from="0.9" to="0" dur="0.7s" begin="${beginOffset}" repeatCount="indefinite" />
     </circle>`;
-    const pulseRings = animate ? pulseRing('0s') + pulseRing('0.8s') : '';
+    const pulseRings = animate ? pulseRing('0s') + pulseRing('0.35s') : '';
 
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas}" height="${canvas}" viewBox="0 0 ${canvas} ${canvas}">
     ${shadowFilter}

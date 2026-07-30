@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-07-30",
+    "type": "improvement",
+    "title": "Panel del formulario plegable",
+    "description": "Ahora puedes ocultar o mostrar el formulario al crear una publicación con una pestaña lateral, dejando el mapa a la vista cuando lo necesites."
+  },
+  {
     "date": "2026-07-29",
     "type": "improvement",
     "title": "Feedback al pulsar puntos",

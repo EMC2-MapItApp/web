@@ -3,7 +3,19 @@
 :host {
   display: block;
   height: 100%;
+  // "Rompe" el padding de 20px de .app-main (home-shell) para que el mapa
+  // llegue al borde real del área de contenido en vez de dejar un marco
+  // exterior — más notorio ahora que el formulario puede colapsar y el mapa
+  // se queda solo en pantalla.
+  margin: -20px;
+  width: calc(100% + 40px);
+  height: calc(100% + 40px);
 }
+
+// Hueco entre panel y mapa en modo lateral — se referencia también desde
+// .panel-toggle-tab--attached para que la pestaña quede pegada al borde del
+// mapa (no a mitad del hueco) tanto abierta como colapsada.
+$panel-gap: 8px;
 
 // ══════════════════════════════════════════════════════════════════════════════
 // LAYOUT
@@ -12,10 +24,11 @@
 .create-publication-page {
   position: relative;
   display: grid;
-  grid-template-columns: 460px 1fr;
-  gap: 20px;
+  grid-template-columns: min(460px, 46%) 1fr;
+  gap: $panel-gap;
   height: 100%;
   min-height: 0;
+  transition: grid-template-columns 0.3s ease;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -24,15 +37,34 @@
 
 .form-panel {
   position: relative;
-  display: flex;
-  flex-direction: column;
   min-height: 0; // ← necesario en contexto flex/grid
-  // SIN overflow-y aquí — lo gestiona .form-scroll-area
+  min-width: 0; // ← permite que la columna del grid encoja hasta 0 al colapsar
+  overflow: visible; // la pestaña anclada (hija) sobresale del borde, no se recorta
+  transition: transform 0.28s ease;
 }
 
+// Modo pantalla completa (táctil vertical): el panel se desliza fuera por la izquierda.
 .form-panel--hidden {
-  display: none !important;
+  transform: translateX(-100%);
   pointer-events: none;
+}
+
+// Modo panel lateral (escritorio o táctil horizontal): el panel colapsa a 0 de ancho
+// (el grid-template-columns del contenedor hace el trabajo); aquí solo desvanecemos
+// el contenido para que no se vea "aplastado" durante la animación.
+.form-panel--collapsed .form-panel__inner {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.form-panel__inner {
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.2s ease;
 }
 
 .form-scroll-area {
@@ -573,27 +605,62 @@
   height: 100%;
 }
 
-.open-form-fab {
-  position: absolute;
-  left: calc(14px + env(safe-area-inset-left));
-  bottom: calc(14px + env(safe-area-inset-bottom));
-  z-index: 12;
-  width: 56px;
-  height: 56px;
+// ══════════════════════════════════════════════════════════════════════════════
+// PESTAÑA DE TOGGLE DEL FORMULARIO (estilo "panel de indicaciones" de Google Maps)
+// ══════════════════════════════════════════════════════════════════════════════
+
+.panel-toggle-tab {
+  width: 20px;
+  height: 88px;
   border: none;
-  border-radius: 50%;
+  border-radius: 0 10px 10px 0;
   background: var(--c-primary);
   color: #fff;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 3px 0 14px rgba(0, 0, 0, 0.25);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: opacity v.$transition-fast;
+
+  &:hover {
+    opacity: 0.92;
+  }
 
   mat-icon {
-    font-size: 24px;
-    width: 24px;
-    height: 24px;
+    font-size: 18px;
+    line-height: 18px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // Modo panel lateral: hija de .form-panel, pegada al borde del MAPA (no al
+  // borde del panel) — "100% + $panel-gap" salta el hueco entre columnas para
+  // que la pestaña quede integrada contra el mapa en vez de flotar a medias
+  // en la zona vacía entre panel y mapa. Al no ser un pixel fijo sino relativo
+  // al ancho real de .form-panel, funciona igual abierta (460px/46%) que
+  // colapsada (0px, donde "100%" es 0 y solo queda el salto del gap).
+  &--attached {
+    position: absolute;
+    left: calc(100% + #{$panel-gap});
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 11;
+  }
+
+  // Modo pantalla completa: anclada al borde de la PANTALLA real (position: fixed
+  // respecto al viewport), no al layout ni al formulario — así queda al margen
+  // izquierdo del todo, por delante del rail de navegación y la cabecera de la app
+  // (que usan z-index 1100/1200), en vez de desplazada por su padding/ancho.
+  &--fixed {
+    position: fixed;
+    left: env(safe-area-inset-left);
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1300;
   }
 }
 
@@ -730,42 +797,10 @@
   }
 }
 
+// Ajustes de ancho estrecho que aplican tanto en modo pantalla completa (táctil
+// vertical) como en modo panel lateral estrecho (táctil horizontal) — no dependen
+// de la orientación, solo de que el panel/pantalla es más estrecho que en escritorio.
 @media (max-width: 1023px) {
-  .create-publication-page {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .form-panel {
-    position: absolute;
-    inset: 0;
-    z-index: 10;
-    padding: 10px;
-    background: var(--c-bg);
-    border: 1px solid var(--c-border);
-    border-radius: 0;
-    padding-bottom: 52px;
-  }
-
-  .form-panel--hidden {
-    display: none;
-  }
-
-  .map-panel {
-    border-radius: 0;
-    border: none;
-    box-shadow: none;
-  }
-
-  .map-hint-overlay {
-    top: calc(10px + env(safe-area-inset-top));
-    bottom: auto;
-    max-width: 198px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
   .route-preview {
     width: 100%;
 
@@ -790,10 +825,42 @@
       padding: 10px 12px;
       font-size: 12px;
     }
+  }
+}
 
-    .form-actions__back {
-      grid-column: 1 / -1;
-    }
+// Modo pantalla completa real: solo táctil (móvil/tablet) EN VERTICAL — es el único
+// caso sin ancho útil para el mapa junto al formulario, así que este lo tapa entero.
+// En horizontal (aunque sea táctil) se mantiene el modo panel lateral de más arriba.
+@media (max-width: 1023px) and (orientation: portrait) {
+  .create-publication-page {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .form-panel {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    padding: 10px;
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    border-radius: 0;
+    padding-bottom: 52px;
+  }
+
+  .map-panel {
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+
+  .map-hint-overlay {
+    top: calc(10px + env(safe-area-inset-top));
+    bottom: auto;
+    max-width: 198px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 

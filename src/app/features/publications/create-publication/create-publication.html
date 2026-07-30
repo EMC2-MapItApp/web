@@ -1,7 +1,21 @@
-<div class="create-publication-page" [class.create-publication-page--compact]="isCompactViewport()">
+<div class="create-publication-page" [class.create-publication-page--compact]="isCompactViewport()"
+  [style.grid-template-columns]="isFullscreenFormMode() ? null : (showFormPanel() ? 'min(460px, 46%) 1fr' : '0px 1fr')">
 
   <!-- ══ PANEL FORMULARIO (izquierda) ══════════════════════════════════════ -->
-  <div class="form-panel" [class.form-panel--hidden]="isCompactViewport() && !showFormPanel()">
+  <div class="form-panel" [class.form-panel--hidden]="isFullscreenFormMode() && !showFormPanel()"
+    [class.form-panel--collapsed]="!isFullscreenFormMode() && !showFormPanel()">
+
+    <!-- ── Pestaña de toggle anclada al borde del panel (modo panel lateral: escritorio o táctil en horizontal) ── -->
+    @if (!isFullscreenFormMode() && !isAddingRoute) {
+    <button class="panel-toggle-tab panel-toggle-tab--attached" type="button"
+      (click)="showFormPanel() ? closeFormPanel() : openFormPanel()"
+      [attr.aria-expanded]="showFormPanel()" aria-label="Mostrar u ocultar formulario">
+      <mat-icon>{{ showFormPanel() ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+    </button>
+    }
+
+    <!-- ── Contenido colapsable del panel (se recorta/desvanece al colapsar en modo lateral) ── -->
+    <div class="form-panel__inner">
 
     <!-- ── Zona scrollable (header + acordeón) ── -->
     <div class="form-scroll-area">
@@ -35,7 +49,7 @@
       <!-- ══════════════════════════════════════════════════════════════════════
          ACORDEÓN: Agrupa las secciones en paneles colapsables
       ══════════════════════════════════════════════════════════════════════ -->
-      <mat-accordion class="form-accordion" multi>
+      <mat-accordion class="form-accordion">
 
         <!-- ══════════════════════════════════════════════════════════════════
            PANEL 1: Información básica
@@ -424,13 +438,6 @@
        BOTONES DE ACCIÓN (fijos al final)
     ══════════════════════════════════════════════════════════════════════ -->
     <div class="form-actions">
-      @if (isCompactViewport()) {
-      <button class="btn btn--ghost form-actions__back" (click)="closeFormPanel()" type="button">
-        <mat-icon>arrow_back</mat-icon>
-        Volver al mapa
-      </button>
-      }
-
       <!-- Botón: Limpiar formulario -->
       <button class="btn btn--ghost" (click)="resetForm()" type="button">
         <mat-icon>refresh</mat-icon>
@@ -442,6 +449,9 @@
         {{ submitButtonText }}
       </button>
     </div>
+
+    </div>
+    <!-- /.form-panel__inner -->
 
   </div>
 
@@ -459,7 +469,7 @@
     <!-- Contenedor del mapa de Google Maps -->
     <div #mapContainer class="map-container"></div>
 
-    @if (isCompactViewport() && isAddingRoute && !showFormPanel()) {
+    @if (isFullscreenFormMode() && isAddingRoute && !showFormPanel()) {
     <div class="route-finish-stack">
       <button class="route-finish-fab" type="button" (click)="finishRouteFromMap()" aria-label="Finalizar ruta">
         <mat-icon>check_circle</mat-icon>
@@ -468,12 +478,16 @@
     </div>
     }
 
-    @if (isCompactViewport() && !showFormPanel() && !isAddingRoute) {
-    <button class="open-form-fab" type="button" (click)="openFormPanel()" aria-label="Abrir formulario">
-      <mat-icon>add_location_alt</mat-icon>
-    </button>
-    }
-
   </div>
+
+  <!-- ── Pestaña de toggle fija (modo pantalla completa: táctil en vertical) ──
+       Siempre encima del formulario y del mapa, en la misma posición se abra o cierre. -->
+  @if (isFullscreenFormMode() && !isAddingRoute) {
+  <button class="panel-toggle-tab panel-toggle-tab--fixed" type="button"
+    (click)="showFormPanel() ? closeFormPanel() : openFormPanel()"
+    [attr.aria-expanded]="showFormPanel()" aria-label="Mostrar u ocultar formulario">
+    <mat-icon>{{ showFormPanel() ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+  </button>
+  }
 
 </div>

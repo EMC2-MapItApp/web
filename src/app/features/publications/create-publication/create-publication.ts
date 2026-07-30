@@ -101,8 +101,19 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   });
 
   /**
-   * En mobile/tablet el formulario arranca oculto para priorizar el mapa.
-   * En desktop permanece visible para mantener la experiencia actual.
+   * True solo en móvil/tablet en vertical: único caso sin ancho útil para
+   * mostrar el mapa junto al formulario, así que este ocupa toda la pantalla.
+   * En horizontal (aunque sea móvil/tablet) se usa el modo panel lateral,
+   * igual que en escritorio.
+   */
+  readonly isFullscreenFormMode = computed(() => {
+    const state = this.responsiveService.state();
+    return (state.isMobile || state.isTablet) && state.isPortrait;
+  });
+
+  /**
+   * En modo pantalla completa el formulario arranca oculto para priorizar el mapa.
+   * En modo panel lateral (escritorio, o táctil en horizontal) permanece visible.
    */
   readonly showFormPanel = signal(false);
 
@@ -265,10 +276,10 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   constructor() {
     this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
 
-    // Sincroniza visibilidad del formulario según viewport.
-    // En compact se prioriza el mapa; en desktop se mantiene visible.
+    // Sincroniza visibilidad del formulario según el modo.
+    // En pantalla completa se prioriza el mapa; en panel lateral se mantiene visible.
     effect(() => {
-      this.showFormPanel.set(!this.isCompactViewport());
+      this.showFormPanel.set(!this.isFullscreenFormMode());
     });
 
     // Aplica estilos del mapa reactivamente (dark mode + POIs)
@@ -297,14 +308,13 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     });
   }
 
-  /** Muestra el formulario en mobile/tablet desde el botón flotante. */
+  /** Muestra el formulario desde la pestaña de toggle. */
   openFormPanel(): void {
     this.showFormPanel.set(true);
   }
 
-  /** Cierra el formulario en mobile/tablet para volver al mapa completo. */
+  /** Oculta/colapsa el formulario desde la pestaña de toggle. */
   closeFormPanel(): void {
-    if (!this.isCompactViewport()) return;
     this.showFormPanel.set(false);
   }
 
@@ -801,12 +811,13 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   /**
    * Acción principal de ruta desde formulario.
-   * En mobile/tablet inicia el trazado y vuelve al mapa automáticamente.
+   * En modo pantalla completa inicia el trazado y vuelve al mapa automáticamente
+   * (en modo panel lateral el mapa ya es visible, no hace falta cerrar nada).
    */
   onRoutePrimaryAction(): void {
-    const compactViewport = this.isCompactViewport();
+    const fullscreenMode = this.isFullscreenFormMode();
 
-    if (compactViewport && !this.isAddingRoute) {
+    if (fullscreenMode && !this.isAddingRoute) {
       this.toggleRouteMode();
       this.closeFormPanel();
       return;

@@ -594,14 +594,18 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   /**
    * Selecciona o deselecciona una subcategoría.
-   * Resetea el tipo de ubicación.
+   * Autoselecciona el tipo de ubicación cuando solo hay uno disponible: de
+   * momento el único tipo real es "Quedadas" (el "Profesional" está filtrado
+   * en `visibleTypes` y aún no implementado), así que en la práctica siempre
+   * queda preseleccionado sin que el usuario tenga que pulsarlo.
    *
    * @param sub - Subcategoría a seleccionar
    */
   selectSub(sub: SubCategory): void {
     const isSame = this.selectedSub()?.id === sub.id;
     this.selectedSub.set(isSame ? null : sub);
-    this.locationTypeId = null;
+    const types = this.visibleTypes();
+    this.locationTypeId = types.length === 1 ? types[0].id : null;
   }
 
   /**

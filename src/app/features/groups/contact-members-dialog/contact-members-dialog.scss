@@ -51,8 +51,9 @@
     border: 1px solid var(--c-border-light);
     border-radius: v.$radius-md;
 
-    // Diálogo fullscreen en mobile/tablet (ver withResponsiveDialogLayout): más alto en
-    // proporción a la pantalla en vez de un valor fijo pensado para desktop.
+    // En mobile/tablet (ver withResponsiveDialogLayout) el diálogo ya no ocupa toda la
+    // pantalla: se deja una proporción de la altura visible en vez de un valor fijo
+    // pensado para desktop, para que la lista no empuje el resto del formulario fuera de vista.
     @include m.compact {
       max-height: 38vh;
     }

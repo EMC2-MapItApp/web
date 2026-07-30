@@ -442,8 +442,30 @@ export class GroupsPageComponent {
     });
   }
 
-  /** Expulsa a un miembro del grupo en edición. */
+  /** Pide confirmación y, si se acepta, expulsa a un miembro del grupo en edición. */
   removeEditMember(member: GroupMember, group: Group): void {
+    const compactViewport = this.responsive.isMobile() || this.responsive.isTablet();
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, withResponsiveDialogLayout(
+      {
+        ...CONFIRM_DIALOG_CONFIG,
+        data: {
+          title: 'Eliminar del grupo',
+          message: `¿Seguro que quieres eliminar a ${member.name} del grupo?`,
+          warning: 'Dejará de ver las publicaciones y la actividad del grupo.',
+          icon: 'person_remove',
+          acceptText: 'Eliminar',
+          acceptIcon: 'person_remove',
+        } satisfies ConfirmDialogData,
+      },
+      compactViewport,
+    ));
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) this.doRemoveEditMember(member, group);
+    });
+  }
+
+  private doRemoveEditMember(member: GroupMember, group: Group): void {
     this.editActionInProgressId.set(member.userId);
     this.groupService.removeMember(group.id, member.userId).subscribe({
       next: () => {

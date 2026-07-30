@@ -15,7 +15,8 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatDividerModule} from '@angular/material/divider';
 import {MapSettingsService} from '@core/services/map-settings.service';
 import {ThemeService} from '@core/services/theme.service';
-import {PushNotificationService} from '@core/services/push-notification.service';
+import {NotificationPreferencesService} from '@core/services/notification-preferences.service';
+import {NOTIFICATION_TYPE_META} from '@core/models/notification.model';
 
 /** Componente de la página de Ajustes.
  * @remarks Actúa como contenedor de configuración. Delega toda la lógica de estado
@@ -44,19 +45,13 @@ export class SettingsPageComponent {
 
   readonly mapSettings = inject(MapSettingsService);
   readonly themeService = inject(ThemeService);
-  readonly pushNotifications = inject(PushNotificationService);
+  readonly notificationPreferences = inject(NotificationPreferencesService);
+
+  /** Metadata (icono/label/descripción) de cada tipo de notificación, para el template. */
+  readonly notificationTypeMeta = NOTIFICATION_TYPE_META;
 
   /** Permite enlazar aquí con `?section=notifications` (p. ej. desde la campana de notificaciones)
    *  para abrir directamente el acordeón de Notificaciones. */
   readonly notificationsSectionExpanded =
     inject(ActivatedRoute).snapshot.queryParamMap.get('section') === 'notifications';
-
-  /** Activa/desactiva el push nativo del SO para este dispositivo. */
-  togglePushNotifications(): void {
-    if (this.pushNotifications.enabled()) {
-      this.pushNotifications.disable();
-    } else {
-      this.pushNotifications.enable();
-    }
-  }
 }

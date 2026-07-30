@@ -13,7 +13,7 @@ import { unauthorizedInterceptor } from './core/interceptors/unauthorized.interc
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { PUSH_PROVIDER } from './core/notifications/push-provider';
-import { WebPushProvider } from './core/notifications/web-push.provider';
+import { NoopPushProvider } from './core/notifications/noop-push.provider';
 
 import { routes } from './app.routes';
 
@@ -26,8 +26,11 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor, unauthorizedInterceptor])),
-    // Único punto de acoplamiento al canal de push concreto — cambiar a Capacitor en el futuro
-    // es reemplazar este binding, sin tocar PushNotificationService ni la UI.
-    { provide: PUSH_PROVIDER, useClass: WebPushProvider },
+    // Push nativo desactivado temporalmente (kill-switch de producto, ver
+    // mapit.push.enabled en el backend): NoopPushProvider no registra el Service Worker ni pide
+    // permiso. Revertir es volver a `useClass: WebPushProvider` — esa clase y push-sw.js quedan
+    // intactos. Único punto de acoplamiento al canal de push concreto — cambiar a Capacitor en
+    // el futuro también es reemplazar este binding, sin tocar PushNotificationService ni la UI.
+    { provide: PUSH_PROVIDER, useClass: NoopPushProvider },
   ]
 };

@@ -2,6 +2,12 @@
   {
     "date": "2026-07-30",
     "type": "feature",
+    "title": "Elige tus emails de aviso",
+    "description": "Ahora puedes decidir qué eventos quieres recibir por email desde Ajustes. El centro de notificaciones sigue mostrándote siempre todo."
+  },
+  {
+    "date": "2026-07-30",
+    "type": "feature",
     "title": "Aviso de borrado de caducadas",
     "description": "Ahora te avisamos en tu perfil de que las publicaciones caducadas se eliminan solas pasados 3 meses desde su fecha de fin."
   },

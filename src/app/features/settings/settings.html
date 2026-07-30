@@ -42,33 +42,42 @@
           <mat-icon>notifications</mat-icon>
           <span>Notificaciones</span>
         </mat-panel-title>
-        <mat-panel-description>Avisos nativos del sistema en este dispositivo</mat-panel-description>
+        <mat-panel-description>Qué eventos te llegan por email</mat-panel-description>
       </mat-expansion-panel-header>
 
       <section class="settings-section">
         <div class="settings-section__header">
           <div>
-            <h3 class="settings-section__title">Notificaciones push</h3>
+            <h3 class="settings-section__title">Notificaciones por email</h3>
             <p class="settings-section__desc">
-              @if (pushNotifications.permissionState() === 'unsupported') {
-                Este navegador no soporta notificaciones push.
-              } @else if (pushNotifications.permissionState() === 'denied') {
-                Has bloqueado los permisos de notificación. Actívalos desde los ajustes de tu
-                navegador o sistema operativo para poder recibirlas aquí.
-              } @else {
-                Recibe en este dispositivo las mismas notificaciones que ves en la campana:
-                invitaciones a grupos, avisos del organizador y mensajes difundidos.
-              }
+              Elige qué eventos quieres recibir también por email. El centro de notificaciones
+              (la campana) muestra siempre todos los eventos, se reciban o no por email.
             </p>
           </div>
-          <mat-slide-toggle
-            [checked]="pushNotifications.enabled()"
-            [disabled]="pushNotifications.permissionState() === 'unsupported' || pushNotifications.permissionState() === 'denied'"
-            (change)="togglePushNotifications()"
-            color="primary"
-            aria-label="Activar notificaciones push">
-          </mat-slide-toggle>
         </div>
+
+        <mat-divider />
+
+        <ul class="notification-list">
+          @for (pref of notificationPreferences.preferences(); track pref.type) {
+            <li class="notification-item">
+              <span class="notification-item__icon-wrap">
+                <mat-icon class="notification-item__icon">{{ notificationTypeMeta[pref.type].icon }}</mat-icon>
+              </span>
+              <div class="notification-item__text">
+                <span class="notification-item__label">{{ notificationTypeMeta[pref.type].label }}</span>
+                <span class="notification-item__desc">{{ notificationTypeMeta[pref.type].description }}</span>
+              </div>
+              <mat-slide-toggle
+                class="notification-item__toggle"
+                [checked]="pref.emailEnabled"
+                (change)="notificationPreferences.toggleEmail(pref.type)"
+                color="primary"
+                [attr.aria-label]="'Recibir por email: ' + notificationTypeMeta[pref.type].label">
+              </mat-slide-toggle>
+            </li>
+          }
+        </ul>
       </section>
     </mat-expansion-panel>
 

@@ -446,6 +446,12 @@
         </li>
         }
       </ul>
+      @if (hasFinishedPublications()) {
+      <p class="expired-notice">
+        <mat-icon>info</mat-icon>
+        Las publicaciones caducadas se eliminan automáticamente pasados 3 meses desde su fecha de fin.
+      </p>
+      }
       }
     </mat-expansion-panel>
 

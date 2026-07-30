@@ -10,24 +10,46 @@
   <div class="notification-panel">
     <div class="notification-panel__header">
       <span>Notificaciones</span>
-      @if (notificationService.unreadCount() > 0) {
-      <button type="button" class="mark-all-btn" (click)="markAllRead($event)">Marcar todas como leídas</button>
-      }
+      <div class="notification-panel__header-actions">
+        <button type="button" class="mark-all-btn" [disabled]="notificationService.unreadCount() === 0"
+                (click)="markAllRead($event)">Marcar todas como leídas</button>
+        <button type="button" class="delete-all-btn" [disabled]="notificationService.notifications().length === 0"
+                (click)="deleteAll($event)" title="Eliminar todas">Eliminar todas</button>
+      </div>
     </div>
 
     @if (notificationService.notifications().length === 0) {
     <p class="notification-panel__empty">No tienes notificaciones.</p>
     } @else {
     <ul class="notification-list">
-      @for (notification of notificationService.notifications(); track notification.id) {
+      @for (notification of visibleNotifications(); track notification.id) {
       <li class="notification-item" [class.notification-item--unread]="!notification.read"
           (click)="select(notification)">
-        <span class="notification-item__title">{{ notification.title }}</span>
-        <span class="notification-item__body">{{ notification.body }}</span>
-        <span class="notification-item__date">{{ notification.createdAt | date:'short' }}</span>
+        <div class="notification-item__main">
+          <span class="notification-item__title">{{ notification.title }}</span>
+          <span class="notification-item__body">{{ notification.body }}</span>
+          <span class="notification-item__date">{{ notification.createdAt | date:'short' }}</span>
+        </div>
+        <div class="notification-item__actions">
+          <button type="button" mat-icon-button class="action-btn action-btn--toggle-read"
+                  [class.action-btn--unread]="!notification.read"
+                  [title]="notification.read ? 'Marcar como no leída' : 'Marcar como leída'"
+                  (click)="toggleRead($event, notification)">
+            <mat-icon>{{ notification.read ? 'drafts' : 'markunread' }}</mat-icon>
+          </button>
+          <button type="button" mat-icon-button class="action-btn action-btn--delete" title="Eliminar"
+                  (click)="delete($event, notification)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
       </li>
       }
     </ul>
+    }
+    @if (hasMore()) {
+    <button type="button" class="view-all-btn" (click)="viewAll($event)">Ver todas</button>
+    } @else {
+    <button type="button" class="view-all-btn" (click)="goToNotificationSettings($event)">Ir a notificaciones</button>
     }
   </div>
   }

@@ -63,4 +63,33 @@ export class NotificationService {
       this._unreadCount.set(0);
     });
   }
+
+  markUnread(id: string): void {
+    const notification = this._notifications().find(n => n.id === id);
+    if (!notification || !notification.read) return;
+
+    this.http.patch<void>(`${this.baseUrl}/${id}/unread`, {}).subscribe(() => {
+      this._notifications.update(list => list.map(n => (n.id === id ? { ...n, read: false } : n)));
+      this._unreadCount.update(count => count + 1);
+    });
+  }
+
+  delete(id: string): void {
+    const notification = this._notifications().find(n => n.id === id);
+    if (!notification) return;
+
+    this.http.delete<void>(`${this.baseUrl}/${id}`).subscribe(() => {
+      this._notifications.update(list => list.filter(n => n.id !== id));
+      if (!notification.read) {
+        this._unreadCount.update(count => Math.max(0, count - 1));
+      }
+    });
+  }
+
+  deleteAll(): void {
+    this.http.delete<void>(this.baseUrl).subscribe(() => {
+      this._notifications.set([]);
+      this._unreadCount.set(0);
+    });
+  }
 }

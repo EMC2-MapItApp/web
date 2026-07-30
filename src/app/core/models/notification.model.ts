@@ -26,3 +26,37 @@ export interface AppNotification {
   /** Fecha ISO 8601 de creación. */
   createdAt: string;
 }
+
+/**
+ * Preferencia de email de un {@link NotificationType} para el usuario autenticado — forma
+ * devuelta por `GET /api/v1/notifications/preferences`. Solo el canal email es configurable por
+ * tipo: el centro in-app (campana) se recibe siempre, y el push nativo se activa/desactiva de
+ * forma global (no por tipo, ver `NoopPushProvider`), así que ninguno de los dos aparece aquí.
+ */
+export interface NotificationPreference {
+  type: NotificationType;
+  emailEnabled: boolean;
+}
+
+/**
+ * Metadata de presentación de cada {@link NotificationType}, para renderizar la lista de toggles
+ * en Ajustes → Notificaciones. Único punto a extender cuando se añada un tipo nuevo — mantener en
+ * espejo con el enum `emc.mapIt.notifications.NotificationType` del backend.
+ */
+export const NOTIFICATION_TYPE_META: Record<NotificationType, { label: string; description: string; icon: string }> = {
+  GROUP_INVITATION: {
+    label: 'Invitaciones a grupos',
+    icon: 'group_add',
+    description: 'Cuando alguien te invita a unirte a un grupo.',
+  },
+  GROUP_ORGANIZER_NOTICE: {
+    label: 'Avisos al organizador',
+    icon: 'campaign',
+    description: 'Cuando un miembro te escribe como organizador de un grupo.',
+  },
+  GROUP_BROADCAST: {
+    label: 'Difusiones de grupo',
+    icon: 'forum',
+    description: 'Cuando el organizador de un grupo envía un mensaje a los miembros.',
+  },
+};

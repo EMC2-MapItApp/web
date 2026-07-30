@@ -104,6 +104,9 @@ export class ProfilePageComponent {
   /** Error al cargar/borrar publicaciones. */
   publicationsError = signal<string | null>(null);
 
+  /** Indica si alguna publicación del usuario está caducada, para mostrar el aviso de borrado automático. */
+  hasFinishedPublications = computed(() => this.myPublications().some(p => this.isFinished(p)));
+
   // ── Árbol de categorías para el selector de favoritos ──────────────────────
   categories = signal<MainCategory[]>([]);
 

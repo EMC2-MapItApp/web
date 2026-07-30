@@ -568,3 +568,23 @@
   color: var(--c-text-secondary);
   margin: 8px 0 0;
 }
+
+.expired-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 10px 14px;
+  background: var(--c-warning-bg);
+  border: 1px solid color-mix(in srgb, var(--c-warning) 40%, transparent);
+  border-radius: v.$radius-md;
+  color: var(--c-warning);
+  font-size: v.$font-sm;
+
+  mat-icon {
+    flex-shrink: 0;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}

@@ -1,6 +1,12 @@
 [
   {
     "date": "2026-07-30",
+    "type": "feature",
+    "title": "Aviso de borrado de caducadas",
+    "description": "Ahora te avisamos en tu perfil de que las publicaciones caducadas se eliminan solas pasados 3 meses desde su fecha de fin."
+  },
+  {
+    "date": "2026-07-30",
     "type": "improvement",
     "title": "Aviso de sesión más claro",
     "description": "Ahora, si intentas ver contenido que requiere iniciar sesión, verás un aviso claro, mientras que los errores de credenciales o de contraseña se muestran donde corresponde sin confundirte."

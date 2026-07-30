@@ -7,6 +7,7 @@
  */
 
 import {Component, inject} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatIconModule} from '@angular/material/icon';
@@ -44,6 +45,11 @@ export class SettingsPageComponent {
   readonly mapSettings = inject(MapSettingsService);
   readonly themeService = inject(ThemeService);
   readonly pushNotifications = inject(PushNotificationService);
+
+  /** Permite enlazar aquí con `?section=notifications` (p. ej. desde la campana de notificaciones)
+   *  para abrir directamente el acordeón de Notificaciones. */
+  readonly notificationsSectionExpanded =
+    inject(ActivatedRoute).snapshot.queryParamMap.get('section') === 'notifications';
 
   /** Activa/desactiva el push nativo del SO para este dispositivo. */
   togglePushNotifications(): void {

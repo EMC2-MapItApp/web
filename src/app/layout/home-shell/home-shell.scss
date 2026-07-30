@@ -164,25 +164,10 @@
   letter-spacing: 0.3px;
 }
 
-.menu-item {
-  height: 42px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 10px;
-  border-radius: v.$radius-md;
-
-  &--disabled {
-    color: var(--c-close-btn);
-    cursor: not-allowed;
-    user-select: none;
-  }
-
-  // Ítem con badge (p.ej. "Grupos" con invitaciones pendientes): posiciona el badge
-  // en el sidenav expandido (fin de fila) y en el colapsado (esquina del icono).
-  &--with-badge {
-    position: relative;
-  }
+// Ítem con badge (p.ej. "Grupos" con invitaciones pendientes): posiciona el badge
+// en el sidenav expandido (fin de fila) y en el colapsado (esquina del icono).
+.menu-item--with-badge {
+  position: relative;
 }
 
 .menu-badge {
@@ -240,8 +225,7 @@
     gap: 8px;
   }
 
-  .app-sidenav .menu a,
-  .app-sidenav .menu-item {
+  .app-sidenav .menu a {
     justify-content: center;
     gap: 0;
     width: 48px;
@@ -252,8 +236,7 @@
     border: 1px solid color-mix(in srgb, var(--c-border) 22%, transparent);
   }
 
-  .app-sidenav .menu a span,
-  .app-sidenav .menu-item span {
+  .app-sidenav .menu a span {
     display: none;
   }
 

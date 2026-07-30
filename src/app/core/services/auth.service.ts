@@ -78,6 +78,8 @@ export class AuthService {
    * @param payload - Credenciales de acceso
    */
   login(payload: AuthLoginRequest): Observable<AuthResponse> {
+    // El backend responde 401 con code INVALID_CREDENTIALS (no UNAUTHORIZED) para credenciales
+    // incorrectas, así que el interceptor global de "Acceso restringido" lo ignora solo.
     return this.http.post<AuthResponse>(`${this.base}/login`, payload).pipe(
       tap(res => this.handleAuthResponse(res))
     );

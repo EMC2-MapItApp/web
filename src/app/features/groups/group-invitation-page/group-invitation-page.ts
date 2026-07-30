@@ -13,6 +13,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpContext } from '@angular/common/http';
+import { SKIP_UNAUTHORIZED_DIALOG } from '@core/interceptors/unauthorized.interceptor';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -67,6 +69,10 @@ export class GroupInvitationPageComponent implements OnInit {
   hidePassword = true;
   readonly loginError = signal<string | null>(null);
 
+  /** El 401/403 de esta página tiene un significado propio (login inline / cuenta equivocada,
+   *  ver {@link handleLoadError}) — se excluye del diálogo global de "Acceso restringido". */
+  private readonly skipAuthDialog = { context: new HttpContext().set(SKIP_UNAUTHORIZED_DIALOG, true) };
+
   private token: string | null = null;
   /** Por defecto 'view': es lo que hace el propio `ngOnInit`. Solo pasa a 'accept'/'decline' si
    *  el 401/403 ocurrió al pulsar ese botón con la sesión ya caducada o de otra cuenta. */
@@ -91,7 +97,7 @@ export class GroupInvitationPageComponent implements OnInit {
   private loadInvitation(): void {
     const token = this.token!;
     this.state.set('loading');
-    this.groupService.getInvitationById(token).subscribe({
+    this.groupService.getInvitationById(token, this.skipAuthDialog).subscribe({
       next: invitation => {
         if (!invitation || invitation.status !== 'pending') {
           this.state.set('error');
@@ -135,7 +141,7 @@ export class GroupInvitationPageComponent implements OnInit {
     if (!inv || this.processing()) return;
 
     this.processing.set(true);
-    this.groupService.acceptInvitation(inv.id).subscribe({
+    this.groupService.acceptInvitation(inv.id, this.skipAuthDialog).subscribe({
       next: () => {
         this.processing.set(false);
         this.state.set('accepted');
@@ -154,7 +160,7 @@ export class GroupInvitationPageComponent implements OnInit {
     if (!inv || this.processing()) return;
 
     this.processing.set(true);
-    this.groupService.declineInvitation(inv.id).subscribe({
+    this.groupService.declineInvitation(inv.id, this.skipAuthDialog).subscribe({
       next: () => {
         this.processing.set(false);
         this.state.set('declined');
@@ -223,12 +229,12 @@ export class GroupInvitationPageComponent implements OnInit {
     };
 
     if (this.pendingAction === 'decline') {
-      this.groupService.declineInvitation(this.token!).subscribe({
+      this.groupService.declineInvitation(this.token!, this.skipAuthDialog).subscribe({
         next: () => onSettled('declined'),
         error: onError,
       });
     } else {
-      this.groupService.acceptInvitation(this.token!).subscribe({
+      this.groupService.acceptInvitation(this.token!, this.skipAuthDialog).subscribe({
         next: () => onSettled('accepted'),
         error: onError,
       });

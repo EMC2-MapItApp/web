@@ -10,7 +10,7 @@
  * al árbol de categorías. Los componentes consumidores no conocen esta diferencia.
  */
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import { environment } from '@env/environment';
 import { CurrentUserService } from './current-user.service';
@@ -150,8 +150,8 @@ export class GroupService {
    * distingue ambos casos de "invitación no disponible" para no confundir "no tienes sesión" con
    * "la sesión activa no es la correcta".
    */
-  getInvitationById(id: string): Observable<GroupInvitation | undefined> {
-    return this.http.get<ApiGroupInvitation>(`${this.baseUrl}/invitations/${id}`).pipe(
+  getInvitationById(id: string, options?: { context?: HttpContext }): Observable<GroupInvitation | undefined> {
+    return this.http.get<ApiGroupInvitation>(`${this.baseUrl}/invitations/${id}`, options).pipe(
       map(i => this.mapInvitation(i)),
       catchError(err => (err.status === 401 || err.status === 403) ? throwError(() => err) : of(undefined)),
     );
@@ -230,16 +230,16 @@ export class GroupService {
   }
 
   /** Acepta una invitación: pasa a miembro del grupo. */
-  acceptInvitation(invitationId: string): Observable<Group> {
-    return this.http.post<ApiGroup>(`${this.baseUrl}/invitations/${invitationId}/accept`, {}).pipe(
+  acceptInvitation(invitationId: string, options?: { context?: HttpContext }): Observable<Group> {
+    return this.http.post<ApiGroup>(`${this.baseUrl}/invitations/${invitationId}/accept`, {}, options).pipe(
       map(g => this.mapGroup(g)),
       tap(() => this.refreshPendingInvitationsCount()),
     );
   }
 
   /** Rechaza una invitación (no se añade al grupo). */
-  declineInvitation(invitationId: string): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/invitations/${invitationId}/decline`, {}).pipe(
+  declineInvitation(invitationId: string, options?: { context?: HttpContext }): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/invitations/${invitationId}/decline`, {}, options).pipe(
       tap(() => this.refreshPendingInvitationsCount()),
     );
   }

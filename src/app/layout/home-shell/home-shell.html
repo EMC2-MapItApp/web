@@ -48,6 +48,12 @@
         </a>
 
 
+        <!--
+          Estos enlaces son siempre reales (no bloqueados visualmente): las rutas ya están
+          protegidas por authDialogGuard, que abre el diálogo de "Acceso restringido" si no
+          hay sesión en vez de navegar. Así el guest tiene el mismo comportamiento al pulsar
+          "Crear publicación" que al pulsar "Mi perfil", "Grupos" o "Ajustes".
+        -->
         <a routerLink="create-publication" routerLinkActive="active-link">
           <mat-icon>add_location_alt</mat-icon>
           @if (!collapsed()) {
@@ -55,8 +61,6 @@
           }
         </a>
 
-        @if (currentUser.user()) {
-        <!-- Solo para usuarios logados -->
         <a routerLink="profile" routerLinkActive="active-link">
           <mat-icon>person</mat-icon>
           @if (!collapsed()) {
@@ -87,43 +91,6 @@
           <span>Ajustes</span>
           }
         </a>
-        } @else {
-        <!-- Guest: items bloqueados -->
-        <span class="menu-item menu-item--disabled" title="Inicia sesión para acceder">
-          <mat-icon>person</mat-icon>
-          @if (!collapsed()) {
-          <span>Mi perfil</span>
-          }
-        </span>
-
-        <span class="menu-item menu-item--disabled" title="Inicia sesión para acceder">
-          <mat-icon>add_location_alt</mat-icon>
-          @if (!collapsed()) {
-          <span>Crear publicación</span>
-          }
-        </span>
-
-        <span class="menu-item menu-item--disabled" title="Inicia sesión para acceder">
-          <mat-icon>groups</mat-icon>
-          @if (!collapsed()) {
-          <span>Grupos</span>
-          }
-        </span>
-<!--
-        <span class="menu-item menu-item--disabled" title="Inicia sesión para acceder">
-          <mat-icon>dashboard</mat-icon>
-          @if (!collapsed()) {
-          <span>Dashboard</span>
-          }
-        </span> -->
-
-        <span class="menu-item menu-item--disabled" title="Inicia sesión para acceder">
-          <mat-icon>settings</mat-icon>
-          @if (!collapsed()) {
-          <span>Ajustes</span>
-          }
-        </span>
-        }
 
         <!-- Acerca de: visible siempre, con o sin sesión -->
         <a routerLink="/about" routerLinkActive="active-link">

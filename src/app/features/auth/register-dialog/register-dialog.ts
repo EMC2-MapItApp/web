@@ -59,7 +59,7 @@ export class RegisterDialogComponent {
   private matDialog    = inject(MatDialog);
   private destroyRef    = inject(DestroyRef);
 
-  selectedType        = signal<UserType | null>(null);
+  selectedType        = signal<UserType | null>('individual');
   hidePassword        = true;
   hidePasswordConfirm = true;
   loading             = signal(false);
@@ -71,8 +71,10 @@ export class RegisterDialogComponent {
   private zxcvbnFactory: ZxcvbnFactoryType | null = null;
   private zxcvbnLoadingPromise: Promise<void> | null = null;
 
+  // Solo "individual" está disponible (profesional/entidad, "Próximamente"); se preselecciona
+  // para que el usuario no tenga que elegir entre opciones que no puede usar.
   step1Form = this.fb.group({
-    userType: ['' as UserType, Validators.required],
+    userType: ['individual' as UserType, Validators.required],
   });
 
   step2Form = this.fb.group(

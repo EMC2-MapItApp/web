@@ -320,7 +320,7 @@
                     {{ member.role === 'organizer' ? 'Organizador' : 'Miembro' }}
                   </span>
                   @if (member.role !== 'organizer') {
-                  <button type="button" class="edit-member-row__action"
+                  <button type="button" class="edit-member-row__action edit-member-row__action--danger"
                     [disabled]="editActionInProgressId() === member.userId"
                     (click)="$event.stopPropagation(); removeEditMember(member, group)"
                     title="Eliminar del grupo">

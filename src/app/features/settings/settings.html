@@ -5,75 +5,75 @@
     <p class="page-header__subtitle">Configura la aplicación según tus preferencias.</p>
   </header>
 
-  <!-- ── Sección APARIENCIA ────────────────────────────────────────────── -->
-  <mat-expansion-panel [expanded]="true">
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        <mat-icon>palette</mat-icon>
-        <span>Apariencia</span>
-      </mat-panel-title>
-      <mat-panel-description>Tema visual de la aplicación</mat-panel-description>
-    </mat-expansion-panel-header>
-
-    <section class="settings-section">
-      <div class="settings-section__header">
-        <div>
-          <h3 class="settings-section__title">Modo oscuro</h3>
-          <p class="settings-section__desc">
-            Cambia entre tema claro y oscuro. Se guarda automáticamente.
-          </p>
-        </div>
-        <mat-slide-toggle
-          [checked]="themeService.isDark()"
-          (change)="themeService.toggle()"
-          color="primary"
-          aria-label="Activar modo oscuro">
-        </mat-slide-toggle>
-      </div>
-    </section>
-  </mat-expansion-panel>
-
-  <!-- ── Sección NOTIFICACIONES ────────────────────────────────────────── -->
-  <mat-expansion-panel>
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        <mat-icon>notifications</mat-icon>
-        <span>Notificaciones</span>
-      </mat-panel-title>
-      <mat-panel-description>Avisos nativos del sistema en este dispositivo</mat-panel-description>
-    </mat-expansion-panel-header>
-
-    <section class="settings-section">
-      <div class="settings-section__header">
-        <div>
-          <h3 class="settings-section__title">Notificaciones push</h3>
-          <p class="settings-section__desc">
-            @if (pushNotifications.permissionState() === 'unsupported') {
-              Este navegador no soporta notificaciones push.
-            } @else if (pushNotifications.permissionState() === 'denied') {
-              Has bloqueado los permisos de notificación. Actívalos desde los ajustes de tu
-              navegador o sistema operativo para poder recibirlas aquí.
-            } @else {
-              Recibe en este dispositivo las mismas notificaciones que ves en la campana:
-              invitaciones a grupos, avisos del organizador y mensajes difundidos.
-            }
-          </p>
-        </div>
-        <mat-slide-toggle
-          [checked]="pushNotifications.enabled()"
-          [disabled]="pushNotifications.permissionState() === 'unsupported' || pushNotifications.permissionState() === 'denied'"
-          (change)="togglePushNotifications()"
-          color="primary"
-          aria-label="Activar notificaciones push">
-        </mat-slide-toggle>
-      </div>
-    </section>
-  </mat-expansion-panel>
-
-  <!-- ── Sección MAPA ──────────────────────────────────────────────────── -->
   <mat-accordion class="settings-accordion">
-    <mat-expansion-panel [expanded]="true">
 
+    <!-- ── Sección APARIENCIA ──────────────────────────────────────────── -->
+    <mat-expansion-panel [expanded]="true">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>palette</mat-icon>
+          <span>Apariencia</span>
+        </mat-panel-title>
+        <mat-panel-description>Tema visual de la aplicación</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <section class="settings-section">
+        <div class="settings-section__header">
+          <div>
+            <h3 class="settings-section__title">Modo oscuro</h3>
+            <p class="settings-section__desc">
+              Cambia entre tema claro y oscuro. Se guarda automáticamente.
+            </p>
+          </div>
+          <mat-slide-toggle
+            [checked]="themeService.isDark()"
+            (change)="themeService.toggle()"
+            color="primary"
+            aria-label="Activar modo oscuro">
+          </mat-slide-toggle>
+        </div>
+      </section>
+    </mat-expansion-panel>
+
+    <!-- ── Sección NOTIFICACIONES ──────────────────────────────────────── -->
+    <mat-expansion-panel [expanded]="notificationsSectionExpanded">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>notifications</mat-icon>
+          <span>Notificaciones</span>
+        </mat-panel-title>
+        <mat-panel-description>Avisos nativos del sistema en este dispositivo</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <section class="settings-section">
+        <div class="settings-section__header">
+          <div>
+            <h3 class="settings-section__title">Notificaciones push</h3>
+            <p class="settings-section__desc">
+              @if (pushNotifications.permissionState() === 'unsupported') {
+                Este navegador no soporta notificaciones push.
+              } @else if (pushNotifications.permissionState() === 'denied') {
+                Has bloqueado los permisos de notificación. Actívalos desde los ajustes de tu
+                navegador o sistema operativo para poder recibirlas aquí.
+              } @else {
+                Recibe en este dispositivo las mismas notificaciones que ves en la campana:
+                invitaciones a grupos, avisos del organizador y mensajes difundidos.
+              }
+            </p>
+          </div>
+          <mat-slide-toggle
+            [checked]="pushNotifications.enabled()"
+            [disabled]="pushNotifications.permissionState() === 'unsupported' || pushNotifications.permissionState() === 'denied'"
+            (change)="togglePushNotifications()"
+            color="primary"
+            aria-label="Activar notificaciones push">
+          </mat-slide-toggle>
+        </div>
+      </section>
+    </mat-expansion-panel>
+
+    <!-- ── Sección MAPA ────────────────────────────────────────────────── -->
+    <mat-expansion-panel [expanded]="true">
       <mat-expansion-panel-header>
         <mat-panel-title>
           <mat-icon>map</mat-icon>
@@ -82,7 +82,7 @@
         <mat-panel-description>Visualización y puntos de interés</mat-panel-description>
       </mat-expansion-panel-header>
 
-      <!-- ── Subsección: Configurar POI ────────────────────────────────── -->
+      <!-- ── Subsección: Configurar POI ──────────────────────────────── -->
       <section class="settings-section">
         <div class="settings-section__header">
           <div>
@@ -125,7 +125,6 @@
           }
         </ul>
       </section>
-
     </mat-expansion-panel>
 
   </mat-accordion>

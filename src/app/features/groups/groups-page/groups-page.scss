@@ -888,6 +888,17 @@ $pending-chip-color: #92400e;
       background: color-mix(in srgb, #fef3c7 80%, transparent);
       color: #92400e;
     }
+
+    // Expulsar miembro: rojo visible por defecto, no solo al pasar el ratón
+    &--danger {
+      color: #b91c1c;
+      background: color-mix(in srgb, #fee2e2 55%, transparent);
+
+      &:hover:not(:disabled) {
+        background: #fecaca;
+        color: #991b1b;
+      }
+    }
   }
 }
 

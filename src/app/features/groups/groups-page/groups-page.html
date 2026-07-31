@@ -417,13 +417,9 @@
                     placeholder="email@ejemplo.com" autocomplete="off"
                     (keydown.enter)="$event.preventDefault(); submitEditEmailInvite(group)" />
                   <button type="button" class="btn btn--ghost"
-                    [disabled]="editEmailInviteCtrl.invalid || !editEmailInviteCtrl.value || editInvitingEmail() === editEmailInviteCtrl.value"
+                    [disabled]="editEmailInviteCtrl.invalid || !editEmailInviteCtrl.value || editSendingEmailInvite()"
                     (click)="submitEditEmailInvite(group)">
-                    @if (editInvitingEmail() === editEmailInviteCtrl.value) {
-                    <mat-spinner diameter="14" />
-                    } @else {
-                    <ng-container><mat-icon>mail</mat-icon> Enviar invitación</ng-container>
-                    }
+                    <mat-icon>mail</mat-icon> Enviar invitación
                   </button>
                 </div>
               </div>

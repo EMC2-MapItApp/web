@@ -109,9 +109,7 @@
           </div>
           <button mat-stroked-button type="button" [disabled]="isAlreadyLinked(user) || invitingUserId() === user.id"
             (click)="invite(user)">
-            @if (invitingUserId() === user.id) {
-            <mat-spinner diameter="16" />
-            } @else if (isAlreadyLinked(user)) {
+            @if (isAlreadyLinked(user)) {
             <ng-container>
               <mat-icon>check</mat-icon>
               Invitado
@@ -141,13 +139,9 @@
               (keydown.enter)="$event.preventDefault(); submitEmailInvite()" />
           </mat-form-field>
           <button mat-stroked-button type="button"
-            [disabled]="emailInviteCtrl.invalid || !emailInviteCtrl.value || invitingEmail() === emailInviteCtrl.value"
+            [disabled]="emailInviteCtrl.invalid || !emailInviteCtrl.value || sendingEmailInvite()"
             (click)="submitEmailInvite()">
-            @if (invitingEmail() === emailInviteCtrl.value) {
-            <mat-spinner diameter="16" />
-            } @else {
-            <ng-container><mat-icon>mail</mat-icon> Enviar invitación</ng-container>
-            }
+            <mat-icon>mail</mat-icon> Enviar invitación
           </button>
         </div>
       </div>

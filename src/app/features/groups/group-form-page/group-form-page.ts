@@ -80,7 +80,7 @@ export class GroupFormPageComponent {
   /** Invitaciones ya enviadas en modo edición (invitación enviada de inmediato). */
   readonly sentInvites = signal<GroupInvitation[]>([]);
   readonly invitingUserId = signal<string | null>(null);
-  readonly invitingEmail = signal<string | null>(null);
+  readonly sendingEmailInvite = signal(false);
   /** Invitar por email a alguien sin cuenta todavía — independiente del buscador de arriba. */
   readonly emailInviteCtrl = this.fb.control('', [Validators.email]);
 
@@ -184,16 +184,16 @@ export class GroupFormPageComponent {
     }
 
     if (!this.group) return;
-    this.invitingEmail.set(email);
+    this.sendingEmailInvite.set(true);
     this.groupService.inviteUserByEmail(this.group, email).subscribe({
       next: (invitation) => {
-        this.invitingEmail.set(null);
+        this.sendingEmailInvite.set(false);
         this.emailInviteCtrl.reset();
         this.sentInvites.update(list => [...list, invitation]);
         this.notify(`Invitación enviada a ${email}`);
       },
       error: (err) => {
-        this.invitingEmail.set(null);
+        this.sendingEmailInvite.set(false);
         this.notify(this.groupService.inviteErrorMessage(err));
       },
     });

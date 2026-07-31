@@ -101,7 +101,7 @@ export class GroupsPageComponent {
   readonly editPendingInvitations = signal<GroupInvitation[]>([]);
   readonly editLoadingInvitations = signal(false);
   readonly editInvitingUserId = signal<string | null>(null);
-  readonly editInvitingEmail = signal<string | null>(null);
+  readonly editSendingEmailInvite = signal(false);
   /** Id de miembro/invitado cuya acción de expulsión/cancelación está en curso. */
   readonly editActionInProgressId = signal<string | null>(null);
 
@@ -411,16 +411,16 @@ export class GroupsPageComponent {
     const email = this.editEmailInviteCtrl.value?.trim();
     if (this.editEmailInviteCtrl.invalid || !email) return;
 
-    this.editInvitingEmail.set(email);
+    this.editSendingEmailInvite.set(true);
     this.groupService.inviteUserByEmail(group, email).subscribe({
       next: (invitation) => {
-        this.editInvitingEmail.set(null);
+        this.editSendingEmailInvite.set(false);
         this.editEmailInviteCtrl.reset();
         this.editPendingInvitations.update(list => [...list, invitation]);
         this.notify(`Invitación enviada a ${email}`);
       },
       error: (err) => {
-        this.editInvitingEmail.set(null);
+        this.editSendingEmailInvite.set(false);
         this.notify(this.groupService.inviteErrorMessage(err));
       },
     });

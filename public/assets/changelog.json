@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-08-04",
+    "type": "feature",
+    "title": "App para Android en camino",
+    "description": "Empezamos a preparar MapIt como aplicación nativa para móviles Android, para que pronto puedas instalarla desde Google Play."
+  },
+  {
     "date": "2026-07-30",
     "type": "feature",
     "title": "Elige tus emails de aviso",

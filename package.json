@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "android:dev": "powershell -ExecutionPolicy Bypass -File scripts/android-dev.ps1",
+    "android:release": "powershell -ExecutionPolicy Bypass -File scripts/android-release.ps1"
   },
   "private": true,
   "packageManager": "npm@10.9.8",
@@ -19,6 +21,8 @@
     "@angular/material": "^22.0.0",
     "@angular/platform-browser": "^22.0.0",
     "@angular/router": "^22.0.0",
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
     "@googlemaps/js-api-loader": "^2.1.0",
     "@zxcvbn-ts/core": "^4.1.2",
     "@zxcvbn-ts/language-common": "^4.1.2",
@@ -31,6 +35,8 @@
     "@angular/build": "^22.0.0",
     "@angular/cli": "^22.0.0",
     "@angular/compiler-cli": "^22.0.0",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.0",
     "@types/google.maps": "^3.65.0",
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",

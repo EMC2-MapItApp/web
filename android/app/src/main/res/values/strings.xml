@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MapIt</string>
+    <string name="title_activity_main">MapIt</string>
+    <string name="package_name">com.emc.mapitapp</string>
+    <string name="custom_url_scheme">com.emc.mapitapp</string>
+</resources>

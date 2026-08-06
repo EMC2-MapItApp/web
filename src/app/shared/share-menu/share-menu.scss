@@ -127,6 +127,14 @@
     background: color-mix(in srgb, var(--c-surface) 5%, transparent);
     border: 1px solid color-mix(in srgb, var(--c-border) 22%, transparent);
   }
+
+  // Sin esto, el <span> (texto sin espacios, no puede partirse) se queda con su ancho de
+  // contenido como mínimo y no cede sitio; es mat-icon (overflow: hidden) quien absorbe todo
+  // el shrink del flexbox hasta 0 — el icono "desaparece" y solo queda el texto. Mismo criterio
+  // que `.app-sidenav .menu a span` en home-shell.scss para los enlaces del sidenav.
+  :host(.menu-row) .share-menu__trigger span {
+    display: none;
+  }
 }
 
 // ── Variante usada por GroupsPageComponent (<app-share-menu class="btn-ghost-icon">) ─

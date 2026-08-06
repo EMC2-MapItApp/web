@@ -9,10 +9,12 @@ import { CurrentUserService } from '@core/services/current-user.service';
 import { GroupService } from '@core/services/group.service';
 import { SlicePipe } from '@angular/common';
 import { WelcomeDialogComponent } from '@shared/welcome-dialog/welcome-dialog';
+import { ShareMenuComponent } from '@shared/share-menu/share-menu';
 import { MatDialog } from '@angular/material/dialog';
 import { WELCOME_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
 import { ResponsiveService } from '@core/responsive/responsive.service';
 import { PushNotificationService } from '@core/services/push-notification.service';
+import { DEFAULT_SHARE_CONTENT } from '@core/constants/share.constants';
 import { NotificationBellComponent } from './notification-bell/notification-bell';
 
 @Component({
@@ -28,7 +30,8 @@ import { NotificationBellComponent } from './notification-bell/notification-bell
     MatIconModule,
     MatButtonModule,
     SlicePipe,
-    NotificationBellComponent
+    NotificationBellComponent,
+    ShareMenuComponent
   ],
   templateUrl: './home-shell.html',
   styleUrls: ['./home-shell.scss']
@@ -47,6 +50,13 @@ export class HomeShellComponent {
 
   readonly collapsed = signal(true);
 
+  /** Si el submenú de <app-share-menu> está desplegado — sincronizado vía `[(open)]` para que
+   *  cerrar/colapsar el sidenav (ver métodos de abajo) cierre también el submenú del hijo. */
+  readonly shareMenuOpen = signal(false);
+
+  /** Invitación genérica a MapIt (sin contexto de una publicación o grupo concretos). */
+  readonly defaultShareContent = DEFAULT_SHARE_CONTENT;
+
   ngOnInit(): void {
     const alreadyShown = sessionStorage.getItem('welcome-dialog-shown');
     if (!this.currentUser.user() && !alreadyShown) {
@@ -59,6 +69,9 @@ export class HomeShellComponent {
 
   toggleSidenav(): void {
     this.collapsed.update((v) => !v);
+    if (this.collapsed()) {
+      this.shareMenuOpen.set(false);
+    }
   }
 
   /** Cierra el menú al pulsar cualquier opción del propio menú lateral. */
@@ -71,9 +84,10 @@ export class HomeShellComponent {
     }
   }
 
-  /** Cierra el menú lateral. */
+  /** Cierra el menú lateral (y con él, el submenú inline "Compartir" si estaba abierto). */
   closeSidenav(): void {
     this.collapsed.set(true);
+    this.shareMenuOpen.set(false);
   }
 
   /**

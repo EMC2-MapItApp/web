@@ -25,6 +25,11 @@ tradicional). Detalles y problemas ya resueltos en `BITACORA.md`:
 - `wrangler.toml` apunta los assets a `./dist/mapit-app/browser` con `not_found_handling = "single-page-application"`.
 - Los límites de bundle en el dashboard de Cloudflare deben ampliarse manualmente si el build crece.
 
+Además del despliegue web, hay una integración en curso de **Capacitor** para publicar una app
+nativa Android en Google Play Store (por ahora solo instalación y configuración base —
+`capacitor.config.ts` — sin la plataforma nativa añadida todavía). Decisiones, pasos ejecutados
+y pendientes documentados en `docs/CAPACITOR.md`.
+
 ## Comandos
 
 ```bash

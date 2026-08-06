@@ -39,6 +39,17 @@ testem.log
 /typings
 __screenshots__/
 
+# Capacitor (fase de instalacion inicial, ver docs/CAPACITOR.md)
+.capacitor/
+
+# Cache local de bundletool.jar, descargado por scripts/android-release.ps1
+scripts/.tools/
+
+# Firmas de apps nativas - nunca versionar (se anticipa aunque la plataforma
+# Android todavia no exista)
+*.keystore
+*.jks
+
 # System files
 .DS_Store
 Thumbs.db

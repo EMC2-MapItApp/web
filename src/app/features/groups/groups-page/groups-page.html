@@ -9,7 +9,7 @@
   <mat-accordion class="groups-accordion">
 
     <!-- ── Grupos de los que soy miembro ──────────────────────────────────── -->
-    <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel [expanded]="false">
       <mat-expansion-panel-header>
         <mat-panel-title>
           <mat-icon>groups</mat-icon>
@@ -97,7 +97,7 @@
     </mat-expansion-panel>
 
     <!-- ── Grupos que organizo ────────────────────────────────────────────── -->
-    <mat-expansion-panel [expanded]="true" (opened)="isOrganizedPanelOpen.set(true)"
+    <mat-expansion-panel [expanded]="false" (opened)="isOrganizedPanelOpen.set(true)"
       (closed)="isOrganizedPanelOpen.set(false)">
       <mat-expansion-panel-header>
         <mat-panel-title>
@@ -192,7 +192,7 @@
                   (click)="!isAlreadyQueued(user) && addToCreateQueue(user)">
                   <span class="user-search__avatar">{{ user.name.charAt(0) }}</span>
                   <div class="user-search__info">
-                    <span class="user-search__name">{{ user.name }}</span>                    
+                    <span class="user-search__name">{{ user.name }}</span>
                     <span class="user-search__nick">&#64;{{ user.nick }}</span>
                     <span class="user-search__mail">{{ user.email }}</span>
                   </div>
@@ -219,6 +219,9 @@
                   <mat-icon>mail</mat-icon>
                   Enviar invitación
                 </button>
+                <app-share-menu class="btn-ghost-icon" [content]="disabledShareContent" [disabled]="true"
+                  disabledReason="Deshabilitado hasta que se cree el grupo" [showLabel]="false"
+                  label="Compartir invitación" />
               </div>
             </div>
           </div>
@@ -289,8 +292,7 @@
               <span class="field__label">Categoría <span class="field__required">*</span></span>
               <div class="cat-chips">
                 @for (category of categories(); track category.id) {
-                <button type="button" class="cat-chip"
-                  [style.--chip-color]="category.color"
+                <button type="button" class="cat-chip" [style.--chip-color]="category.color"
                   [class.cat-chip--active]="isEditCategorySelected(category.id)"
                   (click)="selectEditCategory(category.id)">
                   {{ category.icon }} {{ category.name }}
@@ -322,8 +324,7 @@
                   @if (member.role !== 'organizer') {
                   <button type="button" class="edit-member-row__action edit-member-row__action--danger"
                     [disabled]="editActionInProgressId() === member.userId"
-                    (click)="$event.stopPropagation(); removeEditMember(member, group)"
-                    title="Eliminar del grupo">
+                    (click)="$event.stopPropagation(); removeEditMember(member, group)" title="Eliminar del grupo">
                     @if (editActionInProgressId() === member.userId) {
                     <mat-spinner diameter="12" />
                     } @else {
@@ -354,8 +355,7 @@
                   }
                   <button type="button" class="edit-member-row__action edit-member-row__action--cancel"
                     [disabled]="editActionInProgressId() === inv.id"
-                    (click)="$event.stopPropagation(); cancelEditInvitation(inv)"
-                    title="Retirar invitación">
+                    (click)="$event.stopPropagation(); cancelEditInvitation(inv)" title="Retirar invitación">
                     @if (editActionInProgressId() === inv.id) {
                     <mat-spinner diameter="12" />
                     } @else {
@@ -388,9 +388,9 @@
                     (click)="inviteUserInEdit(user, group)">
                     <span class="user-search__avatar">{{ user.name.charAt(0) }}</span>
                     <div class="user-search__info">
-                      <span class="user-search__name">{{ user.name }}</span>                    
+                      <span class="user-search__name">{{ user.name }}</span>
                       <span class="user-search__nick">&#64;{{ user.nick }}</span>
-                        <span class="user-search__mail">{{ user.email }}</span>
+                      <span class="user-search__mail">{{ user.email }}</span>
                     </div>
                     @if (editInvitingUserId() === user.id) {
                     <mat-spinner diameter="14" />
@@ -421,13 +421,14 @@
                     (click)="submitEditEmailInvite(group)">
                     <mat-icon>mail</mat-icon> Enviar invitación
                   </button>
+                  <app-share-menu class="btn-ghost-icon" [content]="groupShareContent(group)" [nativeOnly]="true"
+                    [showLabel]="false" label="Compartir invitación" />
                 </div>
               </div>
             </div>
 
             <div class="group-create-card__actions">
-              <button class="btn btn--ghost" type="button" [disabled]="editSaving()"
-                (click)="cancelEditForm()">
+              <button class="btn btn--ghost" type="button" [disabled]="editSaving()" (click)="cancelEditForm()">
                 Cancelar
               </button>
               <button class="btn btn--primary" type="submit" [disabled]="editForm.invalid || editSaving()">

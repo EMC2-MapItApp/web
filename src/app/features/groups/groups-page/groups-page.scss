@@ -578,6 +578,14 @@ $pending-chip-color: #92400e;
     color: var(--c-text-secondary);
     border-color: var(--c-border);
     &:hover { background: var(--c-border); }
+    &:disabled {
+      background: var(--c-surface-alt);
+      color: var(--c-text-muted);
+      border-color: var(--c-border-light);
+      opacity: 0.6;
+      cursor: not-allowed;
+      &:hover { background: var(--c-surface-alt); }
+    }
   }
 
   &--primary {

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!--
+    Placeholder de marca: pin de mapa (glifo Material "place"), blanco sobre fondo
+    transparente. capacitor assets lo compone sobre los colores de fondo pasados por CLI
+    para generar iconos/splash de Android. Sustituir por el logo real cuando exista diseño.
+  -->
+  <g transform="translate(512,512) scale(24) translate(-12,-12)">
+    <path
+      fill="#ffffff"
+      d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+    />
+  </g>
+</svg>

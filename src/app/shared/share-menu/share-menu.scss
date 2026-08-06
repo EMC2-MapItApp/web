@@ -1,0 +1,175 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+:host {
+  position: relative;
+  display: inline-block;
+}
+
+// ── Forma por defecto: botón pequeño + panel flotante (p. ej. groups-page) ────
+.share-menu__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--c-border);
+  border-radius: v.$radius-md;
+  background: transparent;
+  color: var(--c-text-primary);
+  font: inherit;
+  cursor: pointer;
+  transition: background v.$transition-fast;
+
+  &:hover,
+  &--active {
+    background: var(--c-surface-hover);
+  }
+
+  // Sin pointer-events: none — el atributo disabled ya bloquea el click, y así el
+  // title (tooltip) del motivo sigue apareciendo al pasar el cursor por encima.
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.share-menu__panel {
+  @include m.glass-panel;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 1400;
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+  min-width: 200px;
+}
+
+.share-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 10px;
+  border: none;
+  border-radius: v.$radius-sm;
+  background: transparent;
+  color: var(--c-text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--c-surface-hover);
+  }
+}
+
+.share-menu__whatsapp-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+// ── Variante usada por HomeShellComponent (<app-share-menu class="menu-row">) ─
+// Mismo esqueleto que hoy tenían button.menu-trigger/.menu-submenu en home-shell.scss:
+// fila de sidenav a ancho completo, panel inline (no flotante) en vez de dropdown.
+:host(.menu-row) {
+  display: block;
+  width: 100%;
+}
+
+:host(.menu-row) .share-menu__trigger {
+  width: 100%;
+  height: 42px;
+  padding: 0 10px;
+  border: none;
+  border-radius: v.$radius-md;
+  background: transparent;
+  color: var(--c-text-primary);
+
+  &:hover,
+  &--active {
+    background: var(--c-primary-hover-bg);
+  }
+}
+
+:host(.menu-row) .share-menu__panel {
+  position: static;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-left: 14px;
+  min-width: 0;
+}
+
+:host(.menu-row) .share-menu__item {
+  height: 42px;
+}
+
+// Icon-only táctil: mismo tratamiento que el resto de ítems del sidenav en este breakpoint
+// (ver home-shell.scss), objetivo táctil ≥44px (CLAUDE.md, regla mobile-first).
+@media (max-width: #{v.$bp-sm}) and (orientation: portrait) {
+  :host(.menu-row) {
+    width: 48px;
+  }
+
+  :host(.menu-row) .share-menu__trigger {
+    justify-content: center;
+    gap: 0;
+    width: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0;
+    background: color-mix(in srgb, var(--c-surface) 5%, transparent);
+    border: 1px solid color-mix(in srgb, var(--c-border) 22%, transparent);
+  }
+}
+
+// ── Variante usada por GroupsPageComponent (<app-share-menu class="btn-ghost-icon">) ─
+// Mismas métricas que .btn.btn--ghost de groups-page.scss, pero solo icono (sin texto),
+// para vivir a la derecha del botón "Enviar invitación" con el mismo aspecto.
+:host(.btn-ghost-icon) {
+  flex-shrink: 0;
+}
+
+:host(.btn-ghost-icon) .share-menu__trigger {
+  justify-content: center;
+  gap: 0;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1.5px solid var(--c-border);
+  border-radius: v.$radius-sm;
+  background: var(--c-surface-alt);
+  color: var(--c-text-secondary);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover,
+  &--active {
+    background: var(--c-border);
+  }
+
+  // Mismo tratamiento que .btn--ghost:disabled en groups-page.scss, para que "Compartir
+  // invitación" y "Enviar invitación" luzcan consistentes en su estado deshabilitado.
+  &:disabled {
+    background: var(--c-surface-alt);
+    color: var(--c-text-muted);
+    border-color: var(--c-border-light);
+    opacity: 0.6;
+    cursor: not-allowed;
+
+    &:hover {
+      background: var(--c-surface-alt);
+    }
+  }
+}

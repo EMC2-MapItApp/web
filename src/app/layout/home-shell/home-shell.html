@@ -100,6 +100,17 @@
           }
         </a>
 
+        <!--
+          Compartir: en navegadores con Web Share API nativa se despacha directo (sin picker
+          propio); si no, despliega el submenú inline de siempre (WhatsApp, copiar enlace). Toda
+          esta lógica vive en <app-share-menu> (shared/), reutilizado también en Grupos para
+          compartir una invitación — aquí solo se le pasa la invitación genérica a MapIt.
+          [(open)] mantiene shareMenuOpen como fuente de verdad para que cerrar/colapsar el
+          sidenav (closeSidenav/toggleSidenav) siga cerrando también este submenú.
+        -->
+        <app-share-menu class="menu-row" [content]="defaultShareContent" [(open)]="shareMenuOpen"
+          [showLabel]="!collapsed()" ariaLabel="Compartir MapIt" (shareDispatched)="closeSidenav()" />
+
       </nav>
     </aside>
 

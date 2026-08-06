@@ -91,13 +91,19 @@
 
     a {
       height: 42px;
+      width: 100%;
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 0 10px;
+      border: none;
       border-radius: v.$radius-md;
+      background: transparent;
       color: var(--c-text-primary);
       text-decoration: none;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
     }
 
     a.active-link {
@@ -225,6 +231,10 @@
     gap: 8px;
   }
 
+  // Icon-only táctil: objetivo táctil ≥44px (ver CLAUDE.md, regla mobile-first). El equivalente
+  // para <app-share-menu class="menu-row"> ("Compartir") vive en su propio share-menu.scss
+  // (mismo breakpoint $bp-sm + orientation: portrait), ya que Angular no permite alcanzar el
+  // DOM interno de un componente hijo desde aquí sin recurrir a ::ng-deep.
   .app-sidenav .menu a {
     justify-content: center;
     gap: 0;

@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-08-06",
+    "type": "feature",
+    "title": "Comparte MapIt fácilmente",
+    "description": "Ahora puedes invitar a otras personas a MapIt compartiendo un enlace por WhatsApp o copiándolo directamente."
+  },
+  {
     "date": "2026-08-04",
     "type": "feature",
     "title": "App para Android en camino",

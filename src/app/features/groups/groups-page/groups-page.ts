@@ -21,9 +21,12 @@ import { GroupService } from '@core/services/group.service';
 import { CategoryService } from '@core/services/category.service';
 import { Group, GroupInvitation, GroupMember, GroupSearchUser, QueuedInvite } from '@core/models/group.model';
 import { MainCategory } from '@core/models/category.model';
+import { ShareContent } from '@core/models/share.model';
+import { DEFAULT_SHARE_CONTENT } from '@core/constants/share.constants';
 import { ResponsiveService } from '@core/responsive/responsive.service';
 import { CONFIRM_DIALOG_CONFIG, CONTACT_MEMBERS_DIALOG_CONFIG, NOTIFY_ORGANIZER_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
 import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/confirm-dialog/confirm-dialog';
+import { ShareMenuComponent } from '@shared/share-menu/share-menu';
 import { NotifyOrganizerDialogComponent, NotifyOrganizerDialogResult } from '../notify-organizer-dialog/notify-organizer-dialog';
 import { ContactMembersDialogComponent, ContactMembersDialogResult } from '../contact-members-dialog/contact-members-dialog';
 
@@ -35,6 +38,7 @@ import { ContactMembersDialogComponent, ContactMembersDialogResult } from '../co
     MatIconModule, MatButtonModule,
     MatExpansionModule, MatProgressSpinnerModule,
     MatFormFieldModule, MatInputModule,
+    ShareMenuComponent,
   ],
   templateUrl: './groups-page.html',
   styleUrl: './groups-page.scss',
@@ -89,6 +93,10 @@ export class GroupsPageComponent {
   readonly createSearchCtrl = new FormControl('');
   /** Invitar por email a alguien sin cuenta todavía — independiente del buscador de arriba. */
   readonly createEmailInviteCtrl = new FormControl('', [Validators.email]);
+  /** Contenido de relleno para el <app-share-menu> deshabilitado del formulario de creación:
+   *  el grupo no existe todavía, no hay ninguna invitación real que compartir, así que nunca
+   *  llega a despacharse (el disparador está deshabilitado). */
+  readonly disabledShareContent: ShareContent = { text: '' };
 
   // ── Edición inline de grupo ────────────────────────────────────────────
 
@@ -424,6 +432,20 @@ export class GroupsPageComponent {
         this.notify(this.groupService.inviteErrorMessage(err));
       },
     });
+  }
+
+  /**
+   * Contenido genérico para invitar a alguien sin cuenta todavía a través de "Compartir
+   * invitación" — segunda vía junto a "Enviar invitación" (por email). Mismo mecanismo que el
+   * botón "Compartir" del menú del shell ({@link ShareService}, sin invitación de backend
+   * ligada a un email concreto): el organizador reparte este mensaje por el canal nativo que
+   * elija (WhatsApp, SMS, email...) para que quien lo reciba se registre y se una al grupo.
+   */
+  groupShareContent(group: Group): ShareContent {
+    return {
+      text: `Te invito a unirte a mi grupo "${group.name}" en MapIt. ¡Regístrate para unirte!`,
+      url: DEFAULT_SHARE_CONTENT.url,
+    };
   }
 
   /** Cancela una invitación pendiente del grupo en edición. */

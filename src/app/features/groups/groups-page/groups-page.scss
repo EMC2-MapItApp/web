@@ -139,6 +139,13 @@ $pending-chip-color: #92400e;
       align-items: center;
       justify-content: center;
     }
+
+    // Solicitud de acceso: requiere una decisión del organizador, no solo informa de un estado
+    // en curso como las invitaciones pendientes — acento distinto para que destaque más.
+    &--join-request {
+      background: var(--c-primary-hover-bg);
+      color: var(--c-primary);
+    }
   }
 }
 
@@ -905,6 +912,17 @@ $pending-chip-color: #92400e;
       &:hover:not(:disabled) {
         background: #fecaca;
         color: #991b1b;
+      }
+    }
+
+    // Aceptar solicitud de acceso: verde visible por defecto — el hover base de este botón es
+    // rojo (pensado para acciones destructivas como retirar invitación), aquí es lo contrario.
+    &--accept {
+      color: var(--c-success);
+      background: var(--c-success-bg);
+
+      &:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--c-success) 22%, var(--c-success-bg));
       }
     }
   }

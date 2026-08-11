@@ -136,6 +136,36 @@
     }
   }
 
+  &__visibility {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    align-self: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+
+    @media (min-width: 1024px) {
+      align-self: flex-start;
+    }
+
+    &--public {
+      background: var(--c-success-bg);
+      color: var(--c-success);
+    }
+
+    &--private {
+      background: var(--c-warning-bg);
+      color: var(--c-warning);
+    }
+  }
+
+  &__visibility-icon {
+    font-size: 12px;
+    line-height: 1;
+  }
+
   &__description {
     margin: 0;
     font-size: v.$font-body;
@@ -361,6 +391,19 @@
     font-size: 12.5px;
     color: var(--c-text-primary);
     font-weight: 500;
+
+    &--locked {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      color: var(--c-text-secondary);
+      font-style: italic;
+
+      @media (min-width: 1024px) {
+        justify-content: flex-start;
+      }
+    }
   }
 
   &__capacity-label {

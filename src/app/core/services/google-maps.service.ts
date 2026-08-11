@@ -65,12 +65,20 @@ export class GoogleMapsService {
    *                  mientras dura la pulsación (ver `attachPressHandlers` en `maps.ts`), no
    *                  de forma permanente, así que tiene que leerse de un vistazo.
    */
+  /**
+   * @param groupBadge Distintivo de publicación privada de grupo: 'none' (por defecto, sin
+   * distintivo), 'locked' (privada, el usuario no es miembro — anillo neutro) o 'member' (privada,
+   * el usuario sí es miembro — anillo del color de la categoría, para que destaque frente a las
+   * restringidas). Parámetro opcional y compatible hacia atrás: las llamadas existentes sin este
+   * argumento siguen produciendo el mismo icono que antes.
+   */
   buildMarkerIcon(
     color: string,
     emoji: string,
     size = 36,
     dark = false,
     animate = false,
+    groupBadge: 'none' | 'locked' | 'member' = 'none',
   ): { url: string; scaledSize: google.maps.Size; anchor: google.maps.Point } {
     const half = size / 2;
     const r    = half - 2;
@@ -100,11 +108,27 @@ export class GoogleMapsService {
     </circle>`;
     const pulseRings = animate ? pulseRing('0s') + pulseRing('0.35s') : '';
 
+    // Distintivo de grupo: candado en la esquina inferior derecha del marker. Anillo neutro
+    // (no-miembro, "restringido") o del color de la categoría (miembro, "sí puedo apuntarme").
+    let groupBadgeSvg = '';
+    if (groupBadge !== 'none') {
+      const badgeRingColor = groupBadge === 'member' ? color : (dark ? '#94a3b8' : '#64748b');
+      const badgeFill = dark ? '#1e293b' : '#ffffff';
+      const bOffset = r * 0.65;
+      const br = Math.max(5, r * 0.38);
+      const bx = cx + bOffset;
+      const by = cy + bOffset;
+      groupBadgeSvg = `
+    <circle cx="${bx}" cy="${by}" r="${br}" fill="${badgeFill}" stroke="${badgeRingColor}" stroke-width="2"/>
+    <text x="${bx}" y="${by + br * 0.38}" text-anchor="middle" font-size="${(br * 1.3).toFixed(1)}">🔒</text>`;
+    }
+
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas}" height="${canvas}" viewBox="0 0 ${canvas} ${canvas}">
     ${shadowFilter}
     ${pulseRings}
     <circle cx="${cx}" cy="${cy}" r="${r}" fill="${color}" stroke="white" stroke-width="2" ${filterAttr}/>
     <text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="${Math.round(size * 0.44)}">${emoji}</text>
+    ${groupBadgeSvg}
   </svg>`;
     return {
       url:        'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),

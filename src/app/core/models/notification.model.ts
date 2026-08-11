@@ -12,7 +12,12 @@
  */
 
 /** Evento de negocio que originó la notificación. */
-export type NotificationType = 'GROUP_INVITATION' | 'GROUP_ORGANIZER_NOTICE' | 'GROUP_BROADCAST';
+export type NotificationType =
+  | 'GROUP_INVITATION'
+  | 'GROUP_ORGANIZER_NOTICE'
+  | 'GROUP_BROADCAST'
+  | 'GROUP_JOIN_REQUEST'
+  | 'GROUP_JOIN_REQUEST_RESOLVED';
 
 /** Notificación in-app persistida (centro de notificaciones / campana). */
 export interface AppNotification {
@@ -58,5 +63,15 @@ export const NOTIFICATION_TYPE_META: Record<NotificationType, { label: string; d
     label: 'Difusiones de grupo',
     icon: 'forum',
     description: 'Cuando el organizador de un grupo envía un mensaje a los miembros.',
+  },
+  GROUP_JOIN_REQUEST: {
+    label: 'Solicitudes de acceso a grupo',
+    icon: 'person_add',
+    description: 'Cuando alguien solicita unirse a un grupo que organizas.',
+  },
+  GROUP_JOIN_REQUEST_RESOLVED: {
+    label: 'Solicitudes resueltas',
+    icon: 'how_to_reg',
+    description: 'Cuando el organizador acepta o rechaza tu solicitud de unirte a un grupo.',
   },
 };

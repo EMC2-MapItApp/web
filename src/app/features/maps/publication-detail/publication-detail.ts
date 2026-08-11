@@ -15,7 +15,7 @@ import { CategoryBreadcrumb } from '@core/models/category.model';
 import { FieldContext, LocationFieldDef } from '@core/models/location-field.model';
 import { LocationFieldService } from '@core/services/location-field.service';
 import { CurrentUserService } from '@core/services/current-user.service';
-import { EnrolledUser } from '@core/models/publication.model';
+import { EnrolledUser, PublicationVisibility } from '@core/models/publication.model';
 
 /**
  * Forma mínima del objeto que recibe el componente.
@@ -37,10 +37,20 @@ export interface PublicationDetailInput {
   requiredLevel?: number;
   /** Solo Publication: flag de activo persistido en backend. */
   active?: boolean;
-  /** Solo Publication: plazas ocupadas actuales. */
+  /** Solo Publication: plazas ocupadas actuales. Ausente si el backend lo enmascara (no-miembro de una publicación privada). */
   occupiedSlots?: number;
   /** Lista de usuarios inscritos en la publicación. */
   enrolledUsers?: EnrolledUser[];
+  /** Solo Publication: visibilidad ('PUBLIC' por defecto si el item no la trae, p. ej. un Place). */
+  visibility?: PublicationVisibility;
+  /** Solo Publication PRIVATE_GROUP: nombre del grupo. */
+  groupName?: string;
+  /** Solo Publication PRIVATE_GROUP: nº de miembros del grupo (no es el aforo, ver metadata.slots). */
+  groupMemberCount?: number;
+  /** Solo Publication PRIVATE_GROUP: true si el usuario actual es miembro del grupo. */
+  isGroupMember?: boolean;
+  /** Solo Publication PRIVATE_GROUP: true si el usuario actual tiene una solicitud de acceso pendiente. */
+  accessRequestPending?: boolean;
 }
 
 @Component({
@@ -72,6 +82,24 @@ export class PublicationDetailComponent implements OnChanges {
 
   /** Notifica al padre que el usuario intenta salir de la publicación. */
   @Output() leaveRequested = new EventEmitter<void>();
+
+  /** Visibilidad de la publicación. 'PUBLIC' para cualquier otro tipo de detalle (p. ej. Place). */
+  @Input() visibility: PublicationVisibility = 'PUBLIC';
+
+  /** Nombre del grupo, solo relevante si `visibility === 'PRIVATE_GROUP'`. */
+  @Input() groupName?: string;
+
+  /** Nº de miembros del grupo, solo relevante si `visibility === 'PRIVATE_GROUP'`. */
+  @Input() groupMemberCount?: number;
+
+  /** true si el usuario actual es miembro del grupo. Solo relevante en publicaciones privadas. */
+  @Input() isGroupMember = false;
+
+  /** true si ya hay una solicitud de acceso pendiente del usuario actual para este grupo. */
+  @Input() accessRequestPending = false;
+
+  /** Notifica al padre que un no-miembro solicita acceso al grupo de una publicación privada. */
+  @Output() joinRequestRequested = new EventEmitter<void>();
 
   /**
    * Contexto que determina qué schema de campos se carga.
@@ -182,21 +210,39 @@ export class PublicationDetailComponent implements OnChanges {
     return this.joinedCount >= this.maxSlots;
   }
 
-  /** true si el botón de apuntarse debe estar deshabilitado. */
+  /** true si la publicación es privada de grupo. */
+  get isPrivateGroup(): boolean {
+    return this.visibility === 'PRIVATE_GROUP';
+  }
+
+  /** true si es una publicación privada y el usuario actual no pertenece al grupo. */
+  get isPrivateNonMember(): boolean {
+    return this.isPrivateGroup && !this.isGroupMember;
+  }
+
+  /** true si el botón de apuntarse/solicitar debe estar deshabilitado. */
   get joinDisabled(): boolean {
+    if (this.isPrivateNonMember) return this.accessRequestPending;
     return this.isFull || this.alreadyJoined;
   }
 
-  /** Etiqueta contextual del botón según estado de inscripción. */
+  /** Etiqueta contextual del botón según estado de inscripción/solicitud. */
   get joinButtonText(): string {
+    if (this.isPrivateNonMember) {
+      return this.accessRequestPending ? 'Solicitud enviada' : 'Solicitar invitación';
+    }
     if (this.alreadyJoined) return 'Ya apuntado';
     if (this.isFull) return 'Plazas completas';
     return 'Apuntarse';
   }
 
-  /** Solicita el alta en el evento/localización. */
+  /** Solicita el alta en el evento/localización, o el acceso al grupo si no es miembro. */
   onJoin(): void {
     if (this.joinDisabled) return;
+    if (this.isPrivateNonMember) {
+      this.joinRequestRequested.emit();
+      return;
+    }
     this.joinRequested.emit();
   }
 

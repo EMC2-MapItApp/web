@@ -427,6 +427,43 @@
               </div>
             </div>
 
+            <!-- ── Solicitudes de acceso pendientes (usuarios que intentaron apuntarse a una
+                 publicación privada sin ser miembros) ── -->
+            @if (editLoadingJoinRequests() || editPendingJoinRequests().length > 0) {
+            <div class="field">
+              <span class="field__label">Solicitudes de acceso</span>
+              @if (editLoadingJoinRequests()) {
+              <p class="edit-members__hint">Cargando solicitudes…</p>
+              } @else {
+              <div class="edit-members">
+                @for (request of editPendingJoinRequests(); track request.id) {
+                <div class="edit-member-row edit-member-row--pending">
+                  <span class="edit-member-row__avatar">{{ request.requestedByName.charAt(0) }}</span>
+                  <div class="edit-member-row__info">
+                    <span class="edit-member-row__name">{{ request.requestedByName }}</span>
+                    <span class="edit-member-row__nick">&#64;{{ request.requestedByNick }}</span>
+                  </div>
+                  <button type="button" class="edit-member-row__action edit-member-row__action--accept"
+                    [disabled]="joinRequestActionInProgressId() === request.id"
+                    (click)="$event.stopPropagation(); acceptEditJoinRequest(request, group)" title="Aceptar">
+                    @if (joinRequestActionInProgressId() === request.id) {
+                    <mat-spinner diameter="12" />
+                    } @else {
+                    <mat-icon>check</mat-icon>
+                    }
+                  </button>
+                  <button type="button" class="edit-member-row__action edit-member-row__action--danger"
+                    [disabled]="joinRequestActionInProgressId() === request.id"
+                    (click)="$event.stopPropagation(); rejectEditJoinRequest(request, group)" title="Rechazar">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+                }
+              </div>
+              }
+            </div>
+            }
+
             <div class="group-create-card__actions">
               <button class="btn btn--ghost" type="button" [disabled]="editSaving()" (click)="cancelEditForm()">
                 Cancelar
@@ -462,6 +499,13 @@
             <span class="group-card__pending">
               <mat-icon>schedule</mat-icon>
               {{ group.pendingInvitees.length }} {{ group.pendingInvitees.length === 1 ? 'pendiente' : 'pendientes' }}
+            </span>
+            }
+            @if ((pendingJoinRequestCountByGroup()[group.id] ?? 0) > 0) {
+            <span class="group-card__pending group-card__pending--join-request">
+              <mat-icon>person_add</mat-icon>
+              {{ pendingJoinRequestCountByGroup()[group.id] }}
+              {{ pendingJoinRequestCountByGroup()[group.id] === 1 ? 'solicitud' : 'solicitudes' }}
             </span>
             }
           </p>

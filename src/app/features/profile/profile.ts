@@ -19,9 +19,12 @@ import { UserService } from '@core/services/user.service';
 import { CategoryService } from '@core/services/category.service';
 import { MainCategory, SubCategory } from '@core/models/category.model';
 import { DatePipe, SlicePipe } from '@angular/common';
-import { Publication } from '@core/models/publication.model';
+import { Publication, PublicationVisibility } from '@core/models/publication.model';
 import { PublicationService } from '@core/services/publication.service';
+import { Group } from '@core/models/group.model';
+import { GroupService } from '@core/services/group.service';
 import { ResponsiveService } from '@core/responsive/responsive.service';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   PasswordStrengthMeterComponent, PasswordStrengthScore,
 } from '../auth/password-strength-meter/password-strength-meter';
@@ -63,6 +66,7 @@ export class ProfilePageComponent {
   private userService = inject(UserService);
   private categoryService = inject(CategoryService);
   private publicationService = inject(PublicationService);
+  private groupService = inject(GroupService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private fb = inject(FormBuilder);
@@ -107,6 +111,17 @@ export class ProfilePageComponent {
   /** Indica si alguna publicación del usuario está caducada, para mostrar el aviso de borrado automático. */
   hasFinishedPublications = computed(() => this.myPublications().some(p => this.isFinished(p)));
 
+  // ── Cambio de visibilidad ────────────────────────────────────────────────────
+
+  /** Grupos que el usuario organiza, para el selector inline al pasar una publicación a privada. */
+  myOrganizedGroupsForVisibility = signal<Group[]>([]);
+
+  /** Id de la publicación cuyo control de "Cambiar visibilidad" está expandido (null = ninguna). */
+  visibilityEditId = signal<number | null>(null);
+
+  /** Id de la publicación con un cambio de visibilidad en curso, para deshabilitar sus botones. */
+  changingVisibilityId = signal<number | null>(null);
+
   // ── Árbol de categorías para el selector de favoritos ──────────────────────
   categories = signal<MainCategory[]>([]);
 
@@ -119,6 +134,12 @@ export class ProfilePageComponent {
   constructor() {
     this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
     this.loadMyPublications();
+
+    this.groupService.getMyGroups().subscribe(groups => {
+      this.myOrganizedGroupsForVisibility.set(
+        groups.filter(g => this.groupService.getMyRole(g) === 'organizer')
+      );
+    });
   }
 
   /**
@@ -185,6 +206,50 @@ export class ProfilePageComponent {
   repeatPublication(publication: Publication): void {
     this.router.navigate(['/create-publication'], {
       queryParams: { repeatFrom: publication.id },
+    });
+  }
+
+  /** Expande/colapsa el control de cambio de visibilidad de una publicación. */
+  toggleVisibilityEdit(publication: Publication): void {
+    this.visibilityEditId.set(this.visibilityEditId() === publication.id ? null : publication.id);
+  }
+
+  /**
+   * Cambia una publicación privada a pública. Siempre permitido (regla de negocio: abrir el
+   * aforo nunca rompe expectativas de nadie).
+   */
+  makePublic(publication: Publication): void {
+    this.applyVisibilityChange(publication, 'PUBLIC', null);
+  }
+
+  /**
+   * Cambia una publicación pública a privada de un grupo que organiza. El backend rechaza el
+   * cambio (409 `FOREIGN_ENROLLMENTS`) si hay apuntados que no son miembros de ese grupo.
+   */
+  makePrivate(publication: Publication, groupId: string): void {
+    this.applyVisibilityChange(publication, 'PRIVATE_GROUP', groupId);
+  }
+
+  private applyVisibilityChange(publication: Publication, visibility: PublicationVisibility, groupId: string | null): void {
+    this.changingVisibilityId.set(publication.id);
+    this.publicationService.changeVisibility(publication.id, visibility, groupId).subscribe({
+      next: updated => {
+        this.myPublications.update(list => list.map(p => p.id === updated.id ? updated : p));
+        this.changingVisibilityId.set(null);
+        this.visibilityEditId.set(null);
+        this.snackBar.open(
+          visibility === 'PUBLIC' ? 'Publicación ahora abierta a todos' : 'Publicación ahora es privada de grupo',
+          'Cerrar', { duration: 3000, horizontalPosition: 'center', verticalPosition: 'top' },
+        );
+      },
+      error: (error: HttpErrorResponse) => {
+        this.changingVisibilityId.set(null);
+        const code = error?.error?.error?.code;
+        const message = code === 'FOREIGN_ENROLLMENTS'
+          ? (error.error?.error?.message ?? 'No puedes limitar esta publicación a ese grupo: hay personas apuntadas que no son miembros.')
+          : 'No se pudo cambiar la visibilidad. Inténtalo de nuevo.';
+        this.snackBar.open(message, 'Cerrar', { duration: 6000, horizontalPosition: 'center', verticalPosition: 'top' });
+      },
     });
   }
 

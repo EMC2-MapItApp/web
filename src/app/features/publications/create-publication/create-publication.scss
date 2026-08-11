@@ -109,31 +109,9 @@ $panel-gap: 8px;
 // CABECERA
 // ══════════════════════════════════════════════════════════════════════════════
 
+// La cabecera usa las clases globales .page-header__title / __subtitle (styles.scss).
 .page-header {
   flex-shrink: 0;
-
-  &__title {
-    display: flex;
-    align-items: center;
-    gap: v.$space-sm;
-    margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--c-text-primary);
-
-    mat-icon {
-      color: var(--c-primary);
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-    }
-  }
-
-  &__subtitle {
-    margin: 3px 0 0;
-    font-size: v.$font-sm;
-    color: var(--c-text-secondary);
-  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -1059,6 +1037,294 @@ $panel-gap: 8px;
   height: 1px;
   background: var(--c-border);
   margin: v.$space-sm 0;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SELECTOR DE VISIBILIDAD
+// ══════════════════════════════════════════════════════════════════════════════
+
+.visibility-selector {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-sm;
+}
+
+.visibility-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: v.$space-sm;
+}
+
+.visibility-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: v.$space-md;
+  border-radius: 12px;
+  border: 1.5px solid var(--c-border);
+  background: var(--c-surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color v.$transition-fast, background v.$transition-fast;
+  min-height: 44px; // objetivo táctil mínimo
+
+  mat-icon {
+    color: var(--c-text-secondary);
+  }
+
+  &__title {
+    font-weight: 600;
+    font-size: v.$font-sm;
+    color: var(--c-text-primary);
+  }
+
+  &__desc {
+    font-size: 12px;
+    color: var(--c-text-secondary);
+    line-height: 1.4;
+  }
+
+  &:hover {
+    border-color: var(--c-primary-light);
+  }
+
+  &--active {
+    border-color: var(--c-primary);
+    background: var(--c-primary-hover-bg);
+
+    mat-icon {
+      color: var(--c-primary);
+    }
+  }
+}
+
+.visibility-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 6px v.$space-sm;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &--public {
+    background: var(--c-success-bg);
+    color: var(--c-success);
+  }
+}
+
+.visibility-hint {
+  margin: 0;
+  font-size: v.$font-sm;
+  color: var(--c-text-secondary);
+}
+
+.visibility-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: v.$space-sm;
+}
+
+.visibility-confirm {
+  margin: 0;
+  font-size: v.$font-sm;
+  color: var(--c-text-primary);
+
+  &__change {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--c-primary);
+    font-size: v.$font-sm;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
+
+.visibility-group-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$space-sm;
+}
+
+.visibility-group-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px v.$space-sm;
+  border-radius: 10px;
+  border: 1.5px solid var(--c-border);
+  background: var(--c-surface);
+  cursor: pointer;
+  transition: border-color v.$transition-fast, background v.$transition-fast;
+
+  &__name {
+    font-size: v.$font-sm;
+    font-weight: 600;
+    color: var(--c-text-primary);
+  }
+
+  &__count {
+    font-size: 11px;
+    color: var(--c-text-secondary);
+  }
+
+  &--active {
+    border-color: var(--c-primary);
+    background: var(--c-primary-hover-bg);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INVITAR USUARIOS
+// ══════════════════════════════════════════════════════════════════════════════
+
+.invite-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.invite-search-results {
+  list-style: none;
+  margin: v.$space-sm 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--c-border-light);
+  border-radius: v.$radius-md;
+  overflow: hidden;
+}
+
+.invite-search-results__empty {
+  padding: v.$space-md;
+  font-size: v.$font-sm;
+  color: var(--c-text-muted);
+  font-style: italic;
+}
+
+.invite-result-row {
+  display: flex;
+  align-items: center;
+  gap: v.$space-sm;
+  padding: v.$space-sm v.$space-md;
+  border-bottom: 1px solid var(--c-border-light);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &__avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--c-surface-alt);
+    color: var(--c-text-secondary);
+    font-weight: 800;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: v.$font-sm;
+    color: var(--c-text-primary);
+    font-weight: 500;
+  }
+
+  &__nick {
+    font-size: 11px;
+    color: var(--c-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.invite-group-shortcut {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-sm;
+  }
+}
+
+.invite-queue {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.invite-queue__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: v.$space-sm;
+}
+
+.invite-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 12px;
+  border-radius: v.$radius-full;
+  background: var(--c-surface-alt);
+  color: var(--c-text-primary);
+  font-size: v.$font-sm;
+  font-weight: 500;
+
+  &__remove {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--c-text-muted);
+    transition: background v.$transition-fast, color v.$transition-fast;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover {
+      background: var(--c-surface-hover);
+      color: var(--c-error);
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

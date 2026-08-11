@@ -12,18 +12,24 @@
  */
 import {
   Component, inject, signal, computed,
-  AfterViewInit, ViewChild, ElementRef, effect,
+  AfterViewInit, ViewChild, ElementRef, effect, DestroyRef,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { Subject, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GoogleMapsService } from '@core/services/google-maps.service';
 import { CategoryService } from '@core/services/category.service';
 import { CurrentUserService } from '@core/services/current-user.service';
 import { MainCategory, SubCategory } from '@core/models/category.model';
-import { Publication } from '@core/models/publication.model';
+import { Publication, PublicationVisibility } from '@core/models/publication.model';
+import { Group, GroupSearchUser } from '@core/models/group.model';
+import { GroupService } from '@core/services/group.service';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MapSettingsService } from '@core/services/map-settings.service';
 import { ThemeService } from '@core/services/theme.service';
@@ -33,6 +39,8 @@ import { PublicationService } from '@core/services/publication.service';
 import { ResponsiveService } from '@core/responsive/responsive.service';
 import { LocationService } from '@core/services/location.service';
 import { MapLocation } from '@core/models/location.model';
+import { CONFIRM_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
+import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/confirm-dialog/confirm-dialog';
 import html2canvas from 'html2canvas';
 
 /**
@@ -45,7 +53,7 @@ import html2canvas from 'html2canvas';
 @Component({
   selector: 'app-create-publication-page',
   standalone: true,
-  imports: [FormsModule, MatIconModule, MatButtonModule, MatExpansionModule],
+  imports: [FormsModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatExpansionModule],
   templateUrl: './create-publication.html',
   styleUrl: './create-publication.scss',
 })
@@ -61,6 +69,9 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   /** Servicio de almacenamiento en memoria para publicaciones */
   private readonly pubService = inject(PublicationService);
 
+  /** Servicio de grupos, para el selector de visibilidad privada. */
+  private readonly groupService = inject(GroupService);
+
   /** Servicio que expone el resto de publicaciones para pintarlas como POIs en el mapa */
   private readonly locationService = inject(LocationService);
 
@@ -69,6 +80,9 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   /** Toast/snack bar para feedback de creación y errores. */
   private readonly snackBar = inject(MatSnackBar);
+
+  /** Diálogo de confirmación (aviso al crear una publicación privada sin invitados). */
+  private readonly dialog = inject(MatDialog);
 
   private readonly mapSettingsService = inject(MapSettingsService);
 
@@ -183,6 +197,43 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     (this.selectedSub()?.locationTypes ?? []).filter(t => t.name.toLowerCase() !== 'profesional')
   );
 
+  // ── Visibilidad ────────────────────────────────────────────────────────────
+  /** Visibilidad elegida: pública (por defecto) o privada de grupo. */
+  visibility = signal<PublicationVisibility>('PUBLIC');
+
+  /** Grupos que el usuario organiza, para el selector de visibilidad privada. Carga eager
+   * (junto a las categorías) para que no haya parpadeo de carga al tocar la tarjeta "Privada". */
+  myOrganizedGroups = signal<Group[]>([]);
+
+  /** true mientras se cargan los grupos organizados. */
+  loadingGroups = signal(true);
+
+  /** Grupo elegido para una publicación privada (preseleccionado si solo se organiza uno). */
+  selectedGroupId = signal<string | null>(null);
+
+  // ── Invitados ──────────────────────────────────────────────────────────────
+  /** Todos los grupos del usuario (organizador o miembro), para el atajo "invitar a todo el grupo". */
+  myGroups = signal<Group[]>([]);
+
+  /** Texto del buscador de usuarios a invitar. */
+  inviteSearchQuery = '';
+
+  /** true mientras se busca en el backend tras el debounce. */
+  searchingInviteUsers = signal(false);
+
+  /** Resultados de la última búsqueda de usuarios a invitar. */
+  inviteSearchResults = signal<GroupSearchUser[]>([]);
+
+  /**
+   * Cola de usuarios invitados individualmente al evento, independiente de la visibilidad
+   * elegida — se envía junto con la publicación al crearla (no hay invitación "en el momento"
+   * porque la publicación todavía no existe, a diferencia del modo edición de grupos).
+   */
+  invitedUsers = signal<GroupSearchUser[]>([]);
+
+  private readonly inviteSearchQuery$ = new Subject<string>();
+  private readonly destroyRef = inject(DestroyRef);
+
   // ── Campos formulario ──────────────────────────────────────────────────────
   /** Título de la actividad (obligatorio) */
   title = '';
@@ -234,17 +285,27 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   /** Mensaje de éxito mostrado tras crear una actividad (null si no hay mensaje) */
   successMessage = signal<string | null>(null);
 
+  /**
+   * true mientras la petición de creación está en curso. Bloquea el botón "Crear publicación"
+   * (y su re-entrada en `submitForm()`) para que un doble click no dispare dos publicaciones —
+   * más fácil de gatillar cuando hay invitados, aunque el envío de invitaciones ya no bloquea la
+   * respuesta del backend (ver `PublicationInvitationDispatcher`), la creación en sí sigue
+   * tardando lo normal de una petición HTTP.
+   */
+  submitting = signal(false);
+
   // ── Control de paneles expandidos ──────────────────────────────────────────
   /**
    * Estado de expansión de los acordeones.
    * Por defecto, el panel de información básica está abierto para guiar al usuario.
    */
   expandedPanels = {
-    info: true,      // Información básica: abierto por defecto
-    category: false, // Categoría: cerrado
-    location: false, // Ubicación y ruta: cerrado
-    dates: false,    // Fechas: cerrado
-    details: false,  // Detalles: cerrado
+    info: true,        // Información básica: abierto por defecto
+    visibility: false, // Visibilidad e invitados: cerrado
+    category: false,   // Categoría: cerrado
+    location: false,   // Ubicación y ruta: cerrado
+    dates: false,      // Fechas: cerrado
+    details: false,    // Detalles: cerrado
   };
 
   /** @returns True si hay una ubicación seleccionada en el mapa */
@@ -254,7 +315,11 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   /**
    * @returns True si el formulario puede ser enviado
-   * Requiere: título, fecha inicio, tipo de ubicación y coordenadas
+   * Requiere: título, fecha inicio, tipo de ubicación y coordenadas.
+   *
+   * No exige grupo ni invitados para publicaciones privadas: ambos son opcionales al crear
+   * (se podrá invitar más adelante desde la edición) — si se envía sin ninguno de los dos,
+   * `submitForm()` avisa con un diálogo de confirmación en vez de bloquear el botón.
    */
   get canSubmit(): boolean {
     return !!this.title.trim() && !!this.activityDate &&
@@ -275,6 +340,34 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    */
   constructor() {
     this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
+
+    // Carga eager de los grupos organizados: independiente de si la tarjeta "Privada" está
+    // seleccionada, para que su selector de grupo aparezca sin parpadeo de carga al elegirla.
+    // La misma respuesta alimenta `myGroups` (organizador o miembro), usada por el atajo
+    // "invitar a todo el grupo" — no depende de organizar el grupo, solo de pertenecer a él.
+    this.groupService.getMyGroups().subscribe(groups => {
+      this.myGroups.set(groups);
+      const organized = groups.filter(g => this.groupService.getMyRole(g) === 'organizer');
+      this.myOrganizedGroups.set(organized);
+      this.loadingGroups.set(false);
+      if (organized.length === 1) {
+        this.selectedGroupId.set(organized[0].id);
+      }
+    });
+
+    // Buscador de usuarios a invitar al evento — mismo patrón que GroupFormPageComponent.
+    this.inviteSearchQuery$.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(query => {
+        this.searchingInviteUsers.set(true);
+        return this.groupService.searchUsers(query ?? '');
+      }),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(results => {
+      this.searchingInviteUsers.set(false);
+      this.inviteSearchResults.set(results);
+    });
 
     // Sincroniza visibilidad del formulario según el modo.
     // En pantalla completa se prioriza el mapa; en panel lateral se mantiene visible.
@@ -316,6 +409,69 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   /** Oculta/colapsa el formulario desde la pestaña de toggle. */
   closeFormPanel(): void {
     this.showFormPanel.set(false);
+  }
+
+  // ── Visibilidad ────────────────────────────────────────────────────────────
+
+  /** Elige la visibilidad de la publicación (tarjetas "Pública"/"Privada de grupo"). */
+  selectVisibility(value: PublicationVisibility): void {
+    this.visibility.set(value);
+  }
+
+  /** Elige el grupo para una publicación privada, cuando el usuario organiza más de uno. */
+  selectGroup(groupId: string): void {
+    this.selectedGroupId.set(groupId);
+  }
+
+  /** Navega a Grupos para crear el primero, o para organizar otro distinto al ya preseleccionado. */
+  goToCreateGroup(): void {
+    this.router.navigate(['/groups']);
+  }
+
+  // ── Invitados ──────────────────────────────────────────────────────────────
+
+  /** Dispara la búsqueda (con debounce) al escribir en el buscador de usuarios a invitar. */
+  onInviteSearchInput(value: string): void {
+    this.inviteSearchQuery$.next(value);
+  }
+
+  /** true si el usuario ya está en la cola de invitados. */
+  isAlreadyInvited(userId: string): boolean {
+    return this.invitedUsers().some(u => u.id === userId);
+  }
+
+  /** Añade un usuario encontrado por búsqueda a la cola de invitados. */
+  queueInvite(user: GroupSearchUser): void {
+    if (this.isAlreadyInvited(user.id)) return;
+    this.invitedUsers.update(list => [...list, user]);
+  }
+
+  /** Quita un usuario de la cola de invitados. */
+  removeInvite(userId: string): void {
+    this.invitedUsers.update(list => list.filter(u => u.id !== userId));
+  }
+
+  /**
+   * Atajo: añade a todos los miembros de un grupo (propio o del que se es miembro) a la cola de
+   * invitados, sin necesidad de buscarlos uno a uno. No implica pertenencia al grupo de la
+   * publicación (si es privada) — es solo una forma rápida de rellenar la cola de invitación
+   * individual con gente que ya conoces de otro contexto.
+   */
+  inviteGroupMembers(group: Group): void {
+    const myId = this.cu.user()?.id;
+    const alreadyQueued = new Set(this.invitedUsers().map(u => u.id));
+    const toAdd: GroupSearchUser[] = group.members
+      .filter(member => member.userId !== myId && !alreadyQueued.has(member.userId))
+      .map(member => ({
+        id: member.userId,
+        name: member.name,
+        nick: member.nick,
+        email: '',
+        avatarUrl: member.avatarUrl,
+      }));
+
+    if (toAdd.length === 0) return;
+    this.invitedUsers.update(list => [...list, ...toAdd]);
   }
 
   /**
@@ -487,6 +643,8 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     this.description = publication.description ?? '';
     this.locationTypeId = publication.locationTypeId;
     this.requiredLevel = publication.requiredLevel ?? 0;
+    this.visibility.set(publication.visibility ?? 'PUBLIC');
+    this.selectedGroupId.set(publication.groupId ?? null);
     this.activityDate = this.getTodayDate();
 
     const start = new Date(publication.startDate);
@@ -1087,15 +1245,50 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    * - Tipo de ubicación seleccionado
    * - Coordenadas establecidas
    *
+   * Si la publicación es privada de grupo y no hay ni grupo ni invitados en cola, nadie podrá
+   * apuntarse todavía — se avisa con un diálogo de confirmación en vez de bloquear el envío
+   * (ninguno de los dos es obligatorio: se puede invitar más adelante desde la edición).
+   *
   * Tras crear la publicación:
    * - Muestra mensaje de éxito (5 segundos)
    * - Resetea el formulario
    */
   submitForm(): void {
-    if (!this.canSubmit) return;
+    if (!this.canSubmit || this.submitting()) return;
 
+    const noAccessYet = this.visibility() === 'PRIVATE_GROUP'
+      && !this.selectedGroupId() && this.invitedUsers().length === 0;
+
+    if (noAccessYet) {
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, withResponsiveDialogLayout(
+        {
+          ...CONFIRM_DIALOG_CONFIG,
+          data: {
+            title: 'Publicación sin invitados',
+            message: '¡No hay invitados en esta publicación! ¿Deseas continuar?',
+            icon: 'group_off',
+            acceptText: 'Crear de todos modos',
+            acceptIcon: 'check',
+          } satisfies ConfirmDialogData,
+        },
+        this.isCompactViewport(),
+      ));
+
+      dialogRef.afterClosed().subscribe(confirmed => {
+        if (confirmed) this.performSubmit();
+      });
+      return;
+    }
+
+    this.performSubmit();
+  }
+
+  /** Construye el payload y lanza la petición de creación — ver {@link submitForm}. */
+  private performSubmit(): void {
     const selectedLocationTypeId = this.locationTypeId;
     if (selectedLocationTypeId === null) return;
+
+    this.submitting.set(true);
 
     this.pubService.add({
       publicationType: 'event',
@@ -1112,6 +1305,9 @@ export class CreatePublicationPageComponent implements AfterViewInit {
       lat: this.lat(),
       lng: this.lng(),
       requiredLevel: this.requiredLevel,
+      visibility: this.visibility(),
+      groupId: this.visibility() === 'PRIVATE_GROUP' ? this.selectedGroupId() : null,
+      inviteUserIds: this.invitedUsers().length > 0 ? this.invitedUsers().map(u => u.id) : undefined,
       metadata: {
         exactLocation: this.exactLocation,
         // price: this.price,
@@ -1132,6 +1328,8 @@ export class CreatePublicationPageComponent implements AfterViewInit {
       },
     }).subscribe({
       next: pub => {
+        this.submitting.set(false);
+
         const snackText = this.isEditingActive()
           ? 'Cambios guardados correctamente'
           : this.isRepeatMode() ? 'Publicación repetida correctamente' : 'Publicación creada correctamente';
@@ -1162,7 +1360,15 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
         this.closeFormPanel();
         setTimeout(() => this.successMessage.set(null), 5000);
-      }
+      },
+      error: () => {
+        this.submitting.set(false);
+        this.snackBar.open('No se pudo crear la publicación. Inténtalo de nuevo.', 'Cerrar', {
+          duration: 4000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
+      },
     });
   }
 
@@ -1180,6 +1386,11 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   private resetFormFields(): void {
     this.isRepeatMode.set(false);
     this.isEditingActive.set(false);
+    this.visibility.set('PUBLIC');
+    this.selectedGroupId.set(this.myOrganizedGroups().length === 1 ? this.myOrganizedGroups()[0].id : null);
+    this.invitedUsers.set([]);
+    this.inviteSearchQuery = '';
+    this.inviteSearchResults.set([]);
     this.title = '';
     this.description = '';
     this.directions = '';

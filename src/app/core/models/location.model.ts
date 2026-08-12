@@ -64,6 +64,24 @@ export interface MapLocation {
   /** Estado de activación persistido en backend. */
   active?: boolean;
 
-  /** Número de personas apuntadas actualmente. */
+  /** Número de personas apuntadas actualmente. Ausente si el backend lo enmascara (ver `Publication.occupiedSlots`). */
   occupiedSlots?: number;
+
+  /** Visibilidad de la publicación (solo Publications). 'PUBLIC' si no aplica (p. ej. Places). */
+  visibility?: 'PUBLIC' | 'PRIVATE_GROUP';
+
+  /** Id del grupo al que está restringida. Solo si `visibility === 'PRIVATE_GROUP'`. */
+  groupId?: string | null;
+
+  /** Nombre del grupo. Solo presente en publicaciones `PRIVATE_GROUP`. */
+  groupName?: string;
+
+  /** Nº de miembros del grupo. Solo presente en publicaciones `PRIVATE_GROUP`. */
+  groupMemberCount?: number;
+
+  /** true si el usuario actual es miembro del grupo. Solo presente en publicaciones `PRIVATE_GROUP`. */
+  isGroupMember?: boolean;
+
+  /** true si el usuario actual tiene una solicitud de acceso pendiente para este grupo. */
+  accessRequestPending?: boolean;
 }

@@ -19,7 +19,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { GroupService } from '@core/services/group.service';
 import { CategoryService } from '@core/services/category.service';
-import { Group, GroupInvitation, GroupMember, GroupSearchUser, QueuedInvite } from '@core/models/group.model';
+import { Group, GroupInvitation, GroupJoinRequest, GroupMember, GroupSearchUser, QueuedInvite } from '@core/models/group.model';
 import { MainCategory } from '@core/models/category.model';
 import { ShareContent } from '@core/models/share.model';
 import { DEFAULT_SHARE_CONTENT } from '@core/constants/share.constants';
@@ -113,6 +113,18 @@ export class GroupsPageComponent {
   /** Id de miembro/invitado cuya acción de expulsión/cancelación está en curso. */
   readonly editActionInProgressId = signal<string | null>(null);
 
+  /** Solicitudes de acceso pendientes del grupo en edición (usuarios que intentaron apuntarse a
+   * una publicación privada sin ser miembros — cargadas al abrir el form, junto a las invitaciones). */
+  readonly editPendingJoinRequests = signal<GroupJoinRequest[]>([]);
+  readonly editLoadingJoinRequests = signal(false);
+  /** Id de solicitud cuya acción (aceptar/rechazar) está en curso. */
+  readonly joinRequestActionInProgressId = signal<string | null>(null);
+
+  /** Nº de solicitudes pendientes por grupo, para el chip "N solicitudes" en la fila cerrada
+   * (mismo dato que hace falta al entrar en modo edición, cargado por adelantado para todos los
+   * grupos organizados sin esperar a que se abra cada uno). */
+  readonly pendingJoinRequestCountByGroup = signal<Record<string, number>>({});
+
   readonly editForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
     description: ['', [Validators.required, Validators.maxLength(500)]],
@@ -171,6 +183,18 @@ export class GroupsPageComponent {
     this.groupService.getMyGroups().subscribe(groups => {
       this.myGroups.set(groups);
       this.loadingGroups.set(false);
+      this.loadPendingJoinRequestCounts(groups);
+    });
+  }
+
+  /** Carga el recuento de solicitudes pendientes de cada grupo organizado, para el chip de la
+   * fila cerrada — se adelanta aquí para no esperar a que el usuario entre en modo edición. */
+  private loadPendingJoinRequestCounts(groups: Group[]): void {
+    const organized = groups.filter(g => this.groupService.getMyRole(g) === 'organizer');
+    organized.forEach(group => {
+      this.groupService.getGroupPendingJoinRequests(group.id).subscribe(requests => {
+        this.pendingJoinRequestCountByGroup.update(prev => ({ ...prev, [group.id]: requests.length }));
+      });
     });
   }
 
@@ -336,6 +360,7 @@ export class GroupsPageComponent {
     this.editEmailInviteCtrl.reset();
     this.editSearchResults.set([]);
     this.editPendingInvitations.set([]);
+    this.editPendingJoinRequests.set([]);
     this.editingGroupId.set(group.id);
 
     // Carga las invitaciones pendientes del grupo para mostrarlas en el formulario.
@@ -346,6 +371,17 @@ export class GroupsPageComponent {
         this.editLoadingInvitations.set(false);
       },
       error: () => this.editLoadingInvitations.set(false),
+    });
+
+    // Carga las solicitudes de acceso pendientes del grupo (usuarios que intentaron apuntarse a
+    // una publicación privada sin ser miembros).
+    this.editLoadingJoinRequests.set(true);
+    this.groupService.getGroupPendingJoinRequests(group.id).subscribe({
+      next: (requests) => {
+        this.editPendingJoinRequests.set(requests);
+        this.editLoadingJoinRequests.set(false);
+      },
+      error: () => this.editLoadingJoinRequests.set(false),
     });
   }
 
@@ -460,6 +496,45 @@ export class GroupsPageComponent {
       error: () => {
         this.editActionInProgressId.set(null);
         this.notify('No se pudo cancelar la invitación. Inténtalo de nuevo.');
+      },
+    });
+  }
+
+  /** Acepta una solicitud de acceso pendiente: añade al solicitante como miembro del grupo. */
+  acceptEditJoinRequest(request: GroupJoinRequest, group: Group): void {
+    this.joinRequestActionInProgressId.set(request.id);
+    this.groupService.acceptJoinRequest(request.id).subscribe({
+      next: (updated) => {
+        this.myGroups.update(list => list.map(g => g.id === updated.id ? updated : g));
+        this.editPendingJoinRequests.update(list => list.filter(r => r.id !== request.id));
+        this.pendingJoinRequestCountByGroup.update(prev => ({
+          ...prev, [group.id]: Math.max(0, (prev[group.id] ?? 1) - 1),
+        }));
+        this.joinRequestActionInProgressId.set(null);
+        this.notify(`${request.requestedByName} se ha unido al grupo`);
+      },
+      error: () => {
+        this.joinRequestActionInProgressId.set(null);
+        this.notify('No se pudo aceptar la solicitud. Inténtalo de nuevo.');
+      },
+    });
+  }
+
+  /** Rechaza una solicitud de acceso pendiente. No añade al solicitante al grupo. */
+  rejectEditJoinRequest(request: GroupJoinRequest, group: Group): void {
+    this.joinRequestActionInProgressId.set(request.id);
+    this.groupService.rejectJoinRequest(request.id).subscribe({
+      next: () => {
+        this.editPendingJoinRequests.update(list => list.filter(r => r.id !== request.id));
+        this.pendingJoinRequestCountByGroup.update(prev => ({
+          ...prev, [group.id]: Math.max(0, (prev[group.id] ?? 1) - 1),
+        }));
+        this.joinRequestActionInProgressId.set(null);
+        this.notify(`Solicitud de ${request.requestedByName} rechazada`);
+      },
+      error: () => {
+        this.joinRequestActionInProgressId.set(null);
+        this.notify('No se pudo rechazar la solicitud. Inténtalo de nuevo.');
       },
     });
   }

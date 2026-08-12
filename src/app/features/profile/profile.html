@@ -419,6 +419,19 @@
             <span class="activity-item__state" [class.activity-item__state--finished]="isFinished(publication)">
               {{ isFinished(publication) ? 'Terminada' : 'Activa' }}
             </span>
+            <span class="activity-item__visibility"
+              [class.activity-item__visibility--private]="publication.visibility === 'PRIVATE_GROUP'">
+              <mat-icon>{{ publication.visibility === 'PRIVATE_GROUP' ? 'lock' : 'public' }}</mat-icon>
+              {{ publication.visibility === 'PRIVATE_GROUP' ? (publication.groupName ?? 'Privada') : 'Pública' }}
+            </span>
+            @if (publication.visibility === 'PRIVATE_GROUP' &&
+              ((pendingAccessRequestCountByPublication()[publication.id] ?? 0) > 0 || accessRequestsPanelId() === publication.id)) {
+            <button type="button" class="activity-item__pending-requests" (click)="toggleAccessRequests(publication)">
+              <mat-icon>person_add</mat-icon>
+              {{ pendingAccessRequestCountByPublication()[publication.id] ?? 0 }}
+              {{ (pendingAccessRequestCountByPublication()[publication.id] ?? 0) === 1 ? 'solicitud' : 'solicitudes' }}
+            </button>
+            }
           </div>
 
           <p class="activity-item__meta">
@@ -437,12 +450,87 @@
               <mat-icon>{{ isFinished(publication) ? 'content_copy' : 'edit' }}</mat-icon>
               {{ isFinished(publication) ? 'Repetir publicación' : 'Editar' }}
             </button>
+            <button mat-stroked-button type="button" (click)="toggleVisibilityEdit(publication)">
+              <mat-icon>visibility</mat-icon>
+              Cambiar visibilidad
+            </button>
             <button mat-stroked-button type="button" class="btn-delete-activity"
               (click)="deletePublication(publication)">
               <mat-icon>delete_forever</mat-icon>
               Eliminar definitivamente
             </button>
           </div>
+
+          @if (visibilityEditId() === publication.id) {
+          <div class="visibility-edit">
+            @if (publication.visibility === 'PRIVATE_GROUP') {
+            <p class="visibility-edit__hint">
+              Privada para <strong>{{ publication.groupName }}</strong>. Pasar a pública siempre está permitido.
+            </p>
+            <button mat-flat-button color="primary" type="button" [disabled]="changingVisibilityId() === publication.id"
+              (click)="makePublic(publication)">
+              @if (changingVisibilityId() === publication.id) {
+              <mat-spinner diameter="16" />
+              } @else {
+              <ng-container><mat-icon>public</mat-icon> Hacer pública</ng-container>
+              }
+            </button>
+            } @else if (myOrganizedGroupsForVisibility().length === 0) {
+            <p class="visibility-edit__hint">
+              Organiza un grupo para poder limitar esta publicación a sus miembros.
+            </p>
+            } @else {
+            <p class="visibility-edit__hint">
+              Elige el grupo al que restringir esta publicación. Se bloqueará si hay apuntados que no son miembros.
+            </p>
+            <div class="visibility-edit__groups">
+              @for (group of myOrganizedGroupsForVisibility(); track group.id) {
+              <button type="button" class="visibility-edit__group-chip"
+                [disabled]="changingVisibilityId() === publication.id" (click)="makePrivate(publication, group.id)">
+                {{ group.name }}
+              </button>
+              }
+            </div>
+            }
+          </div>
+          }
+
+          @if (accessRequestsPanelId() === publication.id) {
+          <div class="access-requests">
+            <span class="access-requests__label">Solicitudes de acceso</span>
+            @if (loadingAccessRequests()) {
+            <p class="access-requests__hint">Cargando solicitudes…</p>
+            } @else if (openAccessRequests().length === 0) {
+            <p class="access-requests__hint">No hay solicitudes pendientes.</p>
+            } @else {
+            <div class="access-requests__list">
+              @for (request of openAccessRequests(); track request.id) {
+              <div class="access-request-row">
+                <span class="access-request-row__avatar">{{ request.requestedByName.charAt(0) }}</span>
+                <div class="access-request-row__info">
+                  <span class="access-request-row__name">{{ request.requestedByName }}</span>
+                  <span class="access-request-row__nick">&#64;{{ request.requestedByNick }}</span>
+                </div>
+                <button type="button" class="access-request-row__action access-request-row__action--accept"
+                  [disabled]="accessRequestActionInProgressId() === request.id"
+                  (click)="acceptAccessRequest(request, publication)" title="Aceptar">
+                  @if (accessRequestActionInProgressId() === request.id) {
+                  <mat-spinner diameter="14" />
+                  } @else {
+                  <mat-icon>check</mat-icon>
+                  }
+                </button>
+                <button type="button" class="access-request-row__action access-request-row__action--danger"
+                  [disabled]="accessRequestActionInProgressId() === request.id"
+                  (click)="rejectAccessRequest(request, publication)" title="Rechazar">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+              }
+            </div>
+            }
+          </div>
+          }
         </li>
         }
       </ul>

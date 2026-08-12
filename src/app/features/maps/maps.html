@@ -1,10 +1,10 @@
 <section class="maps-page">
 
   <!-- ── Cabecera ─────────────────────────────────────────────────────── -->
-  <header class="maps-header">
+  <!-- <header class="maps-header">
     <h2>Maps</h2>
     <p>Visualización con Google Maps API</p>
-  </header>
+  </header> -->
 
   <!-- ── Contenido principal ──────────────────────────────────────────── -->
   <div class="maps-body" (click)="handleOutsidePanelClick($event)">
@@ -72,8 +72,12 @@
       </button>
       <app-publication-detail [item]="selectedDetail()!" [breadcrumb]="selectedBreadcrumb()!"
         [context]="selectedContext()" [joinedCount]="getJoinedCount(selectedDetail()!.id)"
-        [alreadyJoined]="hasJoined(selectedDetail()!.id)" (joinRequested)="joinSelectedLocation()"
-        (leaveRequested)="leaveSelectedLocation()" />
+        [alreadyJoined]="hasJoined(selectedDetail()!.id)" [visibility]="selectedDetail()!.visibility ?? 'PUBLIC'"
+        [groupName]="selectedDetail()!.groupName" [groupMemberCount]="selectedDetail()!.groupMemberCount"
+        [isGroupMember]="selectedDetail()!.isGroupMember ?? false"
+        [accessRequestPending]="accessRequestedByLocation()[selectedDetail()!.id] ?? false"
+        (joinRequested)="joinSelectedLocation()" (leaveRequested)="leaveSelectedLocation()"
+        (joinRequestRequested)="requestAccessToSelectedLocation()" />
     </div>
     }
 

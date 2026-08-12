@@ -19,6 +19,8 @@ import {
   Group,
   GroupInvitation,
   GroupInvitationStatus,
+  GroupJoinRequest,
+  GroupJoinRequestStatus,
   GroupMember,
   GroupRole,
   GroupSearchUser,
@@ -82,6 +84,19 @@ interface ApiUserSearchResult {
   nick: string;
   email: string;
   avatarUrl: string | null;
+}
+
+interface ApiGroupJoinRequest {
+  id: string;
+  groupId: string;
+  groupName: string;
+  requestedByUserId: string;
+  requestedByName: string;
+  requestedByNick: string;
+  publicationId: string | null;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  createdAt: string;
+  respondedAt: string | null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -261,6 +276,28 @@ export class GroupService {
     );
   }
 
+  /**
+   * Devuelve las solicitudes de acceso pendientes de un grupo (usuarios que intentaron apuntarse
+   * a una publicación privada sin ser miembros). Solo el organizador puede consultarlas.
+   */
+  getGroupPendingJoinRequests(groupId: string): Observable<GroupJoinRequest[]> {
+    return this.http.get<ApiGroupJoinRequest[]>(`${this.baseUrl}/${groupId}/join-requests`).pipe(
+      map(list => list.map(r => this.mapJoinRequest(r)))
+    );
+  }
+
+  /** Acepta una solicitud de acceso: añade al solicitante como miembro del grupo. */
+  acceptJoinRequest(requestId: string): Observable<Group> {
+    return this.http.post<ApiGroup>(`${this.baseUrl}/join-requests/${requestId}/accept`, {}).pipe(
+      map(g => this.mapGroup(g))
+    );
+  }
+
+  /** Rechaza una solicitud de acceso (no se añade al grupo). */
+  rejectJoinRequest(requestId: string): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/join-requests/${requestId}/reject`, {});
+  }
+
   /** Cancela una invitación pendiente (la elimina). Puede hacerlo el organizador o el invitado. */
   cancelGroupInvitation(invitationId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/invitations/${invitationId}/cancel`);
@@ -344,6 +381,21 @@ export class GroupService {
       invitedByName: api.invitedByName,
       status: api.status.toLowerCase() as GroupInvitationStatus,
       createdAt: api.createdAt,
+    };
+  }
+
+  private mapJoinRequest(api: ApiGroupJoinRequest): GroupJoinRequest {
+    return {
+      id: api.id,
+      groupId: api.groupId,
+      groupName: api.groupName,
+      requestedByUserId: api.requestedByUserId,
+      requestedByName: api.requestedByName,
+      requestedByNick: api.requestedByNick,
+      publicationId: api.publicationId,
+      status: api.status.toLowerCase() as GroupJoinRequestStatus,
+      createdAt: api.createdAt,
+      respondedAt: api.respondedAt ?? undefined,
     };
   }
 

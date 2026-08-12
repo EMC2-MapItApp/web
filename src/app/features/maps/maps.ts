@@ -169,6 +169,13 @@ export class MapsPageComponent implements AfterViewInit {
   /** Marca de apuntado por combinación usuario+localización (estado de sesión). */
   joinedByUserAndLocation = signal<Record<string, true>>({});
 
+  /**
+   * Solicitud de acceso pendiente por localización. Se inicializa desde
+   * `location.accessRequestPending` (ya calculado por backend, sobrevive a recargar la página) y
+   * se actualiza localmente al solicitar — mismo patrón que `joinedByUserAndLocation`.
+   */
+  accessRequestedByLocation = signal<Record<number, boolean>>({});
+
   /** Cierra el panel de detalle. */
   closeDetail(): void {
     this.selectedDetail.set(null);
@@ -224,6 +231,39 @@ export class MapsPageComponent implements AfterViewInit {
             ...prev,
             [this.buildJoinKey(detail.id)]: true,
           }));
+        }
+      },
+    });
+  }
+
+  /**
+   * Solicita apuntarse a la publicación privada abierta, para un usuario sin acceso todavía. La
+   * revisa el autor de la publicación, no el organizador de ningún grupo. Resiliente al mismo
+   * caso límite que `joinSelectedLocation`: si el backend responde 409 `ALREADY_REQUESTED` (ya
+   * había una solicitud pendiente, p. ej. de otra pestaña), se marca igualmente como pendiente
+   * en vez de mostrar un error.
+   */
+  requestAccessToSelectedLocation(): void {
+    if (!this.requireAuth()) return;
+
+    const detail = this.selectedDetail();
+    if (!detail) return;
+
+    this.publicationService.requestAccess(detail.id).subscribe({
+      next: () => {
+        this.accessRequestedByLocation.update(prev => ({ ...prev, [detail.id]: true }));
+        this.selectedDetail.update(d => d ? { ...d, accessRequestPending: true } : null);
+        this.snackBar.open('Solicitud enviada. El autor de la publicación la revisará.', 'Cerrar', {
+          duration: 4000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
+      },
+      error: (error: HttpErrorResponse) => {
+        const code = error?.error?.error?.code;
+        if (code === 'ALREADY_REQUESTED') {
+          this.accessRequestedByLocation.update(prev => ({ ...prev, [detail.id]: true }));
+          this.selectedDetail.update(d => d ? { ...d, accessRequestPending: true } : null);
         }
       },
     });
@@ -476,7 +516,8 @@ export class MapsPageComponent implements AfterViewInit {
     locations.forEach(location => {
       const color = this.categoryService.resolveColor(location.locationTypeId);
       const icon = this.categoryService.resolveIcon(location.locationTypeId);
-      const baseIcon = this.mapsService.buildMarkerIcon(color, icon, 36, isDark, false);
+      const groupBadge = this.resolveGroupBadge(location);
+      const baseIcon = this.mapsService.buildMarkerIcon(color, icon, 36, isDark, false, groupBadge);
 
       const marker = new google.maps.Marker({
         position: { lat: location.lat, lng: location.lng },
@@ -495,13 +536,20 @@ export class MapsPageComponent implements AfterViewInit {
         // El icono animado solo se aplica mientras dura la pulsación (ver
         // attachPressHandlers) — no se muestra de forma permanente.
         const pressIcon = showPressFeedback
-          ? this.mapsService.buildMarkerIcon(color, icon, 36, isDark, true)
+          ? this.mapsService.buildMarkerIcon(color, icon, 36, isDark, true, groupBadge)
           : null;
         this.attachPressHandlers(marker, location, color, baseIcon, pressIcon);
       }
 
       this.markers.push(marker);
     });
+  }
+
+  /** Distintivo de marker según visibilidad: sin distintivo (pública), candado neutro (privada,
+   * no miembro) o candado en color de acento (privada, miembro) — ver `GoogleMapsService.buildMarkerIcon`. */
+  private resolveGroupBadge(location: MapLocation): 'none' | 'locked' | 'member' {
+    if (location.visibility !== 'PRIVATE_GROUP') return 'none';
+    return location.isGroupMember ? 'member' : 'locked';
   }
 
   /**
@@ -512,10 +560,46 @@ export class MapsPageComponent implements AfterViewInit {
    * (ver {@link MapsPageComponent.attachPressHandlers}).
    */
   private openLocationDetail(location: MapLocation): void {
+    if (!this.requireAuth()) return;
+
     const bc = this.categoryService.resolveBreadcrumb(location.locationTypeId);
     if (!bc) return;
-    this.publicationService.getEnrollments(location.id).subscribe(users => {
 
+    this.accessRequestedByLocation.update(prev => ({
+      ...prev,
+      [location.id]: location.accessRequestPending ?? prev[location.id] ?? false,
+    }));
+
+    const baseDetail: PublicationDetailInput = {
+      id: location.id,
+      name: location.name,
+      description: location.description,
+      locationTypeId: location.locationTypeId,
+      metadata: location.metadata,
+      startDate: location.startDate,
+      endDate: location.endDate,
+      requiredLevel: location.requiredLevel,
+      publicationType: location.publicationType,
+      active: location.active,
+      occupiedSlots: location.occupiedSlots,
+      visibility: location.visibility,
+      groupName: location.groupName,
+      groupMemberCount: location.groupMemberCount,
+      isGroupMember: location.isGroupMember,
+      accessRequestPending: this.accessRequestedByLocation()[location.id] ?? false,
+    };
+
+    this.selectedBreadcrumb.set(bc);
+    this.selectedContext.set(location.publicationType ?? 'place');
+
+    // Publicación privada y el usuario no es miembro: el backend rechaza /enrollments con 403 —
+    // no tiene sentido pedirlo, solo generaría ruido en consola.
+    if (location.visibility === 'PRIVATE_GROUP' && !location.isGroupMember) {
+      this.selectedDetail.set(baseDetail);
+      return;
+    }
+
+    this.publicationService.getEnrollments(location.id).subscribe(users => {
       // Actualizar estado local si el usuario actual está en la lista
       const currentUserId = this.currentUser.user()?.id?.toString();
       if (currentUserId && users.some(u => u.userId === currentUserId)) {
@@ -525,22 +609,7 @@ export class MapsPageComponent implements AfterViewInit {
         }));
       }
 
-      this.selectedDetail.set({
-        id: location.id,
-        name: location.name,
-        description: location.description,
-        locationTypeId: location.locationTypeId,
-        metadata: location.metadata,
-        startDate: location.startDate,
-        endDate: location.endDate,
-        requiredLevel: location.requiredLevel,
-        publicationType: location.publicationType,
-        active: location.active,
-        occupiedSlots: location.occupiedSlots,
-        enrolledUsers: users,
-      });
-      this.selectedBreadcrumb.set(bc);
-      this.selectedContext.set(location.publicationType ?? 'place');
+      this.selectedDetail.set({ ...baseDetail, enrolledUsers: users });
     });
   }
 

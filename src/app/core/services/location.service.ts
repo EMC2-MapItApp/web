@@ -104,6 +104,12 @@ export class LocationService {
                 requiredLevel: publication.requiredLevel,
                 occupiedSlots: publication.occupiedSlots,
                 active: publication.active,
+                visibility: publication.visibility,
+                groupId: publication.groupId,
+                groupName: publication.groupName,
+                groupMemberCount: publication.groupMemberCount,
+                isGroupMember: publication.isGroupMember,
+                accessRequestPending: publication.accessRequestPending,
             }));
     }
 }

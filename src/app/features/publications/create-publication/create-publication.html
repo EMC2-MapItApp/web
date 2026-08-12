@@ -24,7 +24,6 @@
       <!-- ── Cabecera fija ─────────────────────────────────────────────────── -->
       <header class="page-header">
         <h2 class="page-header__title">
-          <mat-icon>{{ isEditingActive() ? 'edit' : isRepeatMode() ? 'content_copy' : 'add_location_alt' }}</mat-icon>
           {{ isEditingActive() ? 'Editar publicación' : isRepeatMode() ? 'Repetir publicación' : 'Nueva publicación' }}
         </h2>
         <p class="page-header__subtitle">
@@ -85,6 +84,156 @@
               <textarea id="act-desc" class="field__input field__input--textarea"
                 placeholder="Punto de encuentro, qué llevar, nivel necesario…" [(ngModel)]="description"
                 rows="3"></textarea>
+            </div>
+
+          </div>
+        </mat-expansion-panel>
+
+        <!-- ══════════════════════════════════════════════════════════════════
+           PANEL 1.5: Visibilidad e Invitados
+        ══════════════════════════════════════════════════════════════════ -->
+        <mat-expansion-panel [expanded]="expandedPanels.visibility" (opened)="expandedPanels.visibility = true"
+          (closed)="expandedPanels.visibility = false">
+
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>group</mat-icon>
+              Visibilidad e Invitados
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="panel-content">
+
+            <div class="visibility-selector">
+              <div class="visibility-cards">
+                <button type="button" class="visibility-card" [class.visibility-card--active]="visibility() === 'PUBLIC'"
+                  (click)="selectVisibility('PUBLIC')">
+                  <mat-icon>public</mat-icon>
+                  <span class="visibility-card__title">Pública</span>
+                  <span class="visibility-card__desc">Cualquiera puede apuntarse hasta llenar el aforo.</span>
+                </button>
+                <button type="button" class="visibility-card"
+                  [class.visibility-card--active]="visibility() === 'PRIVATE_GROUP'"
+                  (click)="selectVisibility('PRIVATE_GROUP')">
+                  <mat-icon>lock</mat-icon>
+                  <span class="visibility-card__title">Privada de grupo</span>
+                  <span class="visibility-card__desc">Solo pueden apuntarse los miembros de un grupo que organizas.</span>
+                </button>
+              </div>
+
+              @if (visibility() === 'PUBLIC') {
+              <span class="visibility-badge visibility-badge--public">
+                <mat-icon>public</mat-icon>
+                Abierta a todos
+              </span>
+              } @else {
+              @if (loadingGroups()) {
+              <p class="visibility-hint">Cargando tus grupos…</p>
+              } @else if (myOrganizedGroups().length === 0) {
+              <div class="visibility-empty">
+                <p class="visibility-hint">Todavía no organizas ningún grupo.</p>
+                <button type="button" class="btn btn--ghost" (click)="goToCreateGroup()">
+                  <mat-icon>group_add</mat-icon>
+                  Crear un grupo primero
+                </button>
+              </div>
+              } @else if (myOrganizedGroups().length === 1) {
+              <p class="visibility-confirm">
+                Se publicará para: <strong>{{ myOrganizedGroups()[0].name }}</strong>
+                · <button type="button" class="visibility-confirm__change" (click)="goToCreateGroup()">cambiar</button>
+              </p>
+              } @else {
+              <div class="visibility-group-chips">
+                @for (group of myOrganizedGroups(); track group.id) {
+                <button type="button" class="visibility-group-chip"
+                  [class.visibility-group-chip--active]="selectedGroupId() === group.id"
+                  (click)="selectGroup(group.id)">
+                  <span class="visibility-group-chip__name">{{ group.name }}</span>
+                  <span class="visibility-group-chip__count">
+                    {{ group.members.length }} {{ group.members.length === 1 ? 'miembro' : 'miembros' }}
+                  </span>
+                </button>
+                }
+              </div>
+              }
+              }
+            </div>
+
+            <div class="panel-divider"></div>
+
+            <!-- Invitar usuarios: independiente de la visibilidad elegida arriba. En eventos
+                 privados de grupo, además de avisar concede acceso para apuntarse aunque el
+                 invitado no pertenezca al grupo. -->
+            <div class="invite-section">
+              <p class="field__label">
+                Invitar usuarios <span class="field__optional">(opcional)</span>
+              </p>
+              <span class="field-helper">
+                Se les notificará el evento. Si es privado, podrán apuntarse aunque no pertenezcan al grupo.
+              </span>
+
+              <div class="field">
+                <input class="field__input" type="text" placeholder="Buscar por nombre, nick o email…"
+                  [(ngModel)]="inviteSearchQuery" (ngModelChange)="onInviteSearchInput($event)" />
+              </div>
+
+              @if (inviteSearchQuery.trim().length >= 2) {
+              <ul class="invite-search-results">
+                @if (searchingInviteUsers()) {
+                <li class="invite-search-results__empty">Buscando…</li>
+                } @else if (inviteSearchResults().length === 0) {
+                <li class="invite-search-results__empty">Sin resultados para "{{ inviteSearchQuery }}".</li>
+                } @else {
+                @for (user of inviteSearchResults(); track user.id) {
+                <li class="invite-result-row">
+                  <span class="invite-result-row__avatar">{{ user.name.slice(0, 1) }}</span>
+                  <div class="invite-result-row__info">
+                    <span class="invite-result-row__name">{{ user.name }}</span>
+                    <span class="invite-result-row__nick">&#64;{{ user.nick }}</span>
+                  </div>
+                  <button type="button" class="btn btn--ghost" [disabled]="isAlreadyInvited(user.id)"
+                    (click)="queueInvite(user)">
+                    @if (isAlreadyInvited(user.id)) {
+                    <mat-icon>check</mat-icon> Invitado
+                    } @else {
+                    <mat-icon>person_add</mat-icon> Invitar
+                    }
+                  </button>
+                </li>
+                }
+                }
+              </ul>
+              }
+
+              @if (myGroups().length > 0) {
+              <div class="invite-group-shortcut">
+                <span class="field-helper">O invita a todos los miembros de un grupo:</span>
+                <div class="invite-group-shortcut__chips">
+                  @for (group of myGroups(); track group.id) {
+                  <button type="button" class="btn btn--ghost" (click)="inviteGroupMembers(group)">
+                    <mat-icon>group</mat-icon> {{ group.name }}
+                  </button>
+                  }
+                </div>
+              </div>
+              }
+
+              @if (invitedUsers().length > 0) {
+              <div class="invite-queue">
+                <span class="field__label">Se invitará a:</span>
+                <ul class="invite-queue__list">
+                  @for (user of invitedUsers(); track user.id) {
+                  <li class="invite-chip">
+                    {{ user.name }}
+                    <button type="button" class="invite-chip__remove" (click)="removeInvite(user.id)"
+                      aria-label="Quitar invitación">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </li>
+                  }
+                </ul>
+              </div>
+              }
             </div>
 
           </div>
@@ -439,14 +588,19 @@
     ══════════════════════════════════════════════════════════════════════ -->
     <div class="form-actions">
       <!-- Botón: Limpiar formulario -->
-      <button class="btn btn--ghost" (click)="resetForm()" type="button">
+      <button class="btn btn--ghost" (click)="resetForm()" [disabled]="submitting()" type="button">
         <mat-icon>refresh</mat-icon>
         Limpiar
       </button>
-      <!-- Botón principal: Crear/Editar/Repetir publicación (disabled si faltan datos obligatorios) -->
-      <button class="btn btn--primary" (click)="submitForm()" [disabled]="!canSubmit" type="button">
+      <!-- Botón principal: Crear/Editar/Repetir publicación (disabled si faltan datos obligatorios
+           o si ya hay una petición en curso, para que un doble click no cree dos publicaciones). -->
+      <button class="btn btn--primary" (click)="submitForm()" [disabled]="!canSubmit || submitting()" type="button">
+        @if (submitting()) {
+        <mat-spinner diameter="16" />
+        } @else {
         <mat-icon>{{ isEditingActive() ? 'save' : isRepeatMode() ? 'content_copy' : 'add_location_alt' }}</mat-icon>
-        {{ submitButtonText }}
+        }
+        {{ submitting() ? 'Creando…' : submitButtonText }}
       </button>
     </div>
 

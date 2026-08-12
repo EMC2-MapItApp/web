@@ -4,7 +4,25 @@
 .register-dialog {
   @include m.dialog-base;
 
-  &__icon { @include m.icon-circle(v.$gradient-primary); }
+  // Mobile: menos padding lateral — el diálogo compacto (94vw, ver
+  // withResponsiveDialogLayout) deja poco ancho real y el padding de
+  // desktop (28px) se lo comía casi todo, dejando el stepper y el selector
+  // de tipo sin espacio para respirar.
+  @include m.mobile {
+    padding: v.$space-xl v.$space-md v.$space-lg;
+  }
+
+  &__icon {
+    @include m.icon-circle(v.$gradient-primary);
+
+    @include m.mobile {
+      width: 56px;
+      height: 56px;
+      margin-bottom: v.$space-md;
+
+      mat-icon { font-size: 28px; width: 28px; height: 28px; }
+    }
+  }
 
   &__title {
     margin: 0 0 v.$space-sm;
@@ -12,6 +30,8 @@
     font-weight: 800;
     color: var(--c-text-primary);
     letter-spacing: -0.3px;
+
+    @include m.mobile { font-size: v.$font-3xl; }
   }
 
   &__subtitle {
@@ -19,6 +39,8 @@
     font-size: v.$font-md;
     color: var(--c-text-secondary);
     line-height: 1.6;
+
+    @include m.mobile { margin: 0 0 v.$space-xs; }
   }
 
   &__hint {
@@ -36,13 +58,57 @@
   }
 }
 
-.register-stepper { width: 100%; text-align: left; }
+.register-stepper {
+  width: 100%;
+  text-align: left;
+
+  // Mobile: el header horizontal de mat-stepper usa un padding/tamaño pensado
+  // para desktop (72px de alto, 24px de padding por paso) que no cabe en el
+  // diálogo compacto (94vw) — las 3 etiquetas ("Tu perfil", "Tus datos",
+  // "Detalles") se recortaban con "…" y el header desbordaba con scroll
+  // horizontal. Se reducen icono/padding/línea de conexión vía ::ng-deep
+  // (estilos internos de Material, con encapsulación propia — no alcanzables
+  // de otra forma) solo para este stepper.
+  @include m.mobile {
+    ::ng-deep {
+      .mat-horizontal-stepper-header {
+        padding: 0 4px;
+        height: 56px;
+      }
+
+      .mat-step-icon {
+        width: 22px;
+        height: 22px;
+        margin-right: 4px;
+      }
+
+      .mat-step-label {
+        font-size: v.$font-xs;
+        min-width: 0;
+      }
+
+      .mat-stepper-horizontal-line {
+        margin: 0 2px;
+        min-width: 8px;
+      }
+
+      .mat-horizontal-content-container {
+        padding: 0;
+      }
+    }
+  }
+}
 
 .step-content {
   display: flex;
   flex-direction: column;
   gap: v.$space-lg;
   padding: v.$space-lg 4px v.$space-sm;
+
+  @include m.mobile {
+    gap: v.$space-md;
+    padding: v.$space-md 0 0;
+  }
 
   form {
     display: grid;
@@ -58,6 +124,15 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+
+  // Mobile: una sola columna a ancho completo — 3 columnas en el diálogo
+  // compacto (94vw) dejaban tarjetas demasiado estrechas (la tercera quedaba
+  // cortada, forzando scroll horizontal) con texto apretado y objetivo
+  // táctil pequeño.
+  @include m.mobile {
+    grid-template-columns: 1fr;
+    gap: v.$space-sm;
+  }
 }
 
 .type-card {
@@ -87,10 +162,58 @@
     &:hover { border-color: var(--c-border); background: var(--c-surface); transform: none; }
   }
 
-  &__emoji { font-size: 28px; line-height: 1; }
-  &__label { font-size: v.$font-body; font-weight: 700; color: var(--c-text-primary); }
-  &__desc  { font-size: v.$font-xs; color: var(--c-text-secondary); line-height: 1.4; }
-  &__soon  {
+  // Mobile: tarjeta en formato fila (icono a la izquierda, título+descripción
+  // apilados a la derecha) en vez de columna centrada — más legible a ancho
+  // completo y con mayor objetivo táctil. Se usa grid (no flex-direction: row)
+  // porque emoji/label/desc/soon son hijos planos del mismo nivel, no hay un
+  // contenedor propio para el bloque de texto.
+  @include m.mobile {
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: v.$space-md;
+    row-gap: 2px;
+    text-align: left;
+    padding: v.$space-md;
+  }
+
+  &__emoji {
+    font-size: 28px;
+    line-height: 1;
+
+    @include m.mobile {
+      grid-row: 1 / 3;
+      grid-column: 1;
+      font-size: 30px;
+      justify-self: center;
+    }
+  }
+
+  &__label {
+    font-size: v.$font-body;
+    font-weight: 700;
+    color: var(--c-text-primary);
+
+    @include m.mobile {
+      grid-row: 1;
+      grid-column: 2;
+      font-size: v.$font-lg;
+    }
+  }
+
+  &__desc {
+    font-size: v.$font-xs;
+    color: var(--c-text-secondary);
+    line-height: 1.4;
+
+    @include m.mobile {
+      grid-row: 2;
+      grid-column: 2;
+    }
+  }
+
+  &__soon {
     margin-top: 4px;
     font-size: 10px;
     font-weight: 700;
@@ -100,6 +223,13 @@
     background: var(--c-surface-alt);
     padding: 2px 8px;
     border-radius: v.$radius-full;
+
+    @include m.mobile {
+      grid-row: 1 / 3;
+      grid-column: 3;
+      margin-top: 0;
+      align-self: center;
+    }
   }
 }
 
@@ -123,6 +253,19 @@
   justify-content: flex-end;
   gap: 10px;
   padding-top: 4px;
+
+  // Mobile: acciones apiladas a ancho completo (primaria arriba) para un
+  // objetivo táctil cómodo, igual que el resto de formularios de la app.
+  @include m.mobile {
+    flex-direction: column-reverse;
+    gap: v.$space-sm;
+
+    .btn-primary,
+    .btn-back {
+      width: 100%;
+      min-width: 0;
+    }
+  }
 }
 
 .btn-primary { @include m.btn-primary; height: 40px; min-width: 110px; border-radius: v.$radius-md; font-size: v.$font-md; font-weight: 600; }

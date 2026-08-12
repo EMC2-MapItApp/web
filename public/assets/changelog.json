@@ -1,5 +1,17 @@
 [
   {
+    "date": "2026-08-12",
+    "type": "feature",
+    "title": "Solicita apuntarte a eventos privados",
+    "description": "Ahora puedes pedir plaza en un evento privado y su organizador decide si te acepta; ademas puedes enviarnos tus sugerencias o avisarnos de errores desde la app."
+  },
+  {
+    "date": "2026-08-11",
+    "type": "feature",
+    "title": "Grupos privados en publicaciones",
+    "description": "Ahora puedes crear eventos y promociones visibles solo para los miembros de un grupo, invitar a personas concretas y pedir acceso a un grupo cuando intentas apuntarte a algo restringido."
+  },
+  {
     "date": "2026-08-06",
     "type": "feature",
     "title": "Comparte MapIt fácilmente",

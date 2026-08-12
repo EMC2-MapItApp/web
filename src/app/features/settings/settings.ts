@@ -50,8 +50,17 @@ export class SettingsPageComponent {
   /** Metadata (icono/label/descripción) de cada tipo de notificación, para el template. */
   readonly notificationTypeMeta = NOTIFICATION_TYPE_META;
 
+  /** Estado (abierto/cerrado) de cada panel. Deben enlazarse con `[(expanded)]` en el
+   *  template: un `[expanded]` de un solo sentido se reevalúa en cada detección de
+   *  cambios y revierte el toggle interno del panel justo después de hacer clic.
+   *  El acordeón no lleva `multi`: solo puede haber un panel abierto a la vez, así que
+   *  todos arrancan cerrados (evita que dos `expanded` iniciales a `true` se disputen
+   *  el único hueco vía `UniqueSelectionDispatcher`). */
+  appearanceExpanded = false;
+  mapExpanded = false;
+
   /** Permite enlazar aquí con `?section=notifications` (p. ej. desde la campana de notificaciones)
    *  para abrir directamente el acordeón de Notificaciones. */
-  readonly notificationsSectionExpanded =
+  notificationsSectionExpanded =
     inject(ActivatedRoute).snapshot.queryParamMap.get('section') === 'notifications';
 }

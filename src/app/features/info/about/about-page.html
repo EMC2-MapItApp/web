@@ -51,6 +51,31 @@
       </nav>
 
     </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>feedback</mat-icon>
+          <span>Ayuda y feedback</span>
+        </mat-panel-title>
+        <mat-panel-description>Contacta con el equipo de desarrollo</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <nav class="about-list">
+        <a routerLink="/feedback" class="about-item">
+          <span class="about-item__icon-wrap">
+            <mat-icon class="about-item__icon">feedback</mat-icon>
+          </span>
+          <div class="about-item__text">
+            <span class="about-item__label">Enviar feedback</span>
+            <span class="about-item__desc">
+              Informa de un error o envía una sugerencia al equipo de desarrollo.
+            </span>
+          </div>
+          <mat-icon class="about-item__chevron">chevron_right</mat-icon>
+        </a>
+      </nav>
+    </mat-expansion-panel>
   </mat-accordion>
 
 </div>

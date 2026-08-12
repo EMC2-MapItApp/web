@@ -101,6 +101,27 @@ export interface GroupSearchUser {
   avatarUrl?: string;
 }
 
+/** Estado de una {@link GroupJoinRequest}. */
+export type GroupJoinRequestStatus = 'pending' | 'accepted' | 'rejected';
+
+/**
+ * Solicitud de acceso a un grupo, iniciada por el propio usuario (a diferencia de
+ * {@link GroupInvitation}, iniciada por el organizador) — nace siempre desde una publicación
+ * privada a la que intentó apuntarse sin ser miembro (`publicationId`, trazabilidad).
+ */
+export interface GroupJoinRequest {
+  id: string;
+  groupId: string;
+  groupName: string;
+  requestedByUserId: string;
+  requestedByName: string;
+  requestedByNick: string;
+  publicationId: string | null;
+  status: GroupJoinRequestStatus;
+  createdAt: string;
+  respondedAt?: string;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // DTOs de creación / edición
 // ─────────────────────────────────────────────────────────────────────────────

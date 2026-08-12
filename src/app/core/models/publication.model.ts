@@ -20,6 +20,17 @@
 export type PublicationType = 'promotion' | 'event';
 
 /**
+ * Visibilidad de una publicación. Se mantiene en mayúscula tal cual la sirve el backend
+ * (`emc.mapIt.entity.PublicationVisibility`) — a diferencia de `GroupRole`/`GroupInvitationStatus`
+ * en `group.model.ts`, `publication.service.ts` no tiene ninguna capa `ApiX`→modelo de traducción
+ * hoy (es un passthrough directo), así que añadir una traducción para un solo campo sería más
+ * inconsistente que ser explícito en que el valor es el enum crudo del backend.
+ *  - `PUBLIC`:        cualquiera se apunta hasta completar aforo (comportamiento histórico).
+ *  - `PRIVATE_GROUP`: solo miembros del grupo `groupId` pueden apuntarse.
+ */
+export type PublicationVisibility = 'PUBLIC' | 'PRIVATE_GROUP';
+
+/**
  * Publicación temporal visible en el mapa.
  */
 export interface Publication {
@@ -106,8 +117,30 @@ export interface Publication {
    */
   active: boolean;
 
-  /** Número de personas apuntadas actualmente. */
+  /**
+   * Número de personas apuntadas actualmente.
+   * `undefined`/ausente cuando el backend lo enmascara: publicación `PRIVATE_GROUP` y el usuario
+   * actual no es miembro del grupo — no se filtra el aforo real a quien no debe verlo.
+   */
   occupiedSlots?: number;
+
+  /** Visibilidad de la publicación. `PUBLIC` si el documento es anterior a este campo. */
+  visibility: PublicationVisibility;
+
+  /** Id del grupo al que está restringida. `null` si `visibility === 'PUBLIC'`. */
+  groupId: string | null;
+
+  /** Nombre del grupo. Solo presente en publicaciones `PRIVATE_GROUP`. */
+  groupName?: string;
+
+  /** Nº de miembros del grupo (no es el aforo — ver `metadata.slots` para el límite real de plazas). */
+  groupMemberCount?: number;
+
+  /** true si el usuario actual es miembro del grupo. Solo presente en publicaciones `PRIVATE_GROUP`. */
+  isGroupMember?: boolean;
+
+  /** true si el usuario actual tiene una solicitud de acceso pendiente para este grupo. */
+  accessRequestPending?: boolean;
 }
 
 /**
@@ -128,9 +161,36 @@ export interface PublicationEnrollmentResponse {
   full: boolean;
 }
 
+/** Estado de una {@link PublicationAccessRequest}. */
+export type PublicationAccessRequestStatus = 'pending' | 'accepted' | 'rejected';
+
+/**
+ * Solicitud de un usuario para apuntarse a una publicación privada de la que no tiene acceso.
+ * La aprueba el autor de la publicación (no el organizador de ningún grupo — una publicación
+ * privada "solo invitados" puede no tener grupo vinculado en absoluto).
+ */
+export interface PublicationAccessRequest {
+  id: string;
+  publicationId: number;
+  publicationTitle: string;
+  requestedByUserId: string;
+  requestedByName: string;
+  requestedByNick: string;
+  status: PublicationAccessRequestStatus;
+  createdAt: string;
+  respondedAt?: string;
+}
+
 /**
  * Payload para crear una publicación desde frontend.
  *
  * `id`, `authorId` y `active` son campos gestionados por backend.
  */
-export type PublicationCreateRequest = Omit<Publication, 'id' | 'authorId' | 'active'>;
+export type PublicationCreateRequest = Omit<Publication, 'id' | 'authorId' | 'active'> & {
+  /**
+   * Ids de usuarios invitados individualmente al evento, sea cual sea su visibilidad. No viene
+   * de vuelta en {@link Publication} — es solo de entrada, no se expone en ninguna pantalla de
+   * "quién está invitado" todavía.
+   */
+  inviteUserIds?: string[];
+};

@@ -167,8 +167,36 @@ que respetar siempre:
 
 ## Convenciones de código
 
-Las mismas convenciones que en el backend (`../BACK/CLAUDE.md`): SOLID, buenas prácticas, y
-comentarios/documentación en los bloques relevantes (no en lo obvio). Aquí además:
+Las mismas convenciones que en el backend (`../BACK/CLAUDE.md`), aplicadas también aquí:
+
+- **Clean code**: nombres descriptivos, funciones/métodos y componentes pequeños con una única
+  responsabilidad, evitar duplicación y complejidad innecesaria — priorizar código fácil de leer
+  y mantener sobre código ingenioso.
+- **Principios SOLID** al diseñar o tocar clases, servicios y componentes (responsabilidad única,
+  dependencias inyectadas, evitar acoplar componentes a detalles de implementación ajenos).
+- **Buenas prácticas** generales, y comentarios/documentación solo en los bloques relevantes (no
+  en lo obvio).
+- **Estilos globales y código reutilizable** — por encima de todo: antes de añadir un estilo
+  ad-hoc o duplicar lógica en un componente, comprobar si ya existe una variable de tema
+  (`--c-*`), un mixin (`src/styles/_mixins.scss`), un servicio o una utilidad reutilizable
+  (`core/`, `shared/`) que resuelva el caso, y extender/generalizar lo existente en vez de crear
+  una alternativa local. Ver "Responsive" más arriba para el detalle técnico de estilos globales,
+  y el criterio `core`/`features`/`shared` de "Arquitectura" para dónde vive el código reutilizable
+  nuevo.
+- **Consistencia visual entre componentes del mismo tipo**: todo elemento repetido en la app
+  (botones, inputs, cards, chips, badges, etc.) debe verse y comportarse igual en todas partes —
+  nunca un estilo distinto por página o feature para el mismo tipo de elemento. Si ya existe un
+  estilo global para ese tipo de elemento, reutilizarlo tal cual; si no existe y hace falta,
+  crearlo como clase/mixin global en `src/styles/` (nunca como estilo local del componente que lo
+  necesitó primero).
+- **Componentes candidatos a reutilización**: al crear un componente nuevo que por su naturaleza
+  podría usarse en otras partes de la app (p. ej. un diálogo genérico, un componente de
+  confirmación), diseñarlo desde el principio para ser reutilizable (inputs/outputs genéricos, sin
+  lógica ni copy acoplados a la feature donde nace) y ubicarlo en `shared/` en vez de en la feature
+  de origen. Si hay duda sobre si un componente nuevo es candidato a extraerse como pieza
+  reutilizable, **preguntar al usuario** antes de decidir su diseño o ubicación.
+
+Aquí además:
 
 - **Stack/arquitectura sincronizados**: `docs/STACK.md` (este repo) es pareja de
   `../BACK/docs/STACK.md`, y ambos se resumen en

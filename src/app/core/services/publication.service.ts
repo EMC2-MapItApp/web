@@ -4,10 +4,26 @@
  */
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { EnrolledUser, Publication, PublicationCreateRequest, PublicationEnrollmentResponse } from '../models/publication.model';
+import { Observable, map } from 'rxjs';
+import {
+  EnrolledUser, Publication, PublicationAccessRequest, PublicationAccessRequestStatus,
+  PublicationCreateRequest, PublicationEnrollmentResponse, PublicationVisibility,
+} from '../models/publication.model';
 import { environment } from '@env/environment';
 import { CurrentUserService } from './current-user.service';
+
+/** Forma de la API para `emc.mapIt.dto.PublicationAccessRequestResponse`. */
+interface ApiPublicationAccessRequest {
+  id: string;
+  publicationId: string;
+  publicationTitle: string;
+  requestedByUserId: string;
+  requestedByName: string;
+  requestedByNick: string;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  createdAt: string;
+  respondedAt: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class PublicationService {
@@ -75,5 +91,66 @@ export class PublicationService {
  */
     unenroll(id: number): Observable<void> {
         return this.http.delete<void>(`${this.baseUrl}/${id}/unenroll`);
+    }
+
+    /**
+     * Solicita apuntarse a una publicación privada de la que no se tiene acceso todavía. La
+     * solicitud es de la publicación, no de ningún grupo — la aprueba su autor (ver
+     * `getPendingAccessRequests`/`acceptAccessRequest`/`rejectAccessRequest`).
+     */
+    requestAccess(id: number): Observable<PublicationAccessRequest> {
+        return this.http.post<ApiPublicationAccessRequest>(`${this.baseUrl}/${id}/access-requests`, {}).pipe(
+            map(api => this.mapAccessRequest(api))
+        );
+    }
+
+    /**
+     * Lista las solicitudes de acceso pendientes de una publicación propia. Solo el autor (o un
+     * ADMIN) puede verlas.
+     */
+    getPendingAccessRequests(id: number): Observable<PublicationAccessRequest[]> {
+        return this.http.get<ApiPublicationAccessRequest[]>(`${this.baseUrl}/${id}/access-requests`).pipe(
+            map(list => list.map(api => this.mapAccessRequest(api)))
+        );
+    }
+
+    /** Acepta una solicitud de acceso a una publicación propia. */
+    acceptAccessRequest(requestId: string): Observable<PublicationAccessRequest> {
+        return this.http.post<ApiPublicationAccessRequest>(`${this.baseUrl}/access-requests/${requestId}/accept`, {}).pipe(
+            map(api => this.mapAccessRequest(api))
+        );
+    }
+
+    /** Rechaza una solicitud de acceso a una publicación propia. */
+    rejectAccessRequest(requestId: string): Observable<PublicationAccessRequest> {
+        return this.http.post<ApiPublicationAccessRequest>(`${this.baseUrl}/access-requests/${requestId}/reject`, {}).pipe(
+            map(api => this.mapAccessRequest(api))
+        );
+    }
+
+    private mapAccessRequest(api: ApiPublicationAccessRequest): PublicationAccessRequest {
+        return {
+            id: api.id,
+            // `Publication.id`/`publicationId` están tipados `number` pero en realidad son el
+            // ObjectId de Mongo (string) — se pasa tal cual, igual que el resto del servicio;
+            // convertirlo con Number() lo convertiría en NaN.
+            publicationId: api.publicationId as unknown as number,
+            publicationTitle: api.publicationTitle,
+            requestedByUserId: api.requestedByUserId,
+            requestedByName: api.requestedByName,
+            requestedByNick: api.requestedByNick,
+            status: api.status.toLowerCase() as PublicationAccessRequestStatus,
+            createdAt: api.createdAt,
+            respondedAt: api.respondedAt ?? undefined,
+        };
+    }
+
+    /**
+     * Cambia la visibilidad de una publicación existente. `PRIVATE_GROUP → PUBLIC` siempre está
+     * permitido; `→ PRIVATE_GROUP` puede rechazarse (409 `FOREIGN_ENROLLMENTS`) si hay apuntados
+     * que no son miembros del grupo destino.
+     */
+    changeVisibility(id: number, visibility: PublicationVisibility, groupId: string | null): Observable<Publication> {
+        return this.http.patch<Publication>(`${this.baseUrl}/${id}/visibility`, { visibility, groupId });
     }
 }

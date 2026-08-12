@@ -22,6 +22,21 @@
       }
     </div>
 
+    <!-- ── Badge de visibilidad (solo Publications) ───────────────────────── -->
+    @if (hasDateRange) {
+    @if (isPrivateGroup) {
+    <span class="detail__visibility detail__visibility--private">
+      <span class="detail__visibility-icon">🔒</span>
+      Grupo: {{ groupName }}
+    </span>
+    } @else {
+    <span class="detail__visibility detail__visibility--public">
+      <span class="detail__visibility-icon">🌐</span>
+      Abierta a todos
+    </span>
+    }
+    }
+
     @if (item.publicationType) {
     <div class="detail__publication-meta">
       <!-- <span class="detail__publication-chip">
@@ -149,7 +164,7 @@
     </ul>
     }
 <!-- ── Lista de apuntados ──────────────────────────────── -->
-@if (item.enrolledUsers && item.enrolledUsers.length > 0) {
+@if (!isPrivateNonMember && item.enrolledUsers && item.enrolledUsers.length > 0) {
 <div class="detail__enrollments">
   <h4 class="detail__enrollments-title">Apuntados</h4>
   <ul class="detail__enrollments-list">
@@ -176,7 +191,16 @@
   </button>
   }
 
-  @if (joinedCount > 0) {
+  @if (isPrivateNonMember) {
+  <p class="detail__capacity-text detail__capacity-text--locked">
+    <span class="detail__visibility-icon">🔒</span>
+    Plazas visibles solo para miembros del grupo
+  </p>
+  } @else if (isPrivateGroup) {
+  <p class="detail__capacity-text">
+    {{ joinedCount }} plazas de {{ groupMemberCount }} {{ groupMemberCount === 1 ? 'miembro' : 'miembros' }} del grupo
+  </p>
+  } @else if (joinedCount > 0) {
     @if (hasCapacityLimit) {
       <p class="detail__capacity-text">
         {{ joinedCount }} / {{ maxSlots }} plazas ocupadas

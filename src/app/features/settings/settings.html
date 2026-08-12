@@ -8,7 +8,7 @@
   <mat-accordion class="settings-accordion">
 
     <!-- ── Sección APARIENCIA ──────────────────────────────────────────── -->
-    <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel [(expanded)]="appearanceExpanded">
       <mat-expansion-panel-header>
         <mat-panel-title>
           <mat-icon>palette</mat-icon>
@@ -36,7 +36,7 @@
     </mat-expansion-panel>
 
     <!-- ── Sección NOTIFICACIONES ──────────────────────────────────────── -->
-    <mat-expansion-panel [expanded]="notificationsSectionExpanded">
+    <mat-expansion-panel [(expanded)]="notificationsSectionExpanded">
       <mat-expansion-panel-header>
         <mat-panel-title>
           <mat-icon>notifications</mat-icon>
@@ -82,7 +82,7 @@
     </mat-expansion-panel>
 
     <!-- ── Sección MAPA ────────────────────────────────────────────────── -->
-    <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel [(expanded)]="mapExpanded">
       <mat-expansion-panel-header>
         <mat-panel-title>
           <mat-icon>map</mat-icon>

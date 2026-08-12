@@ -5,20 +5,21 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { EnrolledUser, Publication, PublicationCreateRequest, PublicationEnrollmentResponse, PublicationVisibility } from '../models/publication.model';
-import { GroupJoinRequest, GroupJoinRequestStatus } from '../models/group.model';
+import {
+  EnrolledUser, Publication, PublicationAccessRequest, PublicationAccessRequestStatus,
+  PublicationCreateRequest, PublicationEnrollmentResponse, PublicationVisibility,
+} from '../models/publication.model';
 import { environment } from '@env/environment';
 import { CurrentUserService } from './current-user.service';
 
-/** Forma de la API para `POST /publications/{id}/access-requests` — ver `emc.mapIt.groups.GroupJoinRequestResponse`. */
-interface ApiGroupJoinRequest {
+/** Forma de la API para `emc.mapIt.dto.PublicationAccessRequestResponse`. */
+interface ApiPublicationAccessRequest {
   id: string;
-  groupId: string;
-  groupName: string;
+  publicationId: string;
+  publicationTitle: string;
   requestedByUserId: string;
   requestedByName: string;
   requestedByNick: string;
-  publicationId: string | null;
   status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
   createdAt: string;
   respondedAt: string | null;
@@ -93,25 +94,55 @@ export class PublicationService {
     }
 
     /**
-     * Solicita acceso al grupo de una publicación privada, para poder apuntarse después. Crea una
-     * {@link GroupJoinRequest} que el organizador del grupo debe aceptar o rechazar (ver
-     * `GroupService.getGroupPendingJoinRequests`/`acceptJoinRequest`/`rejectJoinRequest`).
+     * Solicita apuntarse a una publicación privada de la que no se tiene acceso todavía. La
+     * solicitud es de la publicación, no de ningún grupo — la aprueba su autor (ver
+     * `getPendingAccessRequests`/`acceptAccessRequest`/`rejectAccessRequest`).
      */
-    requestAccess(id: number): Observable<GroupJoinRequest> {
-        return this.http.post<ApiGroupJoinRequest>(`${this.baseUrl}/${id}/access-requests`, {}).pipe(
-            map(api => ({
-                id: api.id,
-                groupId: api.groupId,
-                groupName: api.groupName,
-                requestedByUserId: api.requestedByUserId,
-                requestedByName: api.requestedByName,
-                requestedByNick: api.requestedByNick,
-                publicationId: api.publicationId,
-                status: api.status.toLowerCase() as GroupJoinRequestStatus,
-                createdAt: api.createdAt,
-                respondedAt: api.respondedAt ?? undefined,
-            }))
+    requestAccess(id: number): Observable<PublicationAccessRequest> {
+        return this.http.post<ApiPublicationAccessRequest>(`${this.baseUrl}/${id}/access-requests`, {}).pipe(
+            map(api => this.mapAccessRequest(api))
         );
+    }
+
+    /**
+     * Lista las solicitudes de acceso pendientes de una publicación propia. Solo el autor (o un
+     * ADMIN) puede verlas.
+     */
+    getPendingAccessRequests(id: number): Observable<PublicationAccessRequest[]> {
+        return this.http.get<ApiPublicationAccessRequest[]>(`${this.baseUrl}/${id}/access-requests`).pipe(
+            map(list => list.map(api => this.mapAccessRequest(api)))
+        );
+    }
+
+    /** Acepta una solicitud de acceso a una publicación propia. */
+    acceptAccessRequest(requestId: string): Observable<PublicationAccessRequest> {
+        return this.http.post<ApiPublicationAccessRequest>(`${this.baseUrl}/access-requests/${requestId}/accept`, {}).pipe(
+            map(api => this.mapAccessRequest(api))
+        );
+    }
+
+    /** Rechaza una solicitud de acceso a una publicación propia. */
+    rejectAccessRequest(requestId: string): Observable<PublicationAccessRequest> {
+        return this.http.post<ApiPublicationAccessRequest>(`${this.baseUrl}/access-requests/${requestId}/reject`, {}).pipe(
+            map(api => this.mapAccessRequest(api))
+        );
+    }
+
+    private mapAccessRequest(api: ApiPublicationAccessRequest): PublicationAccessRequest {
+        return {
+            id: api.id,
+            // `Publication.id`/`publicationId` están tipados `number` pero en realidad son el
+            // ObjectId de Mongo (string) — se pasa tal cual, igual que el resto del servicio;
+            // convertirlo con Number() lo convertiría en NaN.
+            publicationId: api.publicationId as unknown as number,
+            publicationTitle: api.publicationTitle,
+            requestedByUserId: api.requestedByUserId,
+            requestedByName: api.requestedByName,
+            requestedByNick: api.requestedByNick,
+            status: api.status.toLowerCase() as PublicationAccessRequestStatus,
+            createdAt: api.createdAt,
+            respondedAt: api.respondedAt ?? undefined,
+        };
     }
 
     /**

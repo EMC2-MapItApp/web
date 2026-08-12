@@ -17,7 +17,8 @@ export type NotificationType =
   | 'GROUP_ORGANIZER_NOTICE'
   | 'GROUP_BROADCAST'
   | 'GROUP_JOIN_REQUEST'
-  | 'GROUP_JOIN_REQUEST_RESOLVED';
+  | 'GROUP_JOIN_REQUEST_RESOLVED'
+  | 'PUBLICATION_INVITATION';
 
 /** Notificación in-app persistida (centro de notificaciones / campana). */
 export interface AppNotification {
@@ -73,5 +74,10 @@ export const NOTIFICATION_TYPE_META: Record<NotificationType, { label: string; d
     label: 'Solicitudes resueltas',
     icon: 'how_to_reg',
     description: 'Cuando el organizador acepta o rechaza tu solicitud de unirte a un grupo.',
+  },
+  PUBLICATION_INVITATION: {
+    label: 'Invitaciones a eventos',
+    icon: 'event_available',
+    description: 'Cuando alguien te invita individualmente a un evento.',
   },
 };

@@ -70,6 +70,11 @@ export const routes: Routes = [
         loadComponent: () => import('@features/groups/groups-page/groups-page').then(m => m.GroupsPageComponent)
       },
       {
+        path: 'feedback',
+        canActivate: [authDialogGuard],
+        loadComponent: () => import('@features/feedback/feedback-page').then(m => m.FeedbackPageComponent)
+      },
+      {
         path: 'groups/:id/edit',
         canActivate: [authDialogGuard],
         loadComponent: () => import('@features/groups/group-form-page/group-form-page').then(m => m.GroupFormPageComponent)

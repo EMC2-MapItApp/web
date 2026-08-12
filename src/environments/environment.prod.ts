@@ -8,5 +8,6 @@ export const environment = {
   apiGeoUrl: 'https://backend-931882563225.europe-southwest1.run.app/api/v1/geo',
   apiGroupsUrl: 'https://backend-931882563225.europe-southwest1.run.app/api/v1/groups',
   apiNotificationsUrl: 'https://backend-931882563225.europe-southwest1.run.app/api/v1/notifications',
+  apiFeedbackUrl: 'https://backend-931882563225.europe-southwest1.run.app/api/v1/feedback',
   devSimIp: '',
 };

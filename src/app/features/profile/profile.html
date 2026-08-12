@@ -424,6 +424,14 @@
               <mat-icon>{{ publication.visibility === 'PRIVATE_GROUP' ? 'lock' : 'public' }}</mat-icon>
               {{ publication.visibility === 'PRIVATE_GROUP' ? (publication.groupName ?? 'Privada') : 'Pública' }}
             </span>
+            @if (publication.visibility === 'PRIVATE_GROUP' &&
+              ((pendingAccessRequestCountByPublication()[publication.id] ?? 0) > 0 || accessRequestsPanelId() === publication.id)) {
+            <button type="button" class="activity-item__pending-requests" (click)="toggleAccessRequests(publication)">
+              <mat-icon>person_add</mat-icon>
+              {{ pendingAccessRequestCountByPublication()[publication.id] ?? 0 }}
+              {{ (pendingAccessRequestCountByPublication()[publication.id] ?? 0) === 1 ? 'solicitud' : 'solicitudes' }}
+            </button>
+            }
           </div>
 
           <p class="activity-item__meta">
@@ -481,6 +489,43 @@
                 [disabled]="changingVisibilityId() === publication.id" (click)="makePrivate(publication, group.id)">
                 {{ group.name }}
               </button>
+              }
+            </div>
+            }
+          </div>
+          }
+
+          @if (accessRequestsPanelId() === publication.id) {
+          <div class="access-requests">
+            <span class="access-requests__label">Solicitudes de acceso</span>
+            @if (loadingAccessRequests()) {
+            <p class="access-requests__hint">Cargando solicitudes…</p>
+            } @else if (openAccessRequests().length === 0) {
+            <p class="access-requests__hint">No hay solicitudes pendientes.</p>
+            } @else {
+            <div class="access-requests__list">
+              @for (request of openAccessRequests(); track request.id) {
+              <div class="access-request-row">
+                <span class="access-request-row__avatar">{{ request.requestedByName.charAt(0) }}</span>
+                <div class="access-request-row__info">
+                  <span class="access-request-row__name">{{ request.requestedByName }}</span>
+                  <span class="access-request-row__nick">&#64;{{ request.requestedByNick }}</span>
+                </div>
+                <button type="button" class="access-request-row__action access-request-row__action--accept"
+                  [disabled]="accessRequestActionInProgressId() === request.id"
+                  (click)="acceptAccessRequest(request, publication)" title="Aceptar">
+                  @if (accessRequestActionInProgressId() === request.id) {
+                  <mat-spinner diameter="14" />
+                  } @else {
+                  <mat-icon>check</mat-icon>
+                  }
+                </button>
+                <button type="button" class="access-request-row__action access-request-row__action--danger"
+                  [disabled]="accessRequestActionInProgressId() === request.id"
+                  (click)="rejectAccessRequest(request, publication)" title="Rechazar">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
               }
             </div>
             }

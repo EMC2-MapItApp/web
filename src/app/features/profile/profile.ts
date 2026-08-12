@@ -19,7 +19,7 @@ import { UserService } from '@core/services/user.service';
 import { CategoryService } from '@core/services/category.service';
 import { MainCategory, SubCategory } from '@core/models/category.model';
 import { DatePipe, SlicePipe } from '@angular/common';
-import { Publication, PublicationVisibility } from '@core/models/publication.model';
+import { Publication, PublicationAccessRequest, PublicationVisibility } from '@core/models/publication.model';
 import { PublicationService } from '@core/services/publication.service';
 import { Group } from '@core/models/group.model';
 import { GroupService } from '@core/services/group.service';
@@ -111,6 +111,22 @@ export class ProfilePageComponent {
   /** Indica si alguna publicación del usuario está caducada, para mostrar el aviso de borrado automático. */
   hasFinishedPublications = computed(() => this.myPublications().some(p => this.isFinished(p)));
 
+  // ── Solicitudes de acceso a publicaciones privadas ──────────────────────────
+
+  /** Nº de solicitudes pendientes por publicación, para el badge de la fila cerrada. */
+  pendingAccessRequestCountByPublication = signal<Record<number, number>>({});
+
+  /** Id de la publicación cuyo panel de solicitudes está expandido (null = ninguna). */
+  accessRequestsPanelId = signal<number | null>(null);
+
+  /** Solicitudes pendientes de la publicación con el panel expandido. */
+  openAccessRequests = signal<PublicationAccessRequest[]>([]);
+
+  loadingAccessRequests = signal(false);
+
+  /** Id de la solicitud con una acción (aceptar/rechazar) en curso. */
+  accessRequestActionInProgressId = signal<string | null>(null);
+
   // ── Cambio de visibilidad ────────────────────────────────────────────────────
 
   /** Grupos que el usuario organiza, para el selector inline al pasar una publicación a privada. */
@@ -151,15 +167,95 @@ export class ProfilePageComponent {
 
     this.publicationService.getMine(false).subscribe({
       next: pubs => {
-        this.myPublications.set(
-          [...pubs].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
-        );
+        const sorted = [...pubs].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+        this.myPublications.set(sorted);
         this.loadingPublications.set(false);
+        this.loadPendingAccessRequestCounts(sorted);
       },
       error: () => {
         this.loadingPublications.set(false);
         this.publicationsError.set('No se pudieron cargar tus publicaciones.');
       }
+    });
+  }
+
+  /** Carga, para cada publicación privada, cuántas solicitudes de acceso tiene pendientes. */
+  private loadPendingAccessRequestCounts(pubs: Publication[]): void {
+    pubs
+      .filter(p => p.visibility === 'PRIVATE_GROUP')
+      .forEach(pub => {
+        this.publicationService.getPendingAccessRequests(pub.id).subscribe(requests => {
+          this.pendingAccessRequestCountByPublication.update(prev => ({ ...prev, [pub.id]: requests.length }));
+        });
+      });
+  }
+
+  /** Expande/colapsa el panel de solicitudes de acceso de una publicación, cargándolas si hace falta. */
+  toggleAccessRequests(publication: Publication): void {
+    if (this.accessRequestsPanelId() === publication.id) {
+      this.accessRequestsPanelId.set(null);
+      return;
+    }
+
+    this.accessRequestsPanelId.set(publication.id);
+    this.loadingAccessRequests.set(true);
+    this.publicationService.getPendingAccessRequests(publication.id).subscribe({
+      next: requests => {
+        this.openAccessRequests.set(requests);
+        this.loadingAccessRequests.set(false);
+      },
+      error: () => {
+        this.loadingAccessRequests.set(false);
+      },
+    });
+  }
+
+  /** Acepta una solicitud de acceso: el solicitante ya puede apuntarse a la publicación. */
+  acceptAccessRequest(request: PublicationAccessRequest, publication: Publication): void {
+    this.accessRequestActionInProgressId.set(request.id);
+    this.publicationService.acceptAccessRequest(request.id).subscribe({
+      next: () => {
+        this.openAccessRequests.update(list => list.filter(r => r.id !== request.id));
+        this.decrementPendingAccessRequestCount(publication.id);
+        this.accessRequestActionInProgressId.set(null);
+        this.notify(`${request.requestedByName} ya puede apuntarse`);
+      },
+      error: () => {
+        this.accessRequestActionInProgressId.set(null);
+        this.notify('No se pudo aceptar la solicitud. Inténtalo de nuevo.');
+      },
+    });
+  }
+
+  /** Rechaza una solicitud de acceso. */
+  rejectAccessRequest(request: PublicationAccessRequest, publication: Publication): void {
+    this.accessRequestActionInProgressId.set(request.id);
+    this.publicationService.rejectAccessRequest(request.id).subscribe({
+      next: () => {
+        this.openAccessRequests.update(list => list.filter(r => r.id !== request.id));
+        this.decrementPendingAccessRequestCount(publication.id);
+        this.accessRequestActionInProgressId.set(null);
+        this.notify(`Solicitud de ${request.requestedByName} rechazada`);
+      },
+      error: () => {
+        this.accessRequestActionInProgressId.set(null);
+        this.notify('No se pudo rechazar la solicitud. Inténtalo de nuevo.');
+      },
+    });
+  }
+
+  private decrementPendingAccessRequestCount(publicationId: number): void {
+    this.pendingAccessRequestCountByPublication.update(prev => ({
+      ...prev,
+      [publicationId]: Math.max(0, (prev[publicationId] ?? 1) - 1),
+    }));
+  }
+
+  private notify(message: string): void {
+    this.snackBar.open(message, 'Cerrar', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top',
     });
   }
 

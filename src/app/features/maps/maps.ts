@@ -237,10 +237,11 @@ export class MapsPageComponent implements AfterViewInit {
   }
 
   /**
-   * Solicita acceso al grupo de la publicación privada abierta, para un usuario que no es
-   * miembro. Resiliente al mismo caso límite que `joinSelectedLocation`: si el backend responde
-   * 409 `ALREADY_REQUESTED` (ya había una solicitud pendiente, p. ej. de otra pestaña), se marca
-   * igualmente como pendiente en vez de mostrar un error.
+   * Solicita apuntarse a la publicación privada abierta, para un usuario sin acceso todavía. La
+   * revisa el autor de la publicación, no el organizador de ningún grupo. Resiliente al mismo
+   * caso límite que `joinSelectedLocation`: si el backend responde 409 `ALREADY_REQUESTED` (ya
+   * había una solicitud pendiente, p. ej. de otra pestaña), se marca igualmente como pendiente
+   * en vez de mostrar un error.
    */
   requestAccessToSelectedLocation(): void {
     if (!this.requireAuth()) return;
@@ -252,7 +253,7 @@ export class MapsPageComponent implements AfterViewInit {
       next: () => {
         this.accessRequestedByLocation.update(prev => ({ ...prev, [detail.id]: true }));
         this.selectedDetail.update(d => d ? { ...d, accessRequestPending: true } : null);
-        this.snackBar.open('Solicitud enviada. El organizador del grupo la revisará.', 'Cerrar', {
+        this.snackBar.open('Solicitud enviada. El autor de la publicación la revisará.', 'Cerrar', {
           duration: 4000,
           horizontalPosition: 'center',
           verticalPosition: 'top',

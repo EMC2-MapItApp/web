@@ -161,6 +161,26 @@ export interface PublicationEnrollmentResponse {
   full: boolean;
 }
 
+/** Estado de una {@link PublicationAccessRequest}. */
+export type PublicationAccessRequestStatus = 'pending' | 'accepted' | 'rejected';
+
+/**
+ * Solicitud de un usuario para apuntarse a una publicación privada de la que no tiene acceso.
+ * La aprueba el autor de la publicación (no el organizador de ningún grupo — una publicación
+ * privada "solo invitados" puede no tener grupo vinculado en absoluto).
+ */
+export interface PublicationAccessRequest {
+  id: string;
+  publicationId: number;
+  publicationTitle: string;
+  requestedByUserId: string;
+  requestedByName: string;
+  requestedByNick: string;
+  status: PublicationAccessRequestStatus;
+  createdAt: string;
+  respondedAt?: string;
+}
+
 /**
  * Payload para crear una publicación desde frontend.
  *

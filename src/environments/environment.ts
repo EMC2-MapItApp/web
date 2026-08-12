@@ -16,5 +16,6 @@ export const environment = {
   apiGeoUrl: `http://${apiHost}:8081/api/v1/geo`,
   apiGroupsUrl: `http://${apiHost}:8081/api/v1/groups`,
   apiNotificationsUrl: `http://${apiHost}:8081/api/v1/notifications`,
+  apiFeedbackUrl: `http://${apiHost}:8081/api/v1/feedback`,
   devSimIp: '',
 };

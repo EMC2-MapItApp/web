@@ -92,8 +92,10 @@ export class LocationService {
             .filter(publication => publication.lat !== null && publication.lng !== null)
             .map(publication => ({
                 id: publication.id,
-                name: publication.title,
-                description: publication.description,
+                // El backend enmascara `title`/`description` a null en publicaciones PRIVATE sin
+                // acceso — el pin sigue siendo descubrible, pero sin revelar el contenido.
+                name: publication.title ?? 'Publicación privada',
+                description: publication.description ?? undefined,
                 locationTypeId: publication.locationTypeId,
                 lat: publication.lat as number,
                 lng: publication.lng as number,
@@ -105,10 +107,7 @@ export class LocationService {
                 occupiedSlots: publication.occupiedSlots,
                 active: publication.active,
                 visibility: publication.visibility,
-                groupId: publication.groupId,
-                groupName: publication.groupName,
-                groupMemberCount: publication.groupMemberCount,
-                isGroupMember: publication.isGroupMember,
+                hasAccess: publication.hasAccess,
                 accessRequestPending: publication.accessRequestPending,
             }));
     }

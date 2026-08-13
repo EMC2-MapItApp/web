@@ -73,8 +73,7 @@
       <app-publication-detail [item]="selectedDetail()!" [breadcrumb]="selectedBreadcrumb()!"
         [context]="selectedContext()" [joinedCount]="getJoinedCount(selectedDetail()!.id)"
         [alreadyJoined]="hasJoined(selectedDetail()!.id)" [visibility]="selectedDetail()!.visibility ?? 'PUBLIC'"
-        [groupName]="selectedDetail()!.groupName" [groupMemberCount]="selectedDetail()!.groupMemberCount"
-        [isGroupMember]="selectedDetail()!.isGroupMember ?? false"
+        [hasAccess]="selectedDetail()!.hasAccess ?? false"
         [accessRequestPending]="accessRequestedByLocation()[selectedDetail()!.id] ?? false"
         (joinRequested)="joinSelectedLocation()" (leaveRequested)="leaveSelectedLocation()"
         (joinRequestRequested)="requestAccessToSelectedLocation()" />

@@ -146,11 +146,11 @@ export class PublicationService {
     }
 
     /**
-     * Cambia la visibilidad de una publicación existente. `PRIVATE_GROUP → PUBLIC` siempre está
-     * permitido; `→ PRIVATE_GROUP` puede rechazarse (409 `FOREIGN_ENROLLMENTS`) si hay apuntados
-     * que no son miembros del grupo destino.
+     * Cambia la visibilidad de una publicación existente. `PRIVATE → PUBLIC` siempre está
+     * permitido; `→ PRIVATE` puede rechazarse (409 `FOREIGN_ENROLLMENTS`) si hay apuntados sin
+     * invitación.
      */
-    changeVisibility(id: number, visibility: PublicationVisibility, groupId: string | null): Observable<Publication> {
-        return this.http.patch<Publication>(`${this.baseUrl}/${id}/visibility`, { visibility, groupId });
+    changeVisibility(id: number, visibility: PublicationVisibility): Observable<Publication> {
+        return this.http.patch<Publication>(`${this.baseUrl}/${id}/visibility`, { visibility });
     }
 }

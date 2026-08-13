@@ -237,11 +237,12 @@ export class MapsPageComponent implements AfterViewInit {
   }
 
   /**
-   * Solicita apuntarse a la publicación privada abierta, para un usuario sin acceso todavía. La
-   * revisa el autor de la publicación, no el organizador de ningún grupo. Resiliente al mismo
-   * caso límite que `joinSelectedLocation`: si el backend responde 409 `ALREADY_REQUESTED` (ya
-   * había una solicitud pendiente, p. ej. de otra pestaña), se marca igualmente como pendiente
-   * en vez de mostrar un error.
+   * Solicita acceso a la publicación privada abierta, para un usuario sin acceso todavía. La
+   * revisa el autor de la publicación. Resiliente a dos casos límite (p. ej. otra pestaña ya
+   * resolvió la situación entre tanto): 409 `ALREADY_REQUESTED` (ya había una solicitud
+   * pendiente) se marca como pendiente; 409 `ALREADY_HAS_ACCESS` (ya se le invitó, o ya se le
+   * aceptó la solicitud) recarga el detalle para mostrar el contenido completo en vez de un
+   * error.
    */
   requestAccessToSelectedLocation(): void {
     if (!this.requireAuth()) return;
@@ -264,6 +265,10 @@ export class MapsPageComponent implements AfterViewInit {
         if (code === 'ALREADY_REQUESTED') {
           this.accessRequestedByLocation.update(prev => ({ ...prev, [detail.id]: true }));
           this.selectedDetail.update(d => d ? { ...d, accessRequestPending: true } : null);
+        } else if (code === 'ALREADY_HAS_ACCESS') {
+          this.publicationService.getById(String(detail.id)).subscribe(full => {
+            this.selectedDetail.update(d => d ? { ...d, ...full } : null);
+          });
         }
       },
     });
@@ -546,10 +551,10 @@ export class MapsPageComponent implements AfterViewInit {
   }
 
   /** Distintivo de marker según visibilidad: sin distintivo (pública), candado neutro (privada,
-   * no miembro) o candado en color de acento (privada, miembro) — ver `GoogleMapsService.buildMarkerIcon`. */
+   * sin acceso) o candado en color de acento (privada, con acceso) — ver `GoogleMapsService.buildMarkerIcon`. */
   private resolveGroupBadge(location: MapLocation): 'none' | 'locked' | 'member' {
-    if (location.visibility !== 'PRIVATE_GROUP') return 'none';
-    return location.isGroupMember ? 'member' : 'locked';
+    if (location.visibility !== 'PRIVATE') return 'none';
+    return location.hasAccess ? 'member' : 'locked';
   }
 
   /**
@@ -583,18 +588,16 @@ export class MapsPageComponent implements AfterViewInit {
       active: location.active,
       occupiedSlots: location.occupiedSlots,
       visibility: location.visibility,
-      groupName: location.groupName,
-      groupMemberCount: location.groupMemberCount,
-      isGroupMember: location.isGroupMember,
+      hasAccess: location.hasAccess,
       accessRequestPending: this.accessRequestedByLocation()[location.id] ?? false,
     };
 
     this.selectedBreadcrumb.set(bc);
     this.selectedContext.set(location.publicationType ?? 'place');
 
-    // Publicación privada y el usuario no es miembro: el backend rechaza /enrollments con 403 —
-    // no tiene sentido pedirlo, solo generaría ruido en consola.
-    if (location.visibility === 'PRIVATE_GROUP' && !location.isGroupMember) {
+    // Publicación privada sin acceso: el backend rechaza /enrollments con 403 — no tiene
+    // sentido pedirlo, solo generaría ruido en consola.
+    if (location.visibility === 'PRIVATE' && !location.hasAccess) {
       this.selectedDetail.set(baseDetail);
       return;
     }

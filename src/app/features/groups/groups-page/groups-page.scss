@@ -139,13 +139,6 @@ $pending-chip-color: #92400e;
       align-items: center;
       justify-content: center;
     }
-
-    // Solicitud de acceso: requiere una decisión del organizador, no solo informa de un estado
-    // en curso como las invitaciones pendientes — acento distinto para que destaque más.
-    &--join-request {
-      background: var(--c-primary-hover-bg);
-      color: var(--c-primary);
-    }
   }
 }
 

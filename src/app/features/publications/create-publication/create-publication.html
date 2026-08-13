@@ -113,11 +113,11 @@
                   <span class="visibility-card__desc">Cualquiera puede apuntarse hasta llenar el aforo.</span>
                 </button>
                 <button type="button" class="visibility-card"
-                  [class.visibility-card--active]="visibility() === 'PRIVATE_GROUP'"
-                  (click)="selectVisibility('PRIVATE_GROUP')">
+                  [class.visibility-card--active]="visibility() === 'PRIVATE'"
+                  (click)="selectVisibility('PRIVATE')">
                   <mat-icon>lock</mat-icon>
-                  <span class="visibility-card__title">Privada de grupo</span>
-                  <span class="visibility-card__desc">Solo pueden apuntarse los miembros de un grupo que organizas.</span>
+                  <span class="visibility-card__title">Privada</span>
+                  <span class="visibility-card__desc">Solo pueden apuntarse los invitados — busca usuarios o invita a todo un grupo más abajo.</span>
                 </button>
               </div>
 
@@ -127,49 +127,24 @@
                 Abierta a todos
               </span>
               } @else {
-              @if (loadingGroups()) {
-              <p class="visibility-hint">Cargando tus grupos…</p>
-              } @else if (myOrganizedGroups().length === 0) {
-              <div class="visibility-empty">
-                <p class="visibility-hint">Todavía no organizas ningún grupo.</p>
-                <button type="button" class="btn btn--ghost" (click)="goToCreateGroup()">
-                  <mat-icon>group_add</mat-icon>
-                  Crear un grupo primero
-                </button>
-              </div>
-              } @else if (myOrganizedGroups().length === 1) {
-              <p class="visibility-confirm">
-                Se publicará para: <strong>{{ myOrganizedGroups()[0].name }}</strong>
-                · <button type="button" class="visibility-confirm__change" (click)="goToCreateGroup()">cambiar</button>
-              </p>
-              } @else {
-              <div class="visibility-group-chips">
-                @for (group of myOrganizedGroups(); track group.id) {
-                <button type="button" class="visibility-group-chip"
-                  [class.visibility-group-chip--active]="selectedGroupId() === group.id"
-                  (click)="selectGroup(group.id)">
-                  <span class="visibility-group-chip__name">{{ group.name }}</span>
-                  <span class="visibility-group-chip__count">
-                    {{ group.members.length }} {{ group.members.length === 1 ? 'miembro' : 'miembros' }}
-                  </span>
-                </button>
-                }
-              </div>
-              }
+              <span class="visibility-badge">
+                <mat-icon>lock</mat-icon>
+                Solo invitados
+              </span>
               }
             </div>
 
             <div class="panel-divider"></div>
 
             <!-- Invitar usuarios: independiente de la visibilidad elegida arriba. En eventos
-                 privados de grupo, además de avisar concede acceso para apuntarse aunque el
-                 invitado no pertenezca al grupo. -->
+                 privados, además de avisar es lo que concede acceso para apuntarse — invitar a
+                 todos los miembros de un grupo es solo un atajo para rellenar esta misma cola. -->
             <div class="invite-section">
               <p class="field__label">
                 Invitar usuarios <span class="field__optional">(opcional)</span>
               </p>
               <span class="field-helper">
-                Se les notificará el evento. Si es privado, podrán apuntarse aunque no pertenezcan al grupo.
+                Se les notificará el evento. Si es privada, solo podrán apuntarse los invitados.
               </span>
 
               <div class="field">

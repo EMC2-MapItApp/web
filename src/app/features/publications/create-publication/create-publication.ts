@@ -198,22 +198,15 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   );
 
   // ── Visibilidad ────────────────────────────────────────────────────────────
-  /** Visibilidad elegida: pública (por defecto) o privada de grupo. */
+  /** Visibilidad elegida: pública (por defecto) o privada (solo invitados). */
   visibility = signal<PublicationVisibility>('PUBLIC');
-
-  /** Grupos que el usuario organiza, para el selector de visibilidad privada. Carga eager
-   * (junto a las categorías) para que no haya parpadeo de carga al tocar la tarjeta "Privada". */
-  myOrganizedGroups = signal<Group[]>([]);
-
-  /** true mientras se cargan los grupos organizados. */
-  loadingGroups = signal(true);
-
-  /** Grupo elegido para una publicación privada (preseleccionado si solo se organiza uno). */
-  selectedGroupId = signal<string | null>(null);
 
   // ── Invitados ──────────────────────────────────────────────────────────────
   /** Todos los grupos del usuario (organizador o miembro), para el atajo "invitar a todo el grupo". */
   myGroups = signal<Group[]>([]);
+
+  /** true mientras se cargan los grupos del usuario (atajo "invitar a todo el grupo"). */
+  loadingGroups = signal(true);
 
   /** Texto del buscador de usuarios a invitar. */
   inviteSearchQuery = '';
@@ -341,18 +334,12 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   constructor() {
     this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
 
-    // Carga eager de los grupos organizados: independiente de si la tarjeta "Privada" está
-    // seleccionada, para que su selector de grupo aparezca sin parpadeo de carga al elegirla.
-    // La misma respuesta alimenta `myGroups` (organizador o miembro), usada por el atajo
-    // "invitar a todo el grupo" — no depende de organizar el grupo, solo de pertenecer a él.
+    // Carga eager de los grupos del usuario (organizador o miembro), para el atajo "invitar a
+    // todo el grupo" — la privacidad de la publicación ya no depende de ningún grupo, invitar
+    // desde uno es solo una forma rápida de rellenar la cola de invitados individuales.
     this.groupService.getMyGroups().subscribe(groups => {
       this.myGroups.set(groups);
-      const organized = groups.filter(g => this.groupService.getMyRole(g) === 'organizer');
-      this.myOrganizedGroups.set(organized);
       this.loadingGroups.set(false);
-      if (organized.length === 1) {
-        this.selectedGroupId.set(organized[0].id);
-      }
     });
 
     // Buscador de usuarios a invitar al evento — mismo patrón que GroupFormPageComponent.
@@ -413,19 +400,9 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   // ── Visibilidad ────────────────────────────────────────────────────────────
 
-  /** Elige la visibilidad de la publicación (tarjetas "Pública"/"Privada de grupo"). */
+  /** Elige la visibilidad de la publicación (tarjetas "Pública"/"Privada"). */
   selectVisibility(value: PublicationVisibility): void {
     this.visibility.set(value);
-  }
-
-  /** Elige el grupo para una publicación privada, cuando el usuario organiza más de uno. */
-  selectGroup(groupId: string): void {
-    this.selectedGroupId.set(groupId);
-  }
-
-  /** Navega a Grupos para crear el primero, o para organizar otro distinto al ya preseleccionado. */
-  goToCreateGroup(): void {
-    this.router.navigate(['/groups']);
   }
 
   // ── Invitados ──────────────────────────────────────────────────────────────
@@ -453,9 +430,9 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   /**
    * Atajo: añade a todos los miembros de un grupo (propio o del que se es miembro) a la cola de
-   * invitados, sin necesidad de buscarlos uno a uno. No implica pertenencia al grupo de la
-   * publicación (si es privada) — es solo una forma rápida de rellenar la cola de invitación
-   * individual con gente que ya conoces de otro contexto.
+   * invitados, sin necesidad de buscarlos uno a uno. No ata la publicación al grupo ni implica
+   * pertenencia a él — es solo una forma rápida de rellenar la cola de invitación individual con
+   * gente que ya conoces de otro contexto.
    */
   inviteGroupMembers(group: Group): void {
     const myId = this.cu.user()?.id;
@@ -644,7 +621,6 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     this.locationTypeId = publication.locationTypeId;
     this.requiredLevel = publication.requiredLevel ?? 0;
     this.visibility.set(publication.visibility ?? 'PUBLIC');
-    this.selectedGroupId.set(publication.groupId ?? null);
     this.activityDate = this.getTodayDate();
 
     const start = new Date(publication.startDate);
@@ -1245,9 +1221,9 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    * - Tipo de ubicación seleccionado
    * - Coordenadas establecidas
    *
-   * Si la publicación es privada de grupo y no hay ni grupo ni invitados en cola, nadie podrá
-   * apuntarse todavía — se avisa con un diálogo de confirmación en vez de bloquear el envío
-   * (ninguno de los dos es obligatorio: se puede invitar más adelante desde la edición).
+   * Si la publicación es privada y no hay invitados en cola, nadie podrá apuntarse todavía — se
+   * avisa con un diálogo de confirmación en vez de bloquear el envío (se puede invitar más
+   * adelante desde la edición).
    *
   * Tras crear la publicación:
    * - Muestra mensaje de éxito (5 segundos)
@@ -1256,8 +1232,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   submitForm(): void {
     if (!this.canSubmit || this.submitting()) return;
 
-    const noAccessYet = this.visibility() === 'PRIVATE_GROUP'
-      && !this.selectedGroupId() && this.invitedUsers().length === 0;
+    const noAccessYet = this.visibility() === 'PRIVATE' && this.invitedUsers().length === 0;
 
     if (noAccessYet) {
       const dialogRef = this.dialog.open(ConfirmDialogComponent, withResponsiveDialogLayout(
@@ -1306,7 +1281,6 @@ export class CreatePublicationPageComponent implements AfterViewInit {
       lng: this.lng(),
       requiredLevel: this.requiredLevel,
       visibility: this.visibility(),
-      groupId: this.visibility() === 'PRIVATE_GROUP' ? this.selectedGroupId() : null,
       inviteUserIds: this.invitedUsers().length > 0 ? this.invitedUsers().map(u => u.id) : undefined,
       metadata: {
         exactLocation: this.exactLocation,
@@ -1387,7 +1361,6 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     this.isRepeatMode.set(false);
     this.isEditingActive.set(false);
     this.visibility.set('PUBLIC');
-    this.selectedGroupId.set(this.myOrganizedGroups().length === 1 ? this.myOrganizedGroups()[0].id : null);
     this.invitedUsers.set([]);
     this.inviteSearchQuery = '';
     this.inviteSearchResults.set([]);

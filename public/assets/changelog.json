@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-08-13",
+    "type": "improvement",
+    "title": "Publicaciones privadas por invitación",
+    "description": "Ahora las publicaciones privadas se comparten invitando a personas concretas (o a los miembros de un grupo como atajo), sin quedar atadas a ningún grupo. Si no tienes acceso, verás el pin en el mapa pero no su contenido, y podrás pedir acceso al organizador."
+  },
+  {
     "date": "2026-08-12",
     "type": "feature",
     "title": "Solicita apuntarte a eventos privados",

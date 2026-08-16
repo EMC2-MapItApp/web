@@ -54,8 +54,10 @@ scripts/.tools/
 .DS_Store
 Thumbs.db
 
-# Claude Code (config local)
-.claude/
+# Claude Code (config local) — salvo subagentes y comandos del equipo, que sí se versionan
+.claude/*
+!.claude/agents/
+!.claude/commands/
 
 ## Notas de trabajo internas, no forman parte del repo público ###
 /docs/TareasLogin.md

@@ -18,7 +18,9 @@ export type NotificationType =
   | 'GROUP_BROADCAST'
   | 'GROUP_JOIN_REQUEST'
   | 'GROUP_JOIN_REQUEST_RESOLVED'
-  | 'PUBLICATION_INVITATION';
+  | 'PUBLICATION_INVITATION'
+  | 'PUBLICATION_ACCESS_REQUEST'
+  | 'PUBLICATION_ACCESS_REQUEST_RESOLVED';
 
 /** Notificación in-app persistida (centro de notificaciones / campana). */
 export interface AppNotification {
@@ -79,5 +81,15 @@ export const NOTIFICATION_TYPE_META: Record<NotificationType, { label: string; d
     label: 'Invitaciones a eventos',
     icon: 'event_available',
     description: 'Cuando alguien te invita individualmente a un evento.',
+  },
+  PUBLICATION_ACCESS_REQUEST: {
+    label: 'Solicitudes de acceso a eventos',
+    icon: 'person_add',
+    description: 'Cuando alguien solicita apuntarse a un evento privado tuyo.',
+  },
+  PUBLICATION_ACCESS_REQUEST_RESOLVED: {
+    label: 'Solicitudes de acceso resueltas',
+    icon: 'how_to_reg',
+    description: 'Cuando el autor acepta o rechaza tu solicitud para apuntarte a un evento.',
   },
 };

@@ -1,4 +1,13 @@
-import { AfterViewInit, Component, ElementRef, ViewChild, inject, signal, computed, effect } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  ViewChild,
+  inject,
+  signal,
+  computed,
+  effect,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -9,19 +18,25 @@ import { CategoryService } from '@core/services/category.service';
 import { MapLocation } from '@core/models/location.model';
 import { MainCategory, SubCategory } from '@core/models/category.model';
 import { MapSettingsService } from '@core/services/map-settings.service';
-import { PublicationDetailInput, PublicationDetailComponent } from './publication-detail/publication-detail';
+import {
+  PublicationDetailInput,
+  PublicationDetailComponent,
+} from './publication-detail/publication-detail';
 import { CategoryBreadcrumb } from '@core/models/category.model';
 import { FieldContext } from '@core/models/location-field.model';
 import { CurrentUserService } from '@core/services/current-user.service';
 import { AuthRequiredDialogComponent } from '@shared/auth-required-dialog/auth-required-dialog';
-import { AUTH_REQUIRED_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
+import {
+  AUTH_REQUIRED_DIALOG_CONFIG,
+  withResponsiveDialogLayout,
+} from '@core/constants/dialog.constants';
 import { ThemeService } from '@core/services/theme.service';
 import { GeoIpService } from '@core/services/geo-ip.service';
+import { MapViewportService } from '@core/services/map-viewport.service';
 import { DeviceLocationService } from '@core/services/device-location.service';
 import { PublicationService } from '@core/services/publication.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ResponsiveService } from '@core/responsive/responsive.service';
-
 
 /**
  * Componente de la página de mapas.
@@ -38,10 +53,9 @@ import { ResponsiveService } from '@core/responsive/responsive.service';
   standalone: true,
   imports: [MatIconModule, MatButtonModule, PublicationDetailComponent],
   templateUrl: './maps.html',
-  styleUrl: './maps.scss'
+  styleUrl: './maps.scss',
 })
 export class MapsPageComponent implements AfterViewInit {
-
   /** Umbral de pulsación larga (táctil) para abrir el detalle de un POI, en ms. */
   private static readonly LONG_PRESS_MS = 1000;
 
@@ -53,6 +67,7 @@ export class MapsPageComponent implements AfterViewInit {
   private currentUser = inject(CurrentUserService);
   private dialog = inject(MatDialog);
   private geoIpService = inject(GeoIpService);
+  private mapViewportService = inject(MapViewportService);
   private deviceLocationService = inject(DeviceLocationService);
   private publicationService = inject(PublicationService);
   private responsiveService = inject(ResponsiveService);
@@ -61,8 +76,7 @@ export class MapsPageComponent implements AfterViewInit {
   // ── Propiedades ──────────────────────────────────────────────────────────────
 
   private themeService = inject(ThemeService);
-  private currentLocations: MapLocation[] = [];  // track para re-render en cambio de tema
-
+  private currentLocations: MapLocation[] = []; // track para re-render en cambio de tema
 
   // ── Estado del panel de filtros ───────────────────────────────────────────
   /** Árbol de categorías cargado desde el servicio. */
@@ -88,7 +102,7 @@ export class MapsPageComponent implements AfterViewInit {
 
   /** Alterna la visibilidad del panel de categorías. */
   togglePanel(): void {
-    this.panelVisible.update(v => !v);
+    this.panelVisible.update((v) => !v);
   }
 
   /** Cierra el panel de categorías cuando se toca fuera de él. */
@@ -106,7 +120,11 @@ export class MapsPageComponent implements AfterViewInit {
 
     // Si el clic fue en el panel de filtros o controles interactivos, ignora
     if (target.closest('.filter-panel')) return;
-    if (target.closest('button, a, input, select, textarea, [role="button"], [role="menuitem"], .gm-control-active')) {
+    if (
+      target.closest(
+        'button, a, input, select, textarea, [role="button"], [role="menuitem"], .gm-control-active',
+      )
+    ) {
       return;
     }
 
@@ -152,7 +170,6 @@ export class MapsPageComponent implements AfterViewInit {
   /** true mientras hay una resolución de posición del dispositivo en vuelo. */
   locating = signal(false);
 
-
   // ── Estado del panel de detalle ───────────────────────────────────────────
   /** Localización seleccionada al hacer click en un marker. null = panel cerrado. */
   selectedDetail = signal<PublicationDetailInput | null>(null);
@@ -185,7 +202,7 @@ export class MapsPageComponent implements AfterViewInit {
   getJoinedCount(locationId: number): number {
     const fromState = this.joinedByLocation()[locationId];
     if (typeof fromState === 'number') return fromState;
-    const location = this.allLocations.find(l => l.id === locationId);
+    const location = this.allLocations.find((l) => l.id === locationId);
     return location?.occupiedSlots ?? 0;
   }
 
@@ -209,25 +226,23 @@ export class MapsPageComponent implements AfterViewInit {
     if (maxSlots !== null && current >= maxSlots) return;
 
     this.publicationService.enroll(detail.id).subscribe({
-      next: response => {
-        this.joinedByLocation.update(prev => ({
+      next: (response) => {
+        this.joinedByLocation.update((prev) => ({
           ...prev,
           [detail.id]: response.occupiedSlots,
         }));
 
-        this.joinedByUserAndLocation.update(prev => ({
+        this.joinedByUserAndLocation.update((prev) => ({
           ...prev,
           [this.buildJoinKey(detail.id)]: true,
         }));
         // Recargar apuntados
-        this.publicationService.getEnrollments(detail.id).subscribe(users => {
-          this.selectedDetail.update(d => d ? { ...d, enrolledUsers: users } : null);
-        });
+        this.reloadEnrollments(detail.id);
       },
       error: (error: HttpErrorResponse) => {
         const message = error?.error?.error?.message ?? '';
         if (typeof message === 'string' && message.toLowerCase().includes('ya estás apuntado')) {
-          this.joinedByUserAndLocation.update(prev => ({
+          this.joinedByUserAndLocation.update((prev) => ({
             ...prev,
             [this.buildJoinKey(detail.id)]: true,
           }));
@@ -252,8 +267,8 @@ export class MapsPageComponent implements AfterViewInit {
 
     this.publicationService.requestAccess(detail.id).subscribe({
       next: () => {
-        this.accessRequestedByLocation.update(prev => ({ ...prev, [detail.id]: true }));
-        this.selectedDetail.update(d => d ? { ...d, accessRequestPending: true } : null);
+        this.accessRequestedByLocation.update((prev) => ({ ...prev, [detail.id]: true }));
+        this.selectedDetail.update((d) => (d ? { ...d, accessRequestPending: true } : null));
         this.snackBar.open('Solicitud enviada. El autor de la publicación la revisará.', 'Cerrar', {
           duration: 4000,
           horizontalPosition: 'center',
@@ -263,14 +278,26 @@ export class MapsPageComponent implements AfterViewInit {
       error: (error: HttpErrorResponse) => {
         const code = error?.error?.error?.code;
         if (code === 'ALREADY_REQUESTED') {
-          this.accessRequestedByLocation.update(prev => ({ ...prev, [detail.id]: true }));
-          this.selectedDetail.update(d => d ? { ...d, accessRequestPending: true } : null);
+          this.accessRequestedByLocation.update((prev) => ({ ...prev, [detail.id]: true }));
+          this.selectedDetail.update((d) => (d ? { ...d, accessRequestPending: true } : null));
         } else if (code === 'ALREADY_HAS_ACCESS') {
-          this.publicationService.getById(String(detail.id)).subscribe(full => {
-            this.selectedDetail.update(d => d ? { ...d, ...full } : null);
-          });
+          this.reloadFullDetail(detail.id);
         }
       },
+    });
+  }
+
+  /** Recarga la lista de apuntados del detalle abierto tras un join/leave. */
+  private reloadEnrollments(locationId: number): void {
+    this.publicationService.getEnrollments(locationId).subscribe((users) => {
+      this.selectedDetail.update((d) => (d ? { ...d, enrolledUsers: users } : null));
+    });
+  }
+
+  /** Recarga el detalle completo de una localización (p. ej. tras obtener acceso). */
+  private reloadFullDetail(locationId: number): void {
+    this.publicationService.getById(String(locationId)).subscribe((full) => {
+      this.selectedDetail.update((d) => (d ? { ...d, ...full } : null));
     });
   }
 
@@ -329,17 +356,22 @@ export class MapsPageComponent implements AfterViewInit {
   // ── Ciclo de vida ──────────────────────────────────────────────────────────
 
   async ngAfterViewInit(): Promise<void> {
-    this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
+    this.categoryService.getAll().subscribe((cats) => this.categories.set(cats));
     await this.mapsService.load();
 
-    // Resolver centro por IP antes de crear el mapa ──────────────
-    this.geoIpService.resolveCenter().subscribe(center => {
+    // Resolver el viewport compartido de la app antes de crear el mapa ──────────────
+    this.mapViewportService.resolveInitialViewport().subscribe((viewport) => {
       this.map = new google.maps.Map(this.mapContainer.nativeElement, {
-        center: { lat: center.lat, lng: center.lng },
-        zoom: 12,
+        center: { lat: viewport.lat, lng: viewport.lng },
+        zoom: viewport.zoom,
         styles: this.mapSettingsService.mapStyles(),
       });
       this.infoWindow = new google.maps.InfoWindow({ headerDisabled: true });
+
+      // Mantiene el viewport de la app sincronizado con cualquier movimiento de este mapa
+      // (pan, zoom, "usar mi ubicación"...), para que el mapa de nueva publicación abra
+      // siempre en la misma posición.
+      this.map.addListener('idle', () => this.syncViewport());
 
       // Control nativo "Usar mi ubicación", solo en dispositivos de input táctil.
       if (this.deviceLocationService.isTouchPrimaryDevice()) {
@@ -349,22 +381,27 @@ export class MapsPageComponent implements AfterViewInit {
       }
 
       // Cargar localizaciones
-      this.locationService.getAll().subscribe(locations => {
-        this.allLocations = locations;
-        const occupancy = locations.reduce<Record<number, number>>((acc, location) => {
-          acc[location.id] = location.occupiedSlots ?? 0;
-          return acc;
-        }, {});
-        this.joinedByLocation.set(occupancy);
+      this.loadLocations();
+    });
+  }
 
-        const favorites = this.currentUser.favoriteTypeIds();
-        if (favorites.length > 0) {
-          const filtered = locations.filter(l => favorites.includes(l.locationTypeId));
-          this.renderMarkers(filtered.length > 0 ? filtered : locations);
-        } else {
-          this.renderMarkers(locations);
-        }
-      });
+  /** Obtiene las localizaciones del backend y renderiza los markers correspondientes. */
+  private loadLocations(): void {
+    this.locationService.getAll().subscribe((locations) => {
+      this.allLocations = locations;
+      const occupancy = locations.reduce<Record<number, number>>((acc, location) => {
+        acc[location.id] = location.occupiedSlots ?? 0;
+        return acc;
+      }, {});
+      this.joinedByLocation.set(occupancy);
+
+      const favorites = this.currentUser.favoriteTypeIds();
+      if (favorites.length > 0) {
+        const filtered = locations.filter((l) => favorites.includes(l.locationTypeId));
+        this.renderMarkers(filtered.length > 0 ? filtered : locations);
+      } else {
+        this.renderMarkers(locations);
+      }
     });
   }
 
@@ -417,10 +454,18 @@ export class MapsPageComponent implements AfterViewInit {
       { duration: 5000, horizontalPosition: 'center', verticalPosition: 'top' },
     );
 
-    this.geoIpService.resolveCenter().subscribe(center => {
+    this.geoIpService.resolveCenter().subscribe((center) => {
       this.map.panTo({ lat: center.lat, lng: center.lng });
       this.map.setZoom(12);
     });
+  }
+
+  /** Vuelca el centro/zoom actual del mapa al viewport compartido de la app. */
+  private syncViewport(): void {
+    const center = this.map.getCenter();
+    const zoom = this.map.getZoom();
+    if (!center || zoom === undefined) return;
+    this.mapViewportService.setViewport({ lat: center.lat(), lng: center.lng() }, zoom);
   }
 
   /** Refleja el estado de localización en curso en el signal y en el control nativo del mapa. */
@@ -488,15 +533,13 @@ export class MapsPageComponent implements AfterViewInit {
     const main = this.selectedMain();
 
     if (typeId) {
-      filtered = filtered.filter(l => l.locationTypeId === typeId);
+      filtered = filtered.filter((l) => l.locationTypeId === typeId);
     } else if (sub) {
-      const typeIds = new Set(sub.locationTypes.map(t => t.id));
-      filtered = filtered.filter(l => typeIds.has(l.locationTypeId));
+      const typeIds = new Set(sub.locationTypes.map((t) => t.id));
+      filtered = filtered.filter((l) => typeIds.has(l.locationTypeId));
     } else if (main) {
-      const typeIds = new Set(
-        main.subcategories.flatMap(s => s.locationTypes.map(t => t.id))
-      );
-      filtered = filtered.filter(l => typeIds.has(l.locationTypeId));
+      const typeIds = new Set(main.subcategories.flatMap((s) => s.locationTypes.map((t) => t.id)));
+      filtered = filtered.filter((l) => typeIds.has(l.locationTypeId));
     }
 
     this.renderMarkers(filtered);
@@ -507,7 +550,7 @@ export class MapsPageComponent implements AfterViewInit {
   /** Limpia los markers anteriores y pinta los nuevos. */
   private renderMarkers(locations: MapLocation[]): void {
     this.currentLocations = locations;
-    this.markers.forEach(m => m.setMap(null));
+    this.markers.forEach((m) => m.setMap(null));
     this.markers = [];
 
     const isDark = this.themeService.isDark();
@@ -518,7 +561,7 @@ export class MapsPageComponent implements AfterViewInit {
     const canHover = this.responsiveService.state().hasHover;
     const showPressFeedback = !canHover && !!this.currentUser.user();
 
-    locations.forEach(location => {
+    locations.forEach((location) => {
       const color = this.categoryService.resolveColor(location.locationTypeId);
       const icon = this.categoryService.resolveIcon(location.locationTypeId);
       const groupBadge = this.resolveGroupBadge(location);
@@ -570,7 +613,7 @@ export class MapsPageComponent implements AfterViewInit {
     const bc = this.categoryService.resolveBreadcrumb(location.locationTypeId);
     if (!bc) return;
 
-    this.accessRequestedByLocation.update(prev => ({
+    this.accessRequestedByLocation.update((prev) => ({
       ...prev,
       [location.id]: location.accessRequestPending ?? prev[location.id] ?? false,
     }));
@@ -602,11 +645,11 @@ export class MapsPageComponent implements AfterViewInit {
       return;
     }
 
-    this.publicationService.getEnrollments(location.id).subscribe(users => {
+    this.publicationService.getEnrollments(location.id).subscribe((users) => {
       // Actualizar estado local si el usuario actual está en la lista
       const currentUserId = this.currentUser.user()?.id?.toString();
-      if (currentUserId && users.some(u => u.userId === currentUserId)) {
-        this.joinedByUserAndLocation.update(prev => ({
+      if (currentUserId && users.some((u) => u.userId === currentUserId)) {
+        this.joinedByUserAndLocation.update((prev) => ({
           ...prev,
           [this.buildJoinKey(location.id)]: true,
         }));
@@ -713,20 +756,23 @@ export class MapsPageComponent implements AfterViewInit {
        </span>`
       : '';
 
-    const approximateNotice = location.metadata?.['exactLocation'] === false
-      ? `<div style="margin-top:6px;font-size:11px;color:${approxColor};display:flex;align-items:center;gap:4px">
+    const approximateNotice =
+      location.metadata?.['exactLocation'] === false
+        ? `<div style="margin-top:6px;font-size:11px;color:${approxColor};display:flex;align-items:center;gap:4px">
          <span class="material-icons" style="font-size:14px">gps_not_fixed</span>
          Esta ubicación es aproximada — zona de 5 km
        </div>`
-      : '';
+        : '';
 
     return `
     <div style="max-width:220px;font-family:sans-serif;padding:4px">
       <strong style="font-size:14px;color:${textColor}">${location.name}</strong>
       ${breadcrumb}
-      ${location.description
-        ? `<p style="margin:4px 0 0;color:${descColor};font-size:13px">${location.description}</p>`
-        : ''}
+      ${
+        location.description
+          ? `<p style="margin:4px 0 0;color:${descColor};font-size:13px">${location.description}</p>`
+          : ''
+      }
       ${badge}
       ${approximateNotice}
     </div>
@@ -740,12 +786,12 @@ export class MapsPageComponent implements AfterViewInit {
 
     this.publicationService.unenroll(detail.id).subscribe({
       next: () => {
-        this.joinedByLocation.update(prev => ({
+        this.joinedByLocation.update((prev) => ({
           ...prev,
           [detail.id]: Math.max(0, (prev[detail.id] ?? 0) - 1),
         }));
 
-        this.joinedByUserAndLocation.update(prev => {
+        this.joinedByUserAndLocation.update((prev) => {
           const key = this.buildJoinKey(detail.id);
           const newState = { ...prev };
           delete newState[key];
@@ -753,9 +799,7 @@ export class MapsPageComponent implements AfterViewInit {
         });
 
         // Recargar apuntados
-        this.publicationService.getEnrollments(detail.id).subscribe(users => {
-          this.selectedDetail.update(d => d ? { ...d, enrolledUsers: users } : null);
-        });
+        this.reloadEnrollments(detail.id);
       },
       error: (error: HttpErrorResponse) => {
         console.error('Error al salir del evento', error);

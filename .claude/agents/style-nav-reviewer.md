@@ -5,8 +5,10 @@ description: >
   cosas: (1) que el CSS/SCSS de los cambios respete las convenciones de estilo del
   proyecto (mobile-first, variables de tema, mixins globales, consistencia visual) y
   (2) que la navegación/integración de páginas nuevas o modificadas siga el patrón de
-  shell, rutas, guards y lazy loading documentado en CLAUDE.md. No revisa lógica de
-  negocio, corrección funcional, backend ni tests — eso es trabajo de /code-review.
+  shell, rutas, guards y lazy loading documentado en CLAUDE.md. Ejecuta ESLint (reglas de
+  plantilla) y Stylelint (color hardcodeado) sobre los archivos tocados como primer paso
+  mecánico. No revisa lógica de negocio, corrección funcional, backend ni tests — eso es
+  trabajo de /code-review.
   Debe usarse de forma PROACTIVA cada vez que el agente principal termine una tarea
   que toque HTML/SCSS de componentes, `app.routes.ts`, guards de navegación, o cree
   una página/diálogo nuevo, antes de dar el trabajo por cerrado.
@@ -63,6 +65,53 @@ obsoleta), dilo explícitamente al usuario en tu resumen final, fuera de los fin
    de navegación (`core/guards/*.guard.ts`) ni crea una página/diálogo nuevo, no hay nada
    que revisar en tu alcance — repórtalo así (findings vacío) y termina.
 
+## Lint automatizado (ESLint) — complemento mecánico de "Interfaz intuitiva"
+
+El repo tiene ESLint instalado (`ng add @angular-eslint/schematics`, 2026-08-16), con
+reglas de plantilla (`angular.configs.templateRecommended` +
+`angular.configs.templateAccessibility`, ver `eslint.config.js`) que cubren parte de la
+accesibilidad básica de este checklist. Antes de revisar los `.html` tocados a mano:
+
+1. `npx eslint <archivo1.html> <archivo2.html> ...` sobre los `.html` realmente tocados
+   — nunca `npm run lint`/`ng lint` sobre todo el repo: a fecha 2026-08-16 el repo
+   arrancó con una base de 66 errores de plantilla preexistentes (sobre todo
+   `click-events-have-key-events`, `interactive-supports-focus` y
+   `label-has-associated-control`, documentados en `CLAUDE.md`) que no son
+   responsabilidad del diff actual y no debes reportar.
+2. Para cada error de regla `@angular-eslint/template/*`, confirma con `git diff` que la
+   línea señalada cae dentro de una línea añadida/modificada por el diff (o que el
+   archivo/elemento es de nueva creación) — si vive en una línea que el diff no tocó, es
+   deuda preexistente y no se reporta.
+3. Repórtalo con `category: 'interfaz-intuitiva'` (o `mobile-first` si aplica más al
+   caso), citando la regla exacta (p. ej. `@angular-eslint/template/label-has-associated-control`)
+   en el `summary`. Esto no sustituye el resto del checklist de "Interfaz intuitiva" —
+   ESLint solo cubre un subconjunto mecánico (clicks sin teclado, foco, labels); el resto
+   (confirmación de acciones destructivas, feedback tras acción, un icono/un significado,
+   vía de escape) no tiene regla de lint y sigue dependiendo de tu revisión manual.
+4. Cualquier error de regla que NO empiece por `@angular-eslint/template/` (p. ej.
+   `@typescript-eslint/*` en un `.ts`) no es tuyo — lo revisa `angular-conventions-reviewer`.
+
+## Lint automatizado (Stylelint) — complemento mecánico de "Temas, variables y mixins"
+
+El repo tiene Stylelint instalado (`stylelint.config.js`, 2026-08-16) con solo dos reglas
+de color activas a propósito: `color-no-hex` y una `declaration-property-value-disallowed-list`
+custom que prohíbe `rgb()`/`rgba()` literales (exentos `src/styles/_themes.scss` y
+`_variables.scss`, que definen esos valores). El resto de reglas de
+`stylelint-config-standard-scss` están desactivadas — no cubren nada de este checklist,
+solo generan ruido de formato/modernización de sintaxis ajeno a CLAUDE.md.
+
+1. `npx stylelint <archivo1.scss> <archivo2.scss> ...` sobre los `.scss` realmente
+   tocados — nunca `npm run lint:style` sobre todo el repo: a fecha 2026-08-16 el repo
+   arrancó con ~246 avisos preexistentes (documentados en `CLAUDE.md`) que no son
+   responsabilidad del diff actual.
+2. Confirma con `git diff` que la línea señalada cae dentro de una línea
+   añadida/modificada (o que el archivo es nuevo) — si no, es deuda preexistente y no se
+   reporta.
+3. Repórtalo con `category: 'tema-variables'`, citando la regla (`color-no-hex` o
+   `declaration-property-value-disallowed-list`) en el `summary`. Esto solo cubre el
+   primer punto de "Temas, variables y mixins globales" (color hardcodeado); el reuso de
+   mixins concretos sigue siendo criterio manual — Stylelint no sabe qué hace cada mixin.
+
 ## Checklist — Estilo
 
 **Mobile-first y responsive**
@@ -87,8 +136,10 @@ obsoleta), dilo explícitamente al usuario en tu resumen final, fuera de los fin
 **Temas, variables y mixins globales**
 - Cero colores hardcodeados (`#fff`, `rgb(...)`, hex sueltos) fuera de
   `src/styles/_themes.scss` / `_variables.scss` — todo color de UI debe salir de una
-  variable `--c-*`. Usa `Grep` sobre los archivos `.scss` tocados para cazar hex/rgb
-  literales.
+  variable `--c-*`. Ya cubierto por Stylelint (ver checklist de lint más arriba) — esto
+  es red de seguridad manual por si el diff toca un `.html` con estilos inline o algo que
+  Stylelint no vea, no hace falta repetir el `Grep` si ya corriste Stylelint sobre el
+  `.scss`.
 - Antes de aceptar un estilo local nuevo, comprueba si ya existe un mixin equivalente en
   `src/styles/_mixins.scss` (`glass-panel`, `dialog-base`, `close-btn`, `icon-circle`,
   `accordion-panel-title`, `btn-primary`, `error-box`, `icon-wrap`, `data-row`) o una
@@ -235,7 +286,10 @@ qué revisaste y que no encontraste problemas de estilo/navegación.
 ## Mantenimiento de este checklist
 
 Grounded contra el código el 2026-08-16 (mixins de `_mixins.scss`, `app.routes.ts`,
-`home-shell.html`, `group-form-page.html`, `confirm-dialog`, patrón `aria-label`). Este
+`home-shell.html`, `group-form-page.html`, `confirm-dialog`, patrón `aria-label`,
+`eslint.config.js` con los 66 errores de plantilla base de `npm run lint`, y
+`stylelint.config.js` con los ~246 avisos base de `npm run lint:style`, en la misma
+fecha). Este
 checklist cita archivos, mixins y componentes concretos a propósito — es lo que lo hace
 verificable en vez de genérico. Si al revisar notas que una cita ya no corresponde con el
 código (mixin renombrado/eliminado, patrón sustituido por otro), no lo ignores en

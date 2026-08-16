@@ -11,8 +11,15 @@
  * Las publicaciones se persisten en backend mediante PublicationService.
  */
 import {
-  Component, inject, signal, computed,
-  AfterViewInit, ViewChild, ElementRef, effect, DestroyRef,
+  Component,
+  inject,
+  signal,
+  computed,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+  effect,
+  DestroyRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -33,13 +40,16 @@ import { GroupService } from '@core/services/group.service';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MapSettingsService } from '@core/services/map-settings.service';
 import { ThemeService } from '@core/services/theme.service';
-import { GeoIpService } from '@core/services/geo-ip.service';
+import { MapViewportService } from '@core/services/map-viewport.service';
 import { DeviceLocationService } from '@core/services/device-location.service';
 import { PublicationService } from '@core/services/publication.service';
 import { ResponsiveService } from '@core/responsive/responsive.service';
 import { LocationService } from '@core/services/location.service';
 import { MapLocation } from '@core/models/location.model';
-import { CONFIRM_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
+import {
+  CONFIRM_DIALOG_CONFIG,
+  withResponsiveDialogLayout,
+} from '@core/constants/dialog.constants';
 import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/confirm-dialog/confirm-dialog';
 import html2canvas from 'html2canvas';
 
@@ -53,12 +63,17 @@ import html2canvas from 'html2canvas';
 @Component({
   selector: 'app-create-publication-page',
   standalone: true,
-  imports: [FormsModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatExpansionModule],
+  imports: [
+    FormsModule,
+    MatIconModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatExpansionModule,
+  ],
   templateUrl: './create-publication.html',
   styleUrl: './create-publication.scss',
 })
 export class CreatePublicationPageComponent implements AfterViewInit {
-
   // ── Servicios ──────────────────────────────────────────────────────────────
   /** Servicio para cargar Google Maps API de forma lazy */
   private readonly mapsService = inject(GoogleMapsService);
@@ -88,7 +103,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   private readonly themeService = inject(ThemeService);
 
-  private readonly geoIpService = inject(GeoIpService);
+  private readonly mapViewportService = inject(MapViewportService);
   private readonly deviceLocationService = inject(DeviceLocationService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -188,13 +203,12 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   /** Modo edición de ruta activado (click añade puntos en lugar de mover el marcador) */
   isAddingRoute = false;
 
-
   /**
    * Tipos de ubicación visibles según la subcategoría seleccionada.
    * Filtra los tipos profesionales por nombre.
    */
   visibleTypes = computed(() =>
-    (this.selectedSub()?.locationTypes ?? []).filter(t => t.name.toLowerCase() !== 'profesional')
+    (this.selectedSub()?.locationTypes ?? []).filter((t) => t.name.toLowerCase() !== 'profesional'),
   );
 
   // ── Visibilidad ────────────────────────────────────────────────────────────
@@ -267,7 +281,6 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     { label: 'Experto', description: 'Máximo nivel', value: 10 },
   ];
 
-
   /** Latitud de la ubicación (obligatorio, se establece al hacer click en el mapa) */
   lat = signal<number | null>(null);
 
@@ -293,12 +306,12 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    * Por defecto, el panel de información básica está abierto para guiar al usuario.
    */
   expandedPanels = {
-    info: true,        // Información básica: abierto por defecto
+    info: true, // Información básica: abierto por defecto
     visibility: false, // Visibilidad e invitados: cerrado
-    category: false,   // Categoría: cerrado
-    location: false,   // Ubicación y ruta: cerrado
-    dates: false,      // Fechas: cerrado
-    details: false,    // Detalles: cerrado
+    category: false, // Categoría: cerrado
+    location: false, // Ubicación y ruta: cerrado
+    dates: false, // Fechas: cerrado
+    details: false, // Detalles: cerrado
   };
 
   /** @returns True si hay una ubicación seleccionada en el mapa */
@@ -315,8 +328,12 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    * `submitForm()` avisa con un diálogo de confirmación en vez de bloquear el botón.
    */
   get canSubmit(): boolean {
-    return !!this.title.trim() && !!this.activityDate &&
-      this.locationTypeId !== null && this.locationSelected;
+    return (
+      !!this.title.trim() &&
+      !!this.activityDate &&
+      this.locationTypeId !== null &&
+      this.locationSelected
+    );
   }
 
   /**
@@ -324,7 +341,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    * @example "Todos" para nivel 0, "Nivel 5+" para nivel 5
    */
   get levelLabel(): string {
-    return this.ACTIVITY_LEVELS.find(l => l.value === this.requiredLevel)?.label ?? 'Básico';
+    return this.ACTIVITY_LEVELS.find((l) => l.value === this.requiredLevel)?.label ?? 'Básico';
   }
 
   /**
@@ -332,29 +349,31 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    * Carga las categorías disponibles del servicio.
    */
   constructor() {
-    this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
+    this.categoryService.getAll().subscribe((cats) => this.categories.set(cats));
 
     // Carga eager de los grupos del usuario (organizador o miembro), para el atajo "invitar a
     // todo el grupo" — la privacidad de la publicación ya no depende de ningún grupo, invitar
     // desde uno es solo una forma rápida de rellenar la cola de invitados individuales.
-    this.groupService.getMyGroups().subscribe(groups => {
+    this.groupService.getMyGroups().subscribe((groups) => {
       this.myGroups.set(groups);
       this.loadingGroups.set(false);
     });
 
     // Buscador de usuarios a invitar al evento — mismo patrón que GroupFormPageComponent.
-    this.inviteSearchQuery$.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(query => {
-        this.searchingInviteUsers.set(true);
-        return this.groupService.searchUsers(query ?? '');
-      }),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(results => {
-      this.searchingInviteUsers.set(false);
-      this.inviteSearchResults.set(results);
-    });
+    this.inviteSearchQuery$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((query) => {
+          this.searchingInviteUsers.set(true);
+          return this.groupService.searchUsers(query ?? '');
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((results) => {
+        this.searchingInviteUsers.set(false);
+        this.inviteSearchResults.set(results);
+      });
 
     // Sincroniza visibilidad del formulario según el modo.
     // En pantalla completa se prioriza el mapa; en panel lateral se mantiene visible.
@@ -371,12 +390,14 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     effect(() => {
       const isDark = this.themeService.isDark();
       if (this.marker) {
-        this.marker.setIcon(this.mapsService.buildMarkerIcon(
-          this.selectedMain()?.color ?? '#3f51b5',
-          this.selectedSub()?.icon ?? '📍',
-          40,
-          isDark,
-        ));
+        this.marker.setIcon(
+          this.mapsService.buildMarkerIcon(
+            this.selectedMain()?.color ?? '#3f51b5',
+            this.selectedSub()?.icon ?? '📍',
+            40,
+            isDark,
+          ),
+        );
       }
     });
 
@@ -414,18 +435,18 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   /** true si el usuario ya está en la cola de invitados. */
   isAlreadyInvited(userId: string): boolean {
-    return this.invitedUsers().some(u => u.id === userId);
+    return this.invitedUsers().some((u) => u.id === userId);
   }
 
   /** Añade un usuario encontrado por búsqueda a la cola de invitados. */
   queueInvite(user: GroupSearchUser): void {
     if (this.isAlreadyInvited(user.id)) return;
-    this.invitedUsers.update(list => [...list, user]);
+    this.invitedUsers.update((list) => [...list, user]);
   }
 
   /** Quita un usuario de la cola de invitados. */
   removeInvite(userId: string): void {
-    this.invitedUsers.update(list => list.filter(u => u.id !== userId));
+    this.invitedUsers.update((list) => list.filter((u) => u.id !== userId));
   }
 
   /**
@@ -436,10 +457,10 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    */
   inviteGroupMembers(group: Group): void {
     const myId = this.cu.user()?.id;
-    const alreadyQueued = new Set(this.invitedUsers().map(u => u.id));
+    const alreadyQueued = new Set(this.invitedUsers().map((u) => u.id));
     const toAdd: GroupSearchUser[] = group.members
-      .filter(member => member.userId !== myId && !alreadyQueued.has(member.userId))
-      .map(member => ({
+      .filter((member) => member.userId !== myId && !alreadyQueued.has(member.userId))
+      .map((member) => ({
         id: member.userId,
         name: member.name,
         nick: member.nick,
@@ -448,7 +469,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
       }));
 
     if (toAdd.length === 0) return;
-    this.invitedUsers.update(list => [...list, ...toAdd]);
+    this.invitedUsers.update((list) => [...list, ...toAdd]);
   }
 
   /**
@@ -458,7 +479,6 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     if (!this.isRepeatMode()) return 'Crear publicación';
     return this.isEditingActive() ? 'Guardar cambios' : 'Repetir publicación';
   }
-
 
   private getTodayDate(): string {
     const now = new Date();
@@ -477,15 +497,20 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   async ngAfterViewInit(): Promise<void> {
     await this.mapsService.load();
 
-    this.geoIpService.resolveCenter().subscribe(center => {
+    this.mapViewportService.resolveInitialViewport().subscribe((viewport) => {
       this.map = new google.maps.Map(this.mapContainer.nativeElement, {
-        center: { lat: center.lat, lng: center.lng },
-        zoom: 12,
+        center: { lat: viewport.lat, lng: viewport.lng },
+        zoom: viewport.zoom,
         disableDefaultUI: true,
         zoomControl: true,
         clickableIcons: true,
         styles: this.mapSettingsService.mapStyles(),
       });
+
+      // Mantiene el viewport de la app sincronizado con cualquier movimiento de este mapa
+      // (pan, zoom, "usar mi ubicación"...), para que el mapa principal abra siempre en
+      // la misma posición.
+      this.map.addListener('idle', () => this.syncViewport());
 
       // Control nativo "Usar mi ubicación", solo en dispositivos de input táctil.
       if (this.deviceLocationService.isTouchPrimaryDevice()) {
@@ -518,7 +543,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    * solo referencia visual, sin listeners de click/hover.
    */
   private loadOtherPublicationsAsPois(): void {
-    this.locationService.getAll().subscribe(locations => {
+    this.locationService.getAll().subscribe((locations) => {
       this.otherLocations = locations;
       this.renderPoiMarkers();
     });
@@ -526,15 +551,15 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
   /** Repinta los markers POI a partir de la última lista cargada, excluyendo la publicación en foco. */
   private renderPoiMarkers(): void {
-    this.poiMarkers.forEach(marker => marker.setMap(null));
+    this.poiMarkers.forEach((marker) => marker.setMap(null));
     this.poiMarkers = [];
 
     const focusedId = this.focusedPublicationId();
     const isDark = this.themeService.isDark();
 
     this.otherLocations
-      .filter(location => location.id !== focusedId)
-      .forEach(location => {
+      .filter((location) => location.id !== focusedId)
+      .forEach((location) => {
         const color = this.categoryService.resolveColor(location.locationTypeId);
         const icon = this.categoryService.resolveIcon(location.locationTypeId);
         const marker = new google.maps.Marker({
@@ -577,7 +602,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   }
 
   /**
-  * Carga un borrador desde una publicación existente si llega `repeatFrom` en query params.
+   * Carga un borrador desde una publicación existente si llega `repeatFrom` en query params.
    */
   private loadRepeatDraftFromQueryParams(): void {
     // El id es un ObjectId de Mongo (string hexadecimal), no un número: no se
@@ -589,7 +614,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     }
 
     this.pubService.getById(repeatFromRaw).subscribe({
-      next: publication => {
+      next: (publication) => {
         this.applyRepeatDraft(publication);
       },
       error: () => {
@@ -599,12 +624,12 @@ export class CreatePublicationPageComponent implements AfterViewInit {
           horizontalPosition: 'center',
           verticalPosition: 'top',
         });
-      }
+      },
     });
   }
 
   /**
-  * Precarga el formulario con una publicación existente para repetirla/editarla.
+   * Precarga el formulario con una publicación existente para repetirla/editarla.
    *
    * La fecha se actualiza a la del día actual para iniciar una nueva convocatoria.
    */
@@ -612,7 +637,8 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     this.isRepeatMode.set(true);
     this.focusedPublicationId.set(publication.id);
 
-    const finished = publication.active === false ||
+    const finished =
+      publication.active === false ||
       (!!publication.endDate && new Date(publication.endDate).getTime() <= Date.now());
     this.isEditingActive.set(!finished);
 
@@ -625,9 +651,12 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
     const start = new Date(publication.startDate);
     const end = publication.endDate ? new Date(publication.endDate) : null;
-    const looksAllDay = !!end &&
-      start.getHours() === 0 && start.getMinutes() === 0 &&
-      end.getHours() === 23 && end.getMinutes() >= 59;
+    const looksAllDay =
+      !!end &&
+      start.getHours() === 0 &&
+      start.getMinutes() === 0 &&
+      end.getHours() === 23 &&
+      end.getMinutes() >= 59;
 
     this.allDay = looksAllDay || !end;
     this.startTime = this.allDay ? '' : this.toHHmm(start);
@@ -698,7 +727,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
         strokeWeight: 4,
       });
 
-      this.routeMarkers.forEach(marker => {
+      this.routeMarkers.forEach((marker) => {
         marker.setIcon({
           path: google.maps.SymbolPath.CIRCLE,
           scale: 6,
@@ -751,12 +780,14 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   selectLocationType(typeId: number): void {
     this.locationTypeId = this.locationTypeId === typeId ? null : typeId;
     if (this.marker && this.lat !== null) {
-      this.marker.setIcon(this.mapsService.buildMarkerIcon(
-        this.selectedMain()?.color ?? '#3f51b5',
-        this.selectedSub()?.icon ?? '📍',
-        40,
-        this.themeService.isDark(),
-      ));
+      this.marker.setIcon(
+        this.mapsService.buildMarkerIcon(
+          this.selectedMain()?.color ?? '#3f51b5',
+          this.selectedSub()?.icon ?? '📍',
+          40,
+          this.themeService.isDark(),
+        ),
+      );
     }
   }
 
@@ -790,6 +821,14 @@ export class CreatePublicationPageComponent implements AfterViewInit {
         });
       },
     });
+  }
+
+  /** Vuelca el centro/zoom actual del mapa al viewport compartido de la app. */
+  private syncViewport(): void {
+    const center = this.map.getCenter();
+    const zoom = this.map.getZoom();
+    if (!center || zoom === undefined) return;
+    this.mapViewportService.setViewport({ lat: center.lat(), lng: center.lng() }, zoom);
   }
 
   /** Traduce un código de error de geolocalización a un mensaje legible para el usuario. */
@@ -934,11 +973,11 @@ export class CreatePublicationPageComponent implements AfterViewInit {
       });
 
       // Opcional: cambiar color de los markers a verde (ruta finalizada)
-      this.routeMarkers.forEach(marker => {
+      this.routeMarkers.forEach((marker) => {
         marker.setIcon({
           path: google.maps.SymbolPath.CIRCLE,
           scale: 6,
-          fillColor: '#16a34a',  // Verde
+          fillColor: '#16a34a', // Verde
           fillOpacity: 1,
           strokeColor: '#fff',
           strokeWeight: 2,
@@ -983,7 +1022,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     }
 
     // Eliminar todos los markers de puntos
-    this.routeMarkers.forEach(marker => marker.setMap(null));
+    this.routeMarkers.forEach((marker) => marker.setMap(null));
 
     // Limpiar arrays
     this.routePoints.set([]);
@@ -1048,9 +1087,11 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     const maxZoom = this.isCompactViewport() ? 16 : 17;
 
     for (let zoom = maxZoom; zoom >= 1; zoom--) {
-      const projected = points.map(point => this.projectToWorldPixels(point.lat(), point.lng(), zoom));
-      const xs = projected.map(point => point.x);
-      const ys = projected.map(point => point.y);
+      const projected = points.map((point) =>
+        this.projectToWorldPixels(point.lat(), point.lng(), zoom),
+      );
+      const xs = projected.map((point) => point.x);
+      const ys = projected.map((point) => point.y);
 
       const minX = Math.min(...xs);
       const maxX = Math.max(...xs);
@@ -1064,15 +1105,14 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
       const fitsSingleTile = tileMinX === tileMaxX && tileMinY === tileMaxY;
       const fitsPadding =
-        maxX - minX <= tileSize - padding * 2
-        && maxY - minY <= tileSize - padding * 2;
+        maxX - minX <= tileSize - padding * 2 && maxY - minY <= tileSize - padding * 2;
 
       if (!fitsSingleTile || !fitsPadding) continue;
 
       const tileX = tileMinX;
       const tileY = tileMinY;
       const polylinePoints = projected
-        .map(point => {
+        .map((point) => {
           const x = point.x - tileX * tileSize;
           const y = point.y - tileY * tileSize;
           return `${x.toFixed(1)},${y.toFixed(1)}`;
@@ -1089,8 +1129,11 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     const tileX = Math.floor(firstProjected.x / tileSize);
     const tileY = Math.floor(firstProjected.y / tileSize);
     const polylinePoints = points
-      .map(point => this.projectToWorldPixels(point.lat(), point.lng(), zoom))
-      .map(point => `${(point.x - tileX * tileSize).toFixed(1)},${(point.y - tileY * tileSize).toFixed(1)}`)
+      .map((point) => this.projectToWorldPixels(point.lat(), point.lng(), zoom))
+      .map(
+        (point) =>
+          `${(point.x - tileX * tileSize).toFixed(1)},${(point.y - tileY * tileSize).toFixed(1)}`,
+      )
       .join(' ');
 
     return { zoom, tileX, tileY, polylinePoints };
@@ -1121,14 +1164,14 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   hasRoute = computed(() => this.routePoints().length > 0);
 
   /**
- * Calcula el bounding box (extent) de los puntos de la ruta
- */
+   * Calcula el bounding box (extent) de los puntos de la ruta
+   */
   private calculateRouteExtent(): google.maps.LatLngBounds | null {
     const points = this.routePoints();
     if (points.length === 0) return null;
 
     const bounds = new google.maps.LatLngBounds();
-    points.forEach(point => bounds.extend(point));
+    points.forEach((point) => bounds.extend(point));
     return bounds;
   }
 
@@ -1138,7 +1181,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
       this.toggleRouteMode();
     }
 
-        // Spinner activo desde que se pulsa "Finalizar".
+    // Spinner activo desde que se pulsa "Finalizar".
     this.capturingRoute.set(true);
 
     const bounds = this.calculateRouteExtent();
@@ -1166,8 +1209,10 @@ export class CreatePublicationPageComponent implements AfterViewInit {
         const worldWidth = seWorldCoord.x - nwWorldCoord.x;
         const worldHeight = seWorldCoord.y - nwWorldCoord.y;
 
-        if (worldWidth < this.mapContainer.nativeElement.offsetWidth - padding &&
-          worldHeight < this.mapContainer.nativeElement.offsetHeight - padding) {
+        if (
+          worldWidth < this.mapContainer.nativeElement.offsetWidth - padding &&
+          worldHeight < this.mapContainer.nativeElement.offsetHeight - padding
+        ) {
           zoom = z;
           break;
         }
@@ -1177,7 +1222,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
       this.map.setZoom(zoom);
 
       // Esperar a que el mapa termine de renderizar
-      const idleListener = google.maps.event.addListenerOnce(this.map, 'idle', async () => {
+      google.maps.event.addListenerOnce(this.map, 'idle', async () => {
         // Pequeño delay adicional para asegurar renderización completa
         // await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -1213,7 +1258,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   // ── Acciones ───────────────────────────────────────────────────────────────
 
   /**
-  * Envía el formulario y crea la publicación.
+   * Envía el formulario y crea la publicación.
    *
    * Validaciones:
    * - Título no vacío
@@ -1225,7 +1270,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    * avisa con un diálogo de confirmación en vez de bloquear el envío (se puede invitar más
    * adelante desde la edición).
    *
-  * Tras crear la publicación:
+   * Tras crear la publicación:
    * - Muestra mensaje de éxito (5 segundos)
    * - Resetea el formulario
    */
@@ -1235,21 +1280,24 @@ export class CreatePublicationPageComponent implements AfterViewInit {
     const noAccessYet = this.visibility() === 'PRIVATE' && this.invitedUsers().length === 0;
 
     if (noAccessYet) {
-      const dialogRef = this.dialog.open(ConfirmDialogComponent, withResponsiveDialogLayout(
-        {
-          ...CONFIRM_DIALOG_CONFIG,
-          data: {
-            title: 'Publicación sin invitados',
-            message: '¡No hay invitados en esta publicación! ¿Deseas continuar?',
-            icon: 'group_off',
-            acceptText: 'Crear de todos modos',
-            acceptIcon: 'check',
-          } satisfies ConfirmDialogData,
-        },
-        this.isCompactViewport(),
-      ));
+      const dialogRef = this.dialog.open(
+        ConfirmDialogComponent,
+        withResponsiveDialogLayout(
+          {
+            ...CONFIRM_DIALOG_CONFIG,
+            data: {
+              title: 'Publicación sin invitados',
+              message: '¡No hay invitados en esta publicación! ¿Deseas continuar?',
+              icon: 'group_off',
+              acceptText: 'Crear de todos modos',
+              acceptIcon: 'check',
+            } satisfies ConfirmDialogData,
+          },
+          this.isCompactViewport(),
+        ),
+      );
 
-      dialogRef.afterClosed().subscribe(confirmed => {
+      dialogRef.afterClosed().subscribe((confirmed) => {
         if (confirmed) this.performSubmit();
       });
       return;
@@ -1265,85 +1313,96 @@ export class CreatePublicationPageComponent implements AfterViewInit {
 
     this.submitting.set(true);
 
-    this.pubService.add({
-      publicationType: 'event',
-      placeId: null,
-      locationTypeId: selectedLocationTypeId,
-      title: this.title.trim(),
-      description: this.description.trim() || undefined,
-      startDate: this.allDay
-        ? `${this.activityDate}T00:00`
-        : `${this.activityDate}T${this.startTime || '00:00'}`,
-      endDate: this.allDay
-        ? `${this.activityDate}T23:59`
-        : (this.endTime ? `${this.activityDate}T${this.endTime}` : null),
-      lat: this.lat(),
-      lng: this.lng(),
-      requiredLevel: this.requiredLevel,
-      visibility: this.visibility(),
-      inviteUserIds: this.invitedUsers().length > 0 ? this.invitedUsers().map(u => u.id) : undefined,
-      metadata: {
-        exactLocation: this.exactLocation,
-        // price: this.price,
-        ...(this.slots !== null ? { slots: this.slots } : {}),
-        // Guardar la ruta si existe
-        ...(this.hasRoute() ? {
-          route: this.routePoints().map(p => ({
-            lat: p.lat(),
-            lng: p.lng()
-          }))
-        } : {}),
-        // Guardar la captura del mapa si existe
-        ...(this.routeMapCapture() ? {
-          routeMapCapture: this.routeMapCapture()
-        } : {}),
-        // Guardar indicaciones si existen
-        ...(this.directions.trim() ? { directions: this.directions.trim() } : {})
-      },
-    }).subscribe({
-      next: pub => {
-        this.submitting.set(false);
+    this.pubService
+      .add({
+        publicationType: 'event',
+        placeId: null,
+        locationTypeId: selectedLocationTypeId,
+        title: this.title.trim(),
+        description: this.description.trim() || undefined,
+        startDate: this.allDay
+          ? `${this.activityDate}T00:00`
+          : `${this.activityDate}T${this.startTime || '00:00'}`,
+        endDate: this.allDay
+          ? `${this.activityDate}T23:59`
+          : this.endTime
+            ? `${this.activityDate}T${this.endTime}`
+            : null,
+        lat: this.lat(),
+        lng: this.lng(),
+        requiredLevel: this.requiredLevel,
+        visibility: this.visibility(),
+        inviteUserIds:
+          this.invitedUsers().length > 0 ? this.invitedUsers().map((u) => u.id) : undefined,
+        metadata: {
+          exactLocation: this.exactLocation,
+          // price: this.price,
+          ...(this.slots !== null ? { slots: this.slots } : {}),
+          // Guardar la ruta si existe
+          ...(this.hasRoute()
+            ? {
+                route: this.routePoints().map((p) => ({
+                  lat: p.lat(),
+                  lng: p.lng(),
+                })),
+              }
+            : {}),
+          // Guardar la captura del mapa si existe
+          ...(this.routeMapCapture()
+            ? {
+                routeMapCapture: this.routeMapCapture(),
+              }
+            : {}),
+          // Guardar indicaciones si existen
+          ...(this.directions.trim() ? { directions: this.directions.trim() } : {}),
+        },
+      })
+      .subscribe({
+        next: (pub) => {
+          this.submitting.set(false);
 
-        const snackText = this.isEditingActive()
-          ? 'Cambios guardados correctamente'
-          : this.isRepeatMode() ? 'Publicación repetida correctamente' : 'Publicación creada correctamente';
-        this.snackBar.open(snackText, 'Cerrar', {
-          duration: 3500,
-          horizontalPosition: 'center',
-          verticalPosition: 'top',
-        });
-        this.successMessage.set(
-          this.isEditingActive()
-            ? `✅ Cambios guardados en "${pub.title}". Aparecerá en el mapa.`
+          const snackText = this.isEditingActive()
+            ? 'Cambios guardados correctamente'
             : this.isRepeatMode()
-              ? `✅ Publicación "${pub.title}" repetida. Aparecerá en el mapa.`
-              : `✅ Publicación "${pub.title}" creada. Aparecerá en el mapa.`
-        );
+              ? 'Publicación repetida correctamente'
+              : 'Publicación creada correctamente';
+          this.snackBar.open(snackText, 'Cerrar', {
+            duration: 3500,
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+          });
+          this.successMessage.set(
+            this.isEditingActive()
+              ? `✅ Cambios guardados en "${pub.title}". Aparecerá en el mapa.`
+              : this.isRepeatMode()
+                ? `✅ Publicación "${pub.title}" repetida. Aparecerá en el mapa.`
+                : `✅ Publicación "${pub.title}" creada. Aparecerá en el mapa.`,
+          );
 
-        // La publicación creada se queda resaltada en su ubicación; solo se
-        // resetean los campos del formulario para poder iniciar otra.
-        const createdPosition = this.marker?.getPosition() ?? null;
-        this.focusedPublicationId.set(pub.id);
-        if (createdPosition) {
-          this.setHighlight(createdPosition);
-          this.map.panTo(createdPosition);
-        }
-        this.resetFormFields();
-        this.clearRepeatFromQueryParam();
-        this.loadOtherPublicationsAsPois();
+          // La publicación creada se queda resaltada en su ubicación; solo se
+          // resetean los campos del formulario para poder iniciar otra.
+          const createdPosition = this.marker?.getPosition() ?? null;
+          this.focusedPublicationId.set(pub.id);
+          if (createdPosition) {
+            this.setHighlight(createdPosition);
+            this.map.panTo(createdPosition);
+          }
+          this.resetFormFields();
+          this.clearRepeatFromQueryParam();
+          this.loadOtherPublicationsAsPois();
 
-        this.closeFormPanel();
-        setTimeout(() => this.successMessage.set(null), 5000);
-      },
-      error: () => {
-        this.submitting.set(false);
-        this.snackBar.open('No se pudo crear la publicación. Inténtalo de nuevo.', 'Cerrar', {
-          duration: 4000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top',
-        });
-      },
-    });
+          this.closeFormPanel();
+          setTimeout(() => this.successMessage.set(null), 5000);
+        },
+        error: () => {
+          this.submitting.set(false);
+          this.snackBar.open('No se pudo crear la publicación. Inténtalo de nuevo.', 'Cerrar', {
+            duration: 4000,
+            horizontalPosition: 'center',
+            verticalPosition: 'top',
+          });
+        },
+      });
   }
 
   /**

@@ -26,18 +26,80 @@ tradicional). Detalles y problemas ya resueltos en `BITACORA.md`:
 - Los límites de bundle en el dashboard de Cloudflare deben ampliarse manualmente si el build crece.
 
 Además del despliegue web, hay una integración en curso de **Capacitor** para publicar una app
-nativa Android en Google Play Store (por ahora solo instalación y configuración base —
-`capacitor.config.ts` — sin la plataforma nativa añadida todavía). Decisiones, pasos ejecutados
-y pendientes documentados en `docs/CAPACITOR.md`.
+nativa Android en Google Play Store — la plataforma nativa ya está añadida (`android/`,
+versionada) y compilando (`assembleDebug`/`assembleRelease`), con keystore de release y registro
+en Android Developer Verification ya hechos; falta completar la ficha de la app en Play Console y
+la subida real. Decisiones, pasos ejecutados y pendientes documentados en `docs/CAPACITOR.md`.
 
 ## Comandos
 
 ```bash
-npm start        # ng serve, http://localhost:4200, recarga en caliente
-npm run build    # ng build (usa environment.prod.ts en config production)
-npm run watch    # build incremental en modo development
-npm test         # ng test (Vitest)
+npm start          # ng serve, http://localhost:4200, recarga en caliente
+npm run build      # ng build (usa environment.prod.ts en config production)
+npm run watch      # build incremental en modo development
+npm test           # ng test (Vitest)
+npm run lint       # ng lint (ESLint sobre src/**/*.ts + src/**/*.html, ver eslint.config.js)
+npm run lint:style # stylelint sobre src/**/*.scss (ver stylelint.config.js)
+npm run format       # prettier --write sobre .ts/.html/.scss
+npm run format:check # prettier --check (sin escribir), lo que corre CI
 ```
+
+### Calidad automatizada (ESLint + Stylelint + Prettier + Husky)
+
+Instalado el 2026-08-16. Antes de asumir que una regla de esta sección sigue vigente,
+confirma que el archivo de config referenciado (`eslint.config.js`, `stylelint.config.js`)
+sigue existiendo y con ese contenido — es tan "documento vivo" como el resto de este
+fichero.
+
+- **ESLint** (`eslint.config.js`, `ng add @angular-eslint/schematics`): reglas TS de
+  `typescript-eslint`/`angular-eslint` sobre `.ts` + reglas de plantilla/accesibilidad de
+  `angular-eslint` sobre `.html`. Además de las reglas de fábrica, dos plugins añadidos a
+  medida para reglas de este documento que antes solo se revisaban a mano:
+  - `eslint-plugin-boundaries` (`boundaries/dependencies`, resuelto vía
+    `eslint-import-resolver-typescript` para que entienda los alias `@core/*` etc.):
+    aplica en código la capa de "Arquitectura" de más abajo — `core` puede depender de
+    `shared` y de una feature concreta (p. ej. los guards que abren un diálogo de auth
+    con `await import(...)`); `shared` solo de `core`/`shared`; `layout` de
+    `core`/`shared`/`layout`; cada **feature** solo de sí misma, `core` y `shared` —
+    nunca de otra feature. Si dos features necesitan el mismo componente, se promueve a
+    `shared/`, no se importa de una feature a otra.
+  - `eslint-plugin-rxjs-x` (`rxjs-x/no-nested-subscribe`, requiere parsing con tipos —
+    `languageOptions.parserOptions.projectService: true`): un `.subscribe()` anidado
+    dentro de otro `.subscribe()` es error. No se activó `no-ignored-subscription`: el
+    patrón dominante del proyecto es HTTP one-shot sin gestión explícita de la
+    suscripción, así que esa regla generaría ruido, no señal.
+- **Stylelint** (`stylelint.config.js`, sobre `stylelint-config-standard-scss`): solo dos
+  reglas de color activas a propósito — `color-no-hex` y una
+  `declaration-property-value-disallowed-list` custom que prohíbe `rgb()/rgba()`
+  literales — automatizan la regla de CLAUDE.md "Colores: solo variables de tema `--c-*`,
+  nunca hex hardcodeados" (exentos `src/styles/_themes.scss` y `_variables.scss`, que SON
+  la fuente de verdad de esos valores). El resto de reglas de
+  `stylelint-config-standard-scss` (modernización de sintaxis de color, notación de media
+  queries, espaciado/líneas en blanco, `selector-class-pattern` sin soporte BEM) están
+  desactivadas explícitamente en `stylelint.config.js` — no son una convención del
+  proyecto y generaban ruido ajeno al objetivo real.
+- **Prettier**: ya estaba como dependencia con `.prettierrc` pero sin script ni uso real.
+  **`format:check` falla hoy en 125 archivos** — el repo nunca se pasó por Prettier de
+  forma sistemática. No se ha aplicado un `npm run format` global todavía (es un diff
+  enorme y merece su propio commit aislado, no un efecto colateral de instalar la
+  herramienta) — pregunta antes de lanzarlo.
+- **Husky + lint-staged**: hook `pre-commit` (`.husky/pre-commit`) que corre
+  `npx lint-staged` — `eslint --fix` + `prettier --write` en `.ts`/`.html` tocados,
+  `stylelint --fix` + `prettier --write` en `.scss` tocados (config en
+  `"lint-staged"` de `package.json`). Solo actúa sobre archivos en stage, no sobre todo
+  el repo.
+- **CI** (`.github/workflows/ci.yml`): `build` es gate real (bloquea el merge). `lint`
+  (ESLint + Stylelint + `format:check`) y `test` corren con `continue-on-error: true` —
+  **informativos, no bloqueantes** — porque a fecha 2026-08-16 el repo arranca con deuda
+  preexistente (~75 avisos de `ng lint`, ~246 de `stylelint`, 125 archivos sin formatear,
+  2 suites de test en rojo — ver `docs/TareasLogin.md`/`src/app/app.routes.spec.ts` y
+  `home-shell.spec.ts` para el detalle de estas últimas). Quitar `continue-on-error`
+  rule por rule según se vaya limpiando la deuda, no todo de golpe.
+
+`angular-conventions-reviewer` y `style-nav-reviewer` ejecutan ESLint/Stylelint sobre los
+archivos tocados como primer paso mecánico de su revisión (ver sus checklists) — no
+sustituye ninguno de los dos, ya que la mayoría de reglas de este documento no tienen
+regla de lint equivalente todavía.
 
 La API local que consume el frontend en dev es el backend en `http://localhost:8081` (perfil
 `dev` de `../BACK`, ver `src/environments/environment.ts`).

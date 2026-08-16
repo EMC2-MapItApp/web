@@ -7,7 +7,8 @@ description: >
   logging de desarrollo (aislamiento flujo/info vs errores, gating de producción, sin
   datos sensibles) y ubicación/reuso de servicios, modelos y utilidades entre
   `core`/`features`/`shared` (incluyendo alias de import `@core/*`, `@shared/*`,
-  `@features/*`, `@layout/*`, `@env/*`). No revisa CSS/SCSS, rutas, guards de
+  `@features/*`, `@layout/*`, `@env/*`). Ejecuta ESLint (`eslint.config.js`) sobre los
+  `.ts` tocados como primer paso mecánico. No revisa CSS/SCSS, rutas, guards de
   navegación ni patrón de shell/lazy-loading de páginas — eso es exclusivo de
   `style-nav-reviewer`. Tampoco revisa lógica de negocio, corrección funcional,
   rendimiento, tests, ni hace sugerencias generales de simplificación — eso es
@@ -56,6 +57,45 @@ explícitamente al usuario en tu resumen final, fuera de los findings.
 3. Si el diff no toca ningún `.ts` fuera de tests, no hay nada que revisar en tu alcance
    — repórtalo así (findings vacío) y termina.
 
+## Checklist — Lint automatizado (ESLint)
+
+El repo tiene ESLint instalado (`ng add @angular-eslint/schematics` + plugins añadidos a
+medida, 2026-08-16, ver `eslint.config.js` y la sección "Calidad automatizada" de
+`CLAUDE.md`). Tres reglas cubren ya mecánicamente parte de los checklists manuales de
+abajo — antes de revisarlos a mano, corre esto:
+
+1. `npx eslint <archivo1.ts> <archivo2.ts> ...` sobre los `.ts` realmente tocados por el
+   diff (no `.html`) — nunca `npm run lint`/`ng lint` sobre todo el repo: a fecha
+   2026-08-16 el repo arrancó con una base de 75 avisos preexistentes (documentados en
+   `CLAUDE.md`) que no son responsabilidad del diff actual y no debes reportar.
+2. Ignora cualquier error de regla `@angular-eslint/template/*` — son de plantilla HTML
+   y las revisa `style-nav-reviewer`, no tú.
+3. Para cada error/warning restante, confirma con `git diff` que la línea que señala
+   ESLint cae dentro de una línea añadida/modificada por el diff (o que el archivo es de
+   nueva creación) — si el error vive en una línea que el diff no tocó, es deuda
+   preexistente y no se reporta. Presta especial atención a estas tres, que sustituyen
+   directamente checks manuales de este documento:
+   - `@angular-eslint/prefer-inject` → sustituye la comprobación manual de "Inyección de
+     dependencias vía `inject()`" de más abajo.
+   - `boundaries/dependencies` → sustituye la comprobación manual de capas
+     `core`/`shared`/`layout`/feature de "Ubicación y reuso de código" más abajo. Ya
+     encontró una violación real preexistente: `features/profile/profile.ts` importa
+     `PasswordStrengthMeterComponent` desde `features/auth/` por ruta relativa — dos
+     problemas a la vez (cruce de feature + relativo entre features). Si el diff toca
+     `profile.ts`, repórtalo (no es deuda ajena una vez que el archivo está en el diff).
+   - `rxjs-x/no-nested-subscribe` → un `.subscribe()` anidado dentro de otro es error
+     directo, no hace falta juicio manual.
+   - El resto (`@typescript-eslint/*`, `@angular-eslint/component-selector`,
+     `@angular-eslint/directive-selector`, `@angular-eslint/use-lifecycle-interface`,
+     reglas base de `eslint:recommended`) repórtalo con `category: 'eslint-ts'`.
+4. Repórtalo citando la regla exacta (p. ej. `boundaries/dependencies`,
+   `@angular-eslint/prefer-inject`) en el `summary`, con la `category` correspondiente de
+   "Cómo reportar" más abajo.
+
+Esto no sustituye el resto de checklists manuales de abajo — el resto (signals vs. RxJS
+fuera de nested-subscribe, JSDoc, logging, "no duplicar lógica ya resuelta") no tiene
+regla de lint y sigue dependiendo de tu revisión manual.
+
 ## Checklist — Arquitectura standalone + signals
 
 - **Sin NgModules**: todo componente nuevo es standalone (import directo de sus
@@ -73,10 +113,10 @@ explícitamente al usuario en tu resumen final, fuera de los findings.
   `BehaviorSubject` en paralelo a un signal para el mismo estado.
 - **Inyección de dependencias vía `inject()`**: el patrón dominante en el proyecto es
   `private readonly foo = inject(Foo)` a nivel de propiedad (ver `auth.service.ts`,
-  `responsive.service.ts`), no `constructor(private foo: Foo)`. Un servicio o componente
-  **nuevo** con inyección por constructor es un finding (los pocos casos legacy como
-  `category.service.ts`/`changelog.service.ts` no se tocan salvo que el diff ya los
-  modifique).
+  `responsive.service.ts`), no `constructor(private foo: Foo)`. Ya cubierto por ESLint
+  (`@angular-eslint/prefer-inject`, ver checklist de lint más arriba) — los pocos casos
+  legacy como `category.service.ts`/`changelog.service.ts` son la deuda base conocida y
+  no se tocan salvo que el diff ya los modifique.
 
 ## Checklist — Documentación JSDoc
 
@@ -120,8 +160,12 @@ explícitamente al usuario en tu resumen final, fuera de los findings.
 - **Alias de import** (`@core/*`, `@shared/*`, `@features/*`, `@layout/*`, `@env/*`) en
   vez de rutas relativas (`../../core/...`) al cruzar de una feature a otra, o de una
   feature a `core`/`shared` — ver `groups-page.ts` como referencia de uso consistente de
-  alias. Relativos solo dentro de la misma feature o dentro de `core`. Un import relativo
-  nuevo que cruza de capa es un finding.
+  alias. Relativos solo dentro de la misma feature o dentro de `core`. La parte de "qué
+  capa puede depender de cuál" ya la cubre ESLint (`boundaries/dependencies`, ver
+  checklist de lint más arriba); lo que sigue siendo manual aquí es específicamente el
+  uso de alias vs. relativo (`boundaries` no distingue cómo se escribió el import, solo
+  a qué apunta) — un import relativo nuevo que cruza de capa sigue siendo un finding
+  aunque `boundaries` no lo marque por ir dentro del mismo tipo de elemento.
 - **No duplicar lógica ya resuelta**: antes de escribir un método nuevo en un servicio,
   comprobar si ya existe una utilidad/servicio equivalente en `core/`. Duplicar a mano
   una petición HTTP, un mapeo o una validación que ya vive en otro servicio reutilizable
@@ -132,7 +176,7 @@ explícitamente al usuario en tu resumen final, fuera de los findings.
 Llama a `ReportFindings` una única vez al final, con todos los hallazgos verificados,
 ordenados de más a menos severo (array vacío si no hay ninguno). Para cada hallazgo:
 
-- `category`: usa una de `standalone-signals`, `inyeccion-dependencias`,
+- `category`: usa una de `eslint-ts`, `standalone-signals`, `inyeccion-dependencias`,
   `jsdoc-servicios`, `logging-dev`, `ubicacion-reuso-codigo`, `alias-import` (o el slug
   kebab-case más cercano si ninguna encaja).
 - `file` / `line`: ubicación exacta del código que incumple la convención.
@@ -163,7 +207,9 @@ revisaste y que no encontraste problemas de convención de código.
 
 Grounded contra el código el 2026-08-16 (`responsive.service.ts`, `auth.service.ts`,
 `geo-ip.service.ts`, `push-notification.service.ts`, `create-publication.ts`,
-`groups-page.ts`, cabeceras JSDoc de los 19 servicios de `core/services/`). Este
+`groups-page.ts`, `profile.ts`, cabeceras JSDoc de los 19 servicios de `core/services/`,
+`eslint.config.js` incluyendo `eslint-plugin-boundaries`/`eslint-plugin-rxjs-x`, y los 75
+avisos base de `npm run lint` en la misma fecha). Este
 checklist cita archivos y patrones concretos a propósito — es lo que lo hace verificable
 en vez de genérico. Si al revisar notas que una cita ya no corresponde con el código
 (patrón sustituido, servicio renombrado/eliminado), no lo ignores en silencio: repórtalo

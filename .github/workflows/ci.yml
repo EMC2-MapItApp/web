@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+
+  # El repo aún tiene deuda preexistente de lint/tests (ver CLAUDE.md — 75 avisos de
+  # `ng lint`, 246 de `stylelint`, 2 suites de test ya en rojo antes de esta CI). Estos
+  # jobs corren e informan en el PR para que la deuda sea visible, pero no bloquean el
+  # merge (`continue-on-error: true`) hasta que se limpie la base; en ese momento,
+  # quitar `continue-on-error` para que pasen a ser gate real.
+  lint:
+    name: Lint (informativo)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run lint:style
+      - run: npm run format:check
+
+  test:
+    name: Tests (informativo)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm test

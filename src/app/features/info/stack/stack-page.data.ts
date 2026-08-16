@@ -48,7 +48,10 @@ export const STACK_GROUPS: StackGroup[] = [
       {
         name: 'Google Maps JavaScript API',
         why: 'El mapa es el elemento central del producto; SDK maduro y mejor cobertura de datos que alternativas gratuitas.',
-        link: { label: 'google-maps.service.ts', url: `${WEB_REPO}/src/app/core/services/google-maps.service.ts` },
+        link: {
+          label: 'google-maps.service.ts',
+          url: `${WEB_REPO}/src/app/core/services/google-maps.service.ts`,
+        },
       },
       {
         name: '@zxcvbn-ts',
@@ -57,12 +60,23 @@ export const STACK_GROUPS: StackGroup[] = [
       {
         name: 'Arquitectura responsive propia',
         why: 'Fuente única de verdad (signal + BreakpointObserver) en vez de que cada componente calcule el viewport por su cuenta.',
-        link: { label: 'responsive.service.ts:35', url: `${WEB_REPO}/src/app/core/responsive/responsive.service.ts#L35` },
+        link: {
+          label: 'responsive.service.ts:35',
+          url: `${WEB_REPO}/src/app/core/responsive/responsive.service.ts#L35`,
+        },
       },
       {
         name: 'Web Push (VAPID) + Service Worker dedicado',
-        why: 'Notificaciones nativas del SO sin empaquetar la app. El canal vive detrás de una interfaz propia (PushProvider) para poder añadir Capacitor/FCM/APNs más adelante sin reescribir la app.',
-        link: { label: 'push-provider.ts', url: `${WEB_REPO}/src/app/core/notifications/push-provider.ts` },
+        why: 'Notificaciones nativas del SO en desktop sin depender de un proveedor propietario. El canal vive detrás de una interfaz propia (PushProvider) para poder migrar a push nativo (FCM) en la app Android sin reescribir el resto de la app.',
+        link: {
+          label: 'push-provider.ts',
+          url: `${WEB_REPO}/src/app/core/notifications/push-provider.ts`,
+        },
+      },
+      {
+        name: 'Capacitor (Android)',
+        why: 'Empaqueta la misma SPA Angular como app nativa Android (WebView) sin reescribir la UI ni mantener un codebase paralelo. Plataforma nativa ya generada y compilando; publicación en Play Store todavía en curso.',
+        link: { label: 'capacitor.config.ts', url: `${WEB_REPO}/capacitor.config.ts` },
       },
     ],
   },
@@ -78,22 +92,39 @@ export const STACK_GROUPS: StackGroup[] = [
       {
         name: 'JWT propio (HMAC)',
         why: 'Implementado a mano en vez de una librería externa, como ejercicio de entender el formato JWT y HMAC-SHA a bajo nivel.',
-        link: { label: 'JwtService.java:20', url: `${BACK_REPO}/src/main/java/emc/mapIt/service/JwtService.java#L20` },
+        link: {
+          label: 'JwtService.java:20',
+          url: `${BACK_REPO}/src/main/java/emc/mapIt/service/JwtService.java#L20`,
+        },
       },
       {
         name: 'Spring Security',
         why: 'Rutas públicas/protegidas declarativas; sesiones stateless y CSRF deshabilitado — API de tokens pura, sin cookies.',
-        link: { label: 'SecurityConfig.java', url: `${BACK_REPO}/src/main/java/emc/mapIt/config/SecurityConfig.java` },
+        link: {
+          label: 'SecurityConfig.java',
+          url: `${BACK_REPO}/src/main/java/emc/mapIt/config/SecurityConfig.java`,
+        },
       },
       {
         name: 'zxcvbn (puerto Java)',
         why: 'Validación de fortaleza de contraseña en el servidor, misma escala que el frontend.',
-        link: { label: 'PasswordPolicyService.java', url: `${BACK_REPO}/src/main/java/emc/mapIt/service/PasswordPolicyService.java` },
+        link: {
+          label: 'PasswordPolicyService.java',
+          url: `${BACK_REPO}/src/main/java/emc/mapIt/service/PasswordPolicyService.java`,
+        },
       },
       {
         name: 'JUnit 5 · Mockito · AssertJ · MockMvc',
         why: 'Tests unitarios puros, con mocks y de capa web sin levantar un servidor real.',
         link: { label: 'docs/tests.md', url: `${BACK_REPO}/docs/tests.md` },
+      },
+      {
+        name: 'bucket4j',
+        why: 'Rate limiting por IP en login y recuperación de contraseña — sin él, nada limitaba la fuerza bruta ni la enumeración masiva de cuentas.',
+        link: {
+          label: 'RateLimitFilter.java',
+          url: `${BACK_REPO}/src/main/java/emc/mapIt/config/RateLimitFilter.java`,
+        },
       },
     ],
   },
@@ -109,7 +140,10 @@ export const STACK_GROUPS: StackGroup[] = [
       {
         name: 'Arquitectura hexagonal en geo/ y notifications/',
         why: 'Piloto selectivo, no una regla global: los dos puntos con una dependencia externa reemplazable (proveedor GeoIP, canales de notificación). notifications/ ya tiene dos puertos en producción — NotificationSender (email) y PushSender (push nativo vía VAPID) — cada uno con su adaptador, sustituible sin tocar el caso de uso.',
-        link: { label: 'PushSender.java', url: `${BACK_REPO}/src/main/java/emc/mapIt/notifications/PushSender.java` },
+        link: {
+          label: 'PushSender.java',
+          url: `${BACK_REPO}/src/main/java/emc/mapIt/notifications/PushSender.java`,
+        },
       },
     ],
   },
@@ -162,8 +196,14 @@ export const STACK_GROUPS: StackGroup[] = [
     title: 'Servicios externos',
     icon: 'extension',
     items: [
-      { name: 'Resend (SMTP)', why: 'Envío del correo de verificación de cuenta — free tier suficiente para el volumen de un proyecto personal.' },
-      { name: 'ip-api.com', why: 'Geolocalización aproximada por IP como fallback cuando el navegador no da permiso de ubicación.' },
+      {
+        name: 'Resend (SMTP)',
+        why: 'Envío del correo de verificación de cuenta — free tier suficiente para el volumen de un proyecto personal.',
+      },
+      {
+        name: 'ip-api.com',
+        why: 'Geolocalización aproximada por IP como fallback cuando el navegador no da permiso de ubicación.',
+      },
     ],
   },
 ];

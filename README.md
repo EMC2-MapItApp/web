@@ -81,7 +81,7 @@ propia app.
 |---|---|
 | Framework | Angular 22 — standalone components, signals (sin NgModules) |
 | UI | Angular Material |
-| Mapa | Google Maps JavaScript API (`@googlemaps/js-api-loader`) |
+| Mapa | Google Maps JavaScript API (carga del script gestionada a mano en `GoogleMapsService`) |
 | Validación de contraseña | `@zxcvbn-ts` — misma escala 0-4 que el `zxcvbn` del backend |
 | Capturas de UI | `html2canvas` |
 | Tests | Vitest (`@angular/build:unit-test`) |

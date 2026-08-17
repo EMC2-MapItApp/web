@@ -25,7 +25,7 @@ usando piezas estándar de la industria en vez de atajos de proyecto de juguete.
 
 | Pieza | Por qué |
 |---|---|
-| [Google Maps JavaScript API](https://developers.google.com/maps/documentation/javascript) | El mapa es el elemento central del producto; Maps es el estándar con mejor cobertura de datos y SDK JS maduro. Se carga inyectando el `<script>` a mano (`google-maps.service.ts`), no con el paquete `@googlemaps/js-api-loader` (declarado en `package.json` pero sin uso real — candidato a retirar). Clave de API restringida por dominio (HTTP referrer), no por IP — es pública en el bundle del cliente por diseño de este tipo de API. |
+| [Google Maps JavaScript API](https://developers.google.com/maps/documentation/javascript) | El mapa es el elemento central del producto; Maps es el estándar con mejor cobertura de datos y SDK JS maduro. Se carga inyectando el `<script>` a mano (`google-maps.service.ts`); el paquete `@googlemaps/js-api-loader` se retiró de `package.json` por no tener uso real. Clave de API restringida por dominio (HTTP referrer), no por IP — es pública en el bundle del cliente por diseño de este tipo de API. |
 | `GeoIpService` (frontend) + `/api/v1/geo` (backend) | Fallback de ubicación cuando el navegador no da permiso de geolocalización. |
 
 ## Seguridad de contraseñas

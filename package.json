@@ -42,7 +42,6 @@
     "@angular/router": "^22.0.0",
     "@capacitor/android": "^8.5.0",
     "@capacitor/core": "^8.5.0",
-    "@googlemaps/js-api-loader": "^2.1.0",
     "@zxcvbn-ts/core": "^4.1.2",
     "@zxcvbn-ts/language-common": "^4.1.2",
     "@zxcvbn-ts/language-es-es": "^4.1.1",

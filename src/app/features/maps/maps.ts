@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  OnDestroy,
   ViewChild,
   inject,
   signal,
@@ -55,7 +56,7 @@ import { ResponsiveService } from '@core/responsive/responsive.service';
   templateUrl: './maps.html',
   styleUrl: './maps.scss',
 })
-export class MapsPageComponent implements AfterViewInit {
+export class MapsPageComponent implements AfterViewInit, OnDestroy {
   /** Umbral de pulsación larga (táctil) para abrir el detalle de un POI, en ms. */
   private static readonly LONG_PRESS_MS = 1000;
 
@@ -385,6 +386,18 @@ export class MapsPageComponent implements AfterViewInit {
     });
   }
 
+  /**
+   * Libera los listeners nativos de Google Maps registrados sobre `map` y sobre cada
+   * marker — `google.maps.event` no los limpia solo al perder la referencia del objeto,
+   * y esta página se destruye/recrea cada vez que el usuario navega fuera y vuelve al
+   * mapa (ruta lazy-loaded, no singleton).
+   */
+  ngOnDestroy(): void {
+    if (this.map) google.maps.event.clearInstanceListeners(this.map);
+    this.markers.forEach((m) => google.maps.event.clearInstanceListeners(m));
+    this.infoWindow?.close();
+  }
+
   /** Obtiene las localizaciones del backend y renderiza los markers correspondientes. */
   private loadLocations(): void {
     this.locationService.getAll().subscribe((locations) => {
@@ -550,7 +563,10 @@ export class MapsPageComponent implements AfterViewInit {
   /** Limpia los markers anteriores y pinta los nuevos. */
   private renderMarkers(locations: MapLocation[]): void {
     this.currentLocations = locations;
-    this.markers.forEach((m) => m.setMap(null));
+    this.markers.forEach((m) => {
+      google.maps.event.clearInstanceListeners(m);
+      m.setMap(null);
+    });
     this.markers = [];
 
     const isDark = this.themeService.isDark();
@@ -564,8 +580,15 @@ export class MapsPageComponent implements AfterViewInit {
     locations.forEach((location) => {
       const color = this.categoryService.resolveColor(location.locationTypeId);
       const icon = this.categoryService.resolveIcon(location.locationTypeId);
-      const groupBadge = this.resolveGroupBadge(location);
-      const baseIcon = this.mapsService.buildMarkerIcon(color, icon, 36, isDark, false, groupBadge);
+      const accessBadge = this.resolveAccessBadge(location);
+      const baseIcon = this.mapsService.buildMarkerIcon(
+        color,
+        icon,
+        36,
+        isDark,
+        false,
+        accessBadge,
+      );
 
       const marker = new google.maps.Marker({
         position: { lat: location.lat, lng: location.lng },
@@ -584,7 +607,7 @@ export class MapsPageComponent implements AfterViewInit {
         // El icono animado solo se aplica mientras dura la pulsación (ver
         // attachPressHandlers) — no se muestra de forma permanente.
         const pressIcon = showPressFeedback
-          ? this.mapsService.buildMarkerIcon(color, icon, 36, isDark, true, groupBadge)
+          ? this.mapsService.buildMarkerIcon(color, icon, 36, isDark, true, accessBadge)
           : null;
         this.attachPressHandlers(marker, location, color, baseIcon, pressIcon);
       }
@@ -595,9 +618,9 @@ export class MapsPageComponent implements AfterViewInit {
 
   /** Distintivo de marker según visibilidad: sin distintivo (pública), candado neutro (privada,
    * sin acceso) o candado en color de acento (privada, con acceso) — ver `GoogleMapsService.buildMarkerIcon`. */
-  private resolveGroupBadge(location: MapLocation): 'none' | 'locked' | 'member' {
+  private resolveAccessBadge(location: MapLocation): 'none' | 'locked' | 'granted' {
     if (location.visibility !== 'PRIVATE') return 'none';
-    return location.hasAccess ? 'member' : 'locked';
+    return location.hasAccess ? 'granted' : 'locked';
   }
 
   /**

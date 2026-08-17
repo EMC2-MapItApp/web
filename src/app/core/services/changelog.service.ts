@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, shareReplay } from 'rxjs';
 import { ChangelogEntry } from '../models/changelog.model';
@@ -11,14 +11,13 @@ import { ChangelogEntry } from '../models/changelog.model';
  */
 @Injectable({ providedIn: 'root' })
 export class ChangelogService {
-  private readonly entries$: Observable<ChangelogEntry[]>;
-
-  constructor(private http: HttpClient) {
-    this.entries$ = this.http.get<ChangelogEntry[]>('/assets/changelog.json').pipe(
-      map(entries => [...entries].sort((a, b) => b.date.localeCompare(a.date))),
-      shareReplay(1)
+  private readonly http = inject(HttpClient);
+  private readonly entries$: Observable<ChangelogEntry[]> = this.http
+    .get<ChangelogEntry[]>('/assets/changelog.json')
+    .pipe(
+      map((entries) => [...entries].sort((a, b) => b.date.localeCompare(a.date))),
+      shareReplay(1),
     );
-  }
 
   getAll(): Observable<ChangelogEntry[]> {
     return this.entries$;

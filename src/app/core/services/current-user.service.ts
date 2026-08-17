@@ -1,18 +1,10 @@
 /**
  * @file current-user.service.ts
- * @description Servicio que provee el usuario actualmente autenticado.
- *
- * @remarks
- * Actualmente devuelve datos mock. En producción se sustituirá por
- * la respuesta del endpoint de autenticación (/api/auth/me).
- *
- * Al migrar a auth real:
- *   - Sustituir MOCK_USER por la respuesta del token JWT decodificado
- *     o por una llamada HttpClient.get<MapItUser>('/api/auth/me').
- *   - Ningún componente consumidor necesita cambios.
+ * @description Servicio que provee el usuario actualmente autenticado, poblado con la
+ * respuesta real de `/auth/me` (ver {@link AuthService.handleAuthResponse}/{@link UserService.loadMe}).
  */
 import { Injectable, signal, computed } from '@angular/core';
-import { MapItUser, UserType } from '../models/user.model';
+import { MapItUser } from '../models/user.model';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Servicio
@@ -20,21 +12,27 @@ import { MapItUser, UserType } from '../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class CurrentUserService {
-
   /** Usuario activo. Signal reactivo: los componentes se actualizan automáticamente. */
   private readonly _user = signal<MapItUser | null>(null);
 
   /** Solo lectura para los consumidores. */
   readonly user = this._user.asReadonly();
 
+  /**
+   * Id del usuario activo, o `null` si es invitado. Cambia de valor solo en login/logout —
+   * a diferencia de `user()`, no cambia de referencia en cada `patch()` — pensado para
+   * `effect()`s que solo necesitan reaccionar a "hay sesión" (ver `NotificationService`).
+   */
+  readonly userId = computed(() => this._user()?.id ?? null);
+
   /** Shortcuts computados para uso frecuente en templates. */
-  readonly userType   = computed(() => this._user()?.userType);
-  readonly userName   = computed(() => this._user()?.name);
-  readonly userLevel  = computed(() => this._user()?.level);
-  readonly userXp     = computed(() => this._user()?.xp);
-  readonly isIndividual   = computed(() => this._user()?.userType === 'individual');
+  readonly userType = computed(() => this._user()?.userType);
+  readonly userName = computed(() => this._user()?.name);
+  readonly userLevel = computed(() => this._user()?.level);
+  readonly userXp = computed(() => this._user()?.xp);
+  readonly isIndividual = computed(() => this._user()?.userType === 'individual');
   readonly isProfessional = computed(() => this._user()?.userType === 'professional');
-  readonly isEntity       = computed(() => this._user()?.userType === 'entity');
+  readonly isEntity = computed(() => this._user()?.userType === 'entity');
 
   /**
    * Comprueba si el usuario tiene una capacidad desbloqueada.
@@ -68,7 +66,5 @@ export class CurrentUserService {
   }
 
   /** Ids de tipos favoritos del usuario. Array vacío si no tiene o no es individual. */
-  readonly favoriteTypeIds = computed(() =>
-    this._user()?.favoriteLocationTypeIds ?? []
-  );
+  readonly favoriteTypeIds = computed(() => this._user()?.favoriteLocationTypeIds ?? []);
 }

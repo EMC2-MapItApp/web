@@ -162,6 +162,16 @@ toque `AndroidManifest.xml`, `network_security_config.xml`, `capacitor.config.ts
 `android/app/build.gradle`, o añada/actualice un plugin `@capacitor/*` que pueda declarar
 permisos o componentes nuevos.
 
+### Barrido retroactivo de los 5 subagentes sobre código ya existente
+
+Añadido el 2026-08-17: los 5 subagentes de arriba nacieron para invocarse sobre el diff
+de una tarea, así que nunca habían pasado por el código ya escrito antes de que
+existieran. `docs/SUBAGENT-VALIDATION.md` registra, bloque a bloque (poco a poco, no en
+una sola sesión), qué zona del código ya se validó con qué subagentes y con qué
+resultado; los hallazgos no triviales que se difieren en vez de arreglarse al momento se
+registran como entradas normales en `audit/AUDIT-DEBT.md` (mismo fichero de deuda que usa
+el proceso `/audit` cross-repo, para no mantener dos listas de deuda distintas).
+
 La API local que consume el frontend en dev es el backend en `http://localhost:8081` (perfil
 `dev` de `../BACK`, ver `src/environments/environment.ts`).
 
@@ -233,10 +243,11 @@ guard para quedar fuera del bundle inicial — mantener ese patrón en guards/di
   abierto desde `login-dialog` vía `MatDialog`, sin ruta propia) y `reset-password/` (página real
   con formulario de contraseña nueva, análoga a `verify-email/` — se llega desde el enlace del
   correo, sin contexto previo del shell).
-- **Rutas hijas de `HomeShellComponent`**: `dashboard`, `profile`, `settings` y `create-publication`
-  requieren sesión vía `authDialogGuard`; las páginas informativas (`about`, `changelog`, `stack`)
-  también son hijas del shell pero **sin guard** (accesibles sin sesión). Solo `verify-email` y
-  `reset-password` quedan fuera del shell — se llega a ellas desde el enlace de un correo, sin
+- **Rutas hijas de `HomeShellComponent`**: `dashboard`, `profile`, `settings`,
+  `create-publication`, `groups`, `groups/:id/edit` y `feedback` requieren sesión vía
+  `authDialogGuard`; las páginas informativas (`about`, `changelog`, `stack`) también son hijas
+  del shell pero **sin guard** (accesibles sin sesión). `verify-email`, `reset-password` y
+  `group-invitation` quedan fuera del shell — se llega a ellas desde el enlace de un correo, sin
   contexto previo de la app.
 
 ### Páginas nuevas — patrón de integración en el shell

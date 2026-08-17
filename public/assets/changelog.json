@@ -2,6 +2,12 @@
   {
     "date": "2026-08-17",
     "type": "improvement",
+    "title": "App más rápida y segura",
+    "description": "Reducimos peticiones innecesarias al usar la app y reforzamos la seguridad al iniciar sesión desde enlaces externos."
+  },
+  {
+    "date": "2026-08-17",
+    "type": "improvement",
     "title": "Formularios de acceso más claros",
     "description": "Hemos mejorado la presentación de las pantallas de inicio de sesión, registro y recuperación de contraseña para que sean más fáciles de usar."
   },

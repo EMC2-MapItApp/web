@@ -1,3 +1,9 @@
+/**
+ * @file dialog.constants.ts
+ * @description Configuraciones de `MatDialogConfig` por diálogo de la app, más
+ * {@link withResponsiveDialogLayout} para ajustar ancho/alto en mobile/tablet sin
+ * duplicar reglas responsive en cada componente/guard que abre un diálogo.
+ */
 import { MatDialogConfig } from '@angular/material/dialog';
 
 /** Configuración base para todos los dialogs de la app. */

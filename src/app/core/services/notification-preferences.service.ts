@@ -14,7 +14,6 @@ import { NotificationPreference, NotificationType } from '../models/notification
 
 @Injectable({ providedIn: 'root' })
 export class NotificationPreferencesService {
-
   private readonly http = inject(HttpClient);
   private readonly cu = inject(CurrentUserService);
   private readonly baseUrl = `${environment.apiNotificationsUrl}/preferences`;
@@ -24,7 +23,9 @@ export class NotificationPreferencesService {
 
   constructor() {
     effect(() => {
-      if (this.cu.user()) {
+      // this.cu.userId(), no this.cu.user(): un patch() de perfil (p. ej. marcar un favorito)
+      // crea un MapItUser nuevo por referencia sin cambiar la sesión, y no debe recargar esto.
+      if (this.cu.userId()) {
         this.refresh();
       } else {
         this._preferences.set([]);
@@ -34,7 +35,7 @@ export class NotificationPreferencesService {
 
   refresh(): void {
     this.http.get<NotificationPreference[]>(this.baseUrl).subscribe({
-      next: list => this._preferences.set(list),
+      next: (list) => this._preferences.set(list),
       // Fallo silencioso: si no cargan las preferencias, Ajustes simplemente no muestra la lista.
       error: () => this._preferences.set([]),
     });
@@ -43,11 +44,13 @@ export class NotificationPreferencesService {
   /** Activa/desactiva el email de un tipo, con actualización optimista revertida si falla. */
   toggleEmail(type: NotificationType): void {
     const previous = this._preferences();
-    const current = previous.find(p => p.type === type);
+    const current = previous.find((p) => p.type === type);
     if (!current) return;
 
     const emailEnabled = !current.emailEnabled;
-    this._preferences.update(list => list.map(p => (p.type === type ? { ...p, emailEnabled } : p)));
+    this._preferences.update((list) =>
+      list.map((p) => (p.type === type ? { ...p, emailEnabled } : p)),
+    );
 
     this.http.patch<void>(`${this.baseUrl}/${type}`, { emailEnabled }).subscribe({
       error: () => this._preferences.set(previous),

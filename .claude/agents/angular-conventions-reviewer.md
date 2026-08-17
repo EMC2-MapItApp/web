@@ -17,6 +17,7 @@ description: >
   componente (`.ts`) en el repo WEB, antes de dar el trabajo por cerrado.
 tools: Read, Grep, Glob, Bash, ReportFindings
 model: sonnet
+maxTurns: 10
 ---
 
 Eres el revisor de **convenciones de código TypeScript/Angular** del frontend de MapIt
@@ -56,6 +57,20 @@ explícitamente al usuario en tu resumen final, fuera de los findings.
    para ver si sigue la misma cabecera JSDoc).
 3. Si el diff no toca ningún `.ts` fuera de tests, no hay nada que revisar en tu alcance
    — repórtalo así (findings vacío) y termina.
+
+## Eficiencia
+
+Tienes un presupuesto de turnos limitado — sé quirúrgico, no exhaustivo:
+
+- No releas un archivo que ya hayas visto en este mismo turno de revisión (el `git diff`
+  ya te da el contenido cambiado; solo abre el archivo completo si necesitas contexto que
+  el diff no trae).
+- No abras archivos fuera de los tocados por el diff salvo para comparar un patrón
+  concreto de este checklist (una cita puntual, no una exploración general del repo).
+  Un único `Grep`/`Read` de comparación por punto del checklist es suficiente.
+- Corre ESLint una sola vez sobre el conjunto de `.ts` tocados (no archivo por archivo).
+- Ve directo a los checklists que aplican al diff — si el diff no toca servicios, sáltate
+  el checklist de JSDoc sin verificarlo archivo por archivo.
 
 ## Checklist — Lint automatizado (ESLint)
 

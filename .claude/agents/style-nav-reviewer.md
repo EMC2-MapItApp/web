@@ -14,6 +14,7 @@ description: >
   una página/diálogo nuevo, antes de dar el trabajo por cerrado.
 tools: Read, Grep, Glob, Bash, ReportFindings
 model: sonnet
+maxTurns: 10
 ---
 
 Eres el revisor de **estilo y navegabilidad** del frontend de MapIt (repo `WEB`, Angular
@@ -64,6 +65,21 @@ obsoleta), dilo explícitamente al usuario en tu resumen final, fuera de los fin
 3. Si el diff no toca ningún `.html`/`.scss`/`.ts` de componente, `app.routes.ts`, guards
    de navegación (`core/guards/*.guard.ts`) ni crea una página/diálogo nuevo, no hay nada
    que revisar en tu alcance — repórtalo así (findings vacío) y termina.
+
+## Eficiencia
+
+Tienes un presupuesto de turnos limitado — sé quirúrgico, no exhaustivo:
+
+- No releas un archivo que ya hayas visto en este mismo turno de revisión (el `git diff`
+  ya te da el contenido cambiado; solo abre el archivo completo si necesitas contexto que
+  el diff no trae).
+- No abras archivos fuera de los tocados por el diff salvo para comparar un patrón
+  concreto de este checklist (una página similar, un mixin puntual) — una comparación por
+  punto del checklist es suficiente, no una exploración general del repo.
+- Corre ESLint y Stylelint una sola vez cada uno sobre el conjunto de archivos tocados (no
+  archivo por archivo).
+- Ve directo a los checklists que aplican al diff — si no toca `app.routes.ts` ni guards,
+  sáltate el checklist de "Navegabilidad" sin verificarlo punto por punto.
 
 ## Lint automatizado (ESLint) — complemento mecánico de "Interfaz intuitiva"
 

@@ -101,6 +101,67 @@ archivos tocados como primer paso mecánico de su revisión (ver sus checklists)
 sustituye ninguno de los dos, ya que la mayoría de reglas de este documento no tienen
 regla de lint equivalente todavía.
 
+Añadido el 2026-08-17: `angular-performance-reviewer` (tercer subagente exclusivo de este
+repo, `.claude/agents/angular-performance-reviewer.md`) cubre lo que los otros dos
+excluyen explícitamente — rendimiento propio de Angular: `ChangeDetectionStrategy.OnPush`
+(solo lo que ESLint no ve; el decorador que falta ya lo cubre
+`@angular-eslint/prefer-on-push-component-change-detection` dentro del paso mecánico de
+`angular-conventions-reviewer`), pureza de `computed()` frente a `effect()`, y ciclo de
+vida de suscripciones RxJS (cuándo una suscripción nueva necesita `takeUntilDestroyed`
+frente al patrón ya aceptado de HTTP one-shot). Se invoca de forma proactiva igual que los
+otros dos: cada vez que el diff toque `effect()`/`computed()`, añada una suscripción RxJS
+nueva en un componente/directiva, o cree un componente nuevo.
+
+### Revisión proactiva de seguridad
+
+Añadido el 2026-08-17: `security-reviewer` (cuarto subagente exclusivo de este repo,
+`.claude/agents/security-reviewer.md`, comando `/security-review-web`) cubre las
+superficies de seguridad propias de este frontend estático sin SSR que consume la API vía
+JWT: inyección DOM/XSS (`innerHTML`, `bypassSecurityTrust*`, `target="_blank"` sin
+`rel="noopener"`), manejo del JWT/sesión (`TOKEN_KEY`, `auth.interceptor.ts`, guards de
+`core/guards/`), redirecciones abiertas (`returnUrl` u otro parámetro de URL pasado sin
+validar a `navigateByUrl`), secretos de servidor filtrados al bundle cliente,
+vulnerabilidades conocidas en dependencias nuevas/actualizadas (`npm audit`) y cabeceras
+de despliegue en Cloudflare (`wrangler.toml`, `public/_headers`). Se invoca de forma
+**proactiva** — igual que los otros cuatro subagentes — cada vez que un cambio toque
+alguna de estas superficies, antes de dar el trabajo por cerrado:
+- **Autenticación**: login, registro, recuperación/reseteo de contraseña, manejo del JWT,
+  guards de sesión.
+- **Entrada de usuario que termina en el DOM, una URL o una query**: cualquier binding
+  nuevo que no pase por el sanitizado por defecto de Angular.
+- **Llamadas HTTP nuevas**, especialmente las que envían o reciben datos sensibles.
+- **`package.json`/`package-lock.json`**: dependencia añadida o actualizada — corre
+  `npm audit --omit=dev` acotado al paquete tocado por el diff, no una auditoría completa
+  del lockfile.
+- **`wrangler.toml`/`public/_headers`**: config de assets/SPA fallback y, si se añade una
+  CSP, que no bloquee Google Maps ni la API del backend ni abra `unsafe-inline`/
+  `unsafe-eval` en `script-src` sin justificación. `public/_headers` no existe todavía en
+  el repo (a fecha 2026-08-17) — su ausencia no es un finding, solo se revisa si un diff
+  la crea.
+
+No sustituye una revisión de seguridad completa bajo demanda (`/security-review`, el skill
+genérico no exclusivo de este repo) en cambios grandes o antes de un despliegue — sigue
+sin auditar el lockfile completo ni la config de despliegue salvo que el diff actual las
+toque. Es un gate ligero y determinista para que estas superficies no queden sin pasar por
+seguridad solo porque nadie se acordó de invocarlo a mano.
+
+### Revisión proactiva de la superficie nativa Android/Capacitor
+
+Añadido el 2026-08-17: `capacitor-android-reviewer` (quinto subagente exclusivo de este
+repo, `.claude/agents/capacitor-android-reviewer.md`, comando
+`/capacitor-android-review`) cubre lo que ninguno de los otros cuatro mira — están todos
+alcance a `src/app` — sobre el proyecto nativo generado por Capacitor: permisos en
+`AndroidManifest.xml`, componentes exportados (`android:exported`), alcance del tráfico
+cleartext en `network_security_config.xml`, deep links/esquemas de URL personalizados, y
+manejo de credenciales de firma (`signingConfigs`/`key.properties`). Estado ya documentado
+y aceptado, que el agente no debe relitigar: un único permiso (`INTERNET`), `MainActivity`
+como único componente exportado (necesario, `LAUNCHER`), cleartext acotado a
+`10.0.2.2`/`localhost` (backend de dev, ver `docs/CAPACITOR.md`), firma vía
+`key.properties` externo al repo. Se invoca de forma **proactiva** cada vez que un cambio
+toque `AndroidManifest.xml`, `network_security_config.xml`, `capacitor.config.ts`,
+`android/app/build.gradle`, o añada/actualice un plugin `@capacitor/*` que pueda declarar
+permisos o componentes nuevos.
+
 La API local que consume el frontend en dev es el backend en `http://localhost:8081` (perfil
 `dev` de `../BACK`, ver `src/environments/environment.ts`).
 

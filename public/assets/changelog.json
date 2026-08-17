@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-08-17",
+    "type": "improvement",
+    "title": "Formularios de acceso más claros",
+    "description": "Hemos mejorado la presentación de las pantallas de inicio de sesión, registro y recuperación de contraseña para que sean más fáciles de usar."
+  },
+  {
     "date": "2026-08-16",
     "type": "improvement",
     "title": "Recuerda tu vista del mapa",

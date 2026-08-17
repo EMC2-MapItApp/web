@@ -34,8 +34,8 @@ Leyenda: ⬜ pendiente · ✅ validado (sin hallazgos nuevos, o hallazgos ya tra
 | 2 | `core/guards` + `core/interceptors` + `app.routes.ts`/`app.config.ts` | ✅ | ✅ | ✅ | ✅ | — |
 | 3a | `core/services` (auth/user/notificaciones) | ✅ | ✅ | — | ✅ | — |
 | 3b | `core/services` (mapa/publicaciones/resto) | ✅ | ✅ | — | ✅ | — |
-| 4 | `core/notifications` + `core/responsive` | ⬜ | ⬜ | — | ⬜ | — |
-| 5 | `shared/*` | ⬜ | ⬜ | ⬜ | ⬜ | — |
+| 4 | `core/notifications` + `core/responsive` | ✅ | ✅ | — | ✅ | — |
+| 5 | `shared/*` | ✅ | ✅ | ✅ | ✅ | — |
 | 6 | `layout/home-shell` | ⬜ | ⬜ | ⬜ | ⬜ | — |
 | 7a | `features/auth` (login/register/password-strength-meter) | ⬜ | ⬜ | ⬜ | ⬜ | — |
 | 7b | `features/auth` (forgot/reset/check-email/verify-email) | ⬜ | ⬜ | ⬜ | ⬜ | — |
@@ -113,4 +113,30 @@ IDs de `audit/AUDIT-DEBT.md` si algo se difiere)_
   (`effect()` reaccionando a `cu.user()` completo en vez de a la sesión), reproducido en
   `group.service.ts` (badge de invitaciones pendientes). Corregido igual: usa
   `cu.userId()`.
+- **security**: sin hallazgos.
+
+### Bloque 4 — `core/notifications` + `core/responsive` (2026-08-17)
+
+- **conventions**: 1 hallazgo real, corregido — `web-push.provider.ts:60` logueaba el
+  objeto `json` completo de la suscripción (incluye claves de cifrado `p256dh`/`auth`)
+  en el caso borde de suscripción incompleta, sin gating ni redacción. Corregido junto
+  con el hallazgo de security de abajo (mismo fichero, misma sesión de fixes).
+- **performance**: sin hallazgos.
+- **security**: 1 hallazgo real, corregido — los 3 `console.log` de
+  `web-push.provider.ts` (permiso, service worker, endpoint de suscripción) no estaban
+  gateados por `environment.production` pese a estar ya marcados `TODO(debug-push)` como
+  temporales; el endpoint es un identificador estable del canal push del dispositivo y
+  quedaba expuesto en consola en cualquier build de producción. Gateados los 3 por
+  `!environment.production`, y el `console.warn` de claves incompletas redactado a solo
+  qué campos faltan en vez del objeto completo.
+
+### Bloque 5 — `shared/*` (2026-08-17)
+
+- **conventions**: 2 hallazgos triviales, corregidos en el momento — `private router =
+  inject(Router)` sin `readonly` en `auth-required-dialog.ts` y en `welcome-dialog.ts`
+  (junto con `changelogService`), rompiendo el patrón `private readonly foo =
+  inject(Foo)` que sí sigue el resto del proyecto.
+- **performance**: sin hallazgos.
+- **style-nav**: sin hallazgos — mixins/variables globales reutilizados correctamente,
+  0 hex hardcodeado, objetivos táctiles ≥44px, sin duplicación de estilos ad-hoc.
 - **security**: sin hallazgos.

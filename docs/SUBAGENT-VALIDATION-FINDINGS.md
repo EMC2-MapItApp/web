@@ -97,7 +97,32 @@ resolvió al momento).
     `GET /invitations/pending` → **Resuelto**: usa `cu.userId()`, igual que en
     `NotificationService`/`NotificationPreferencesService`.
 
+## Bloque 4 — `core/notifications` + `core/responsive` (2026-08-17)
+
+17. **`web-push.provider.ts` con 3 `console.log` de depuración (permiso, registro del
+    service worker, endpoint de la suscripción push) sin gatear por
+    `environment.production`**, pese a estar marcados `TODO(debug-push)` como
+    temporales — el endpoint es un identificador estable del canal push del dispositivo
+    y quedaba expuesto en la consola de producción → **Resuelto**: los 3 gateados por
+    `!environment.production`.
+
+18. **`web-push.provider.ts:60` logueaba el objeto `json` completo de la suscripción
+    (incluye `keys.p256dh`/`keys.auth`, claves de cifrado del dispositivo) en el caso
+    borde de suscripción incompleta**, sin redacción ni gating → **Resuelto**: el
+    `console.warn` ahora solo indica qué campos faltan (`endpoint`/`p256dh`/`auth` como
+    booleanos), nunca el valor real.
+
+## Bloque 5 — `shared/*` (2026-08-17)
+
+19. **`private router = inject(Router)` sin `readonly` en `auth-required-dialog.ts`**,
+    rompiendo el patrón `private readonly foo = inject(Foo)` seguido en el resto del
+    proyecto (incluida la línea `dialogRef` del mismo fichero) → **Resuelto**: añadido
+    `readonly`.
+
+20. **Mismo patrón en `welcome-dialog.ts`** (`router` y `changelogService` sin
+    `readonly`) → **Resuelto**: añadido `readonly` a ambos.
+
 ---
 
-_Próximo bloque a validar: bloque 4 (`core/notifications` + `core/responsive`), ver
+_Próximo bloque a validar: bloque 6 (`layout/home-shell`), ver
 `docs/SUBAGENT-VALIDATION.md`._

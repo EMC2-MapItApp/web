@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 })
 export class AuthRequiredDialogComponent {
   readonly dialogRef = inject(MatDialogRef<AuthRequiredDialogComponent>);
-  private router = inject(Router);
+  private readonly router = inject(Router);
 
   goToRegister(): void {
     this.dialogRef.close();

@@ -32,11 +32,10 @@ const TYPE_LABEL: Record<ChangelogEntryType, string> = {
   styleUrl: './welcome-dialog.scss',
 })
 export class WelcomeDialogComponent implements OnInit {
-
   readonly dialogRef = inject(MatDialogRef<WelcomeDialogComponent>);
 
-  private router = inject(Router);
-  private changelogService = inject(ChangelogService);
+  private readonly router = inject(Router);
+  private readonly changelogService = inject(ChangelogService);
 
   private readonly entries = signal<ChangelogEntry[]>([]);
 
@@ -48,11 +47,13 @@ export class WelcomeDialogComponent implements OnInit {
   readonly sameDayRest = computed<ChangelogEntry[]>(() => {
     const latest = this.latestEntry();
     if (!latest) return [];
-    return this.entries().slice(1).filter(entry => entry.date === latest.date);
+    return this.entries()
+      .slice(1)
+      .filter((entry) => entry.date === latest.date);
   });
 
   ngOnInit(): void {
-    this.changelogService.getAll().subscribe(entries => this.entries.set(entries));
+    this.changelogService.getAll().subscribe((entries) => this.entries.set(entries));
   }
 
   showMore(): void {
@@ -81,5 +82,4 @@ export class WelcomeDialogComponent implements OnInit {
     this.dialogRef.close();
     this.router.navigate(['/about']);
   }
-
 }

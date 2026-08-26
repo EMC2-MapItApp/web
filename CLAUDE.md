@@ -162,6 +162,33 @@ toque `AndroidManifest.xml`, `network_security_config.xml`, `capacitor.config.ts
 `android/app/build.gradle`, o añada/actualice un plugin `@capacitor/*` que pueda declarar
 permisos o componentes nuevos.
 
+### Revisión proactiva de cobertura de tests
+
+Añadido el 2026-08-26: `test-coverage-reviewer` (sexto subagente exclusivo de este repo,
+`.claude/agents/test-coverage-reviewer.md`, comando `/test-coverage-review`) cubre lo que
+ninguno de los otros cinco mira — todos excluyen tests explícitamente de su alcance —: que
+todo servicio (`*.service.ts`) o guard funcional (`*.guard.ts` que exporta
+`CanActivateFn`/`CanMatchFn`/`CanDeactivateFn`/`CanActivateChildFn`/`ResolveFn`) tocado por
+el diff tenga su `.spec.ts`, que ese test ejercite de verdad el comportamiento
+nuevo/modificado (no un shell trivial) y que pase realmente (`npx vitest run` acotado a los
+specs tocados, nunca la suite completa). No revisa componentes, pipes, interceptors,
+modelos ni directivas, ni exige cobertura exhaustiva de casos límite o porcentaje de
+cobertura — solo existencia y no-trivialidad de test para lo que el diff toca. Se invoca de
+forma **proactiva** cada vez que se crea o modifica un `.service.ts` o un guard funcional.
+
+Estado conocido a fecha 2026-08-26: de 21 servicios, 2 tienen spec
+(`publication.service.spec.ts` ya existía; `auth.service.spec.ts` se añadió hoy mismo,
+primer test escrito con este agente aplicado de forma retroactiva); de los 4 archivos
+`*.guard.ts`, 3 son guards funcionales reales sin spec y el 4º (`auth.guard.ts`) no es un
+guard — solo exporta la constante `TOKEN_KEY`, queda fuera del alcance del agente por
+definición. Este gap (22 archivos pendientes de crear, más las 2 suites existentes en rojo
+documentadas más abajo) ya no vive solo en este párrafo: se trackea en
+`../audit/tests/web/TESTS-DEBT.md`, no en `audit/AUDIT-DEBT.md` — la deuda de tests tiene su
+propio registro desde 2026-08-26, separado del resto de hallazgos de auditoría. Por eso, a
+diferencia de los otros 5, `test-coverage-reviewer` no se ha añadido a
+`docs/SUBAGENT-VALIDATION.md`: se aplica solo hacia delante, sobre diffs nuevos, mientras el
+barrido del backlog existente avanza vía `TESTS-DEBT.md`.
+
 ### Barrido retroactivo de los 5 subagentes sobre código ya existente
 
 Añadido el 2026-08-17: los 5 subagentes de arriba nacieron para invocarse sobre el diff

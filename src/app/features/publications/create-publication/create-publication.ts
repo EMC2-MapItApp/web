@@ -51,7 +51,6 @@ import {
   withResponsiveDialogLayout,
 } from '@core/constants/dialog.constants';
 import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/confirm-dialog/confirm-dialog';
-import html2canvas from 'html2canvas';
 
 /**
  * Componente de página para crear actividades (eventos) para usuarios particulares.
@@ -1227,6 +1226,9 @@ export class CreatePublicationPageComponent implements AfterViewInit {
         // await new Promise(resolve => setTimeout(resolve, 500));
 
         try {
+          // Import dinámico: html2canvas es pesado y no-ESM, y solo hace falta para esta
+          // captura puntual de ruta, no en el resto del flujo de creación de publicación.
+          const { default: html2canvas } = await import('html2canvas');
           const canvas = await html2canvas(this.mapContainer.nativeElement, {
             backgroundColor: null,
             scale: 0.6,

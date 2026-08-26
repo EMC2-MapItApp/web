@@ -18,20 +18,20 @@ import {
  */
 
 interface ApiLocationType {
-  id: number;
+  id: string;
   name: string;
   description: string;
 }
 
 interface ApiSubCategory {
-  id: number;
+  id: string;
   name: string;
   icon: string;
   locationTypes: ApiLocationType[];
 }
 
 interface ApiMainCategory {
-  id: number;
+  id: string;
   name: string;
   icon: string;
   color: string;
@@ -64,11 +64,11 @@ export class CategoryService {
     return this.tree$;
   }
 
-  getMainCategoryById(id: number): MainCategory | undefined {
+  getMainCategoryById(id: string): MainCategory | undefined {
     return this.treeCache.find((c) => c.id === id);
   }
 
-  getSubCategoryById(id: number): SubCategory | undefined {
+  getSubCategoryById(id: string): SubCategory | undefined {
     for (const main of this.treeCache) {
       const found = main.subcategories.find((s) => s.id === id);
       if (found) return found;
@@ -76,7 +76,7 @@ export class CategoryService {
     return undefined;
   }
 
-  getLocationTypeById(id: number): LocationType | undefined {
+  getLocationTypeById(id: string): LocationType | undefined {
     for (const main of this.treeCache) {
       for (const sub of main.subcategories) {
         const found = sub.locationTypes.find((lt) => lt.id === id);
@@ -86,7 +86,7 @@ export class CategoryService {
     return undefined;
   }
 
-  resolveBreadcrumb(locationTypeId: number): CategoryBreadcrumb | undefined {
+  resolveBreadcrumb(locationTypeId: string): CategoryBreadcrumb | undefined {
     for (const main of this.treeCache) {
       for (const sub of main.subcategories) {
         const lt = sub.locationTypes.find((t) => t.id === locationTypeId);
@@ -98,12 +98,12 @@ export class CategoryService {
     return undefined;
   }
 
-  resolveColor(locationTypeId: number): string {
+  resolveColor(locationTypeId: string): string {
     const bc = this.resolveBreadcrumb(locationTypeId);
     return bc?.mainCategory.color ?? '#6b7280';
   }
 
-  resolveIcon(locationTypeId: number): string {
+  resolveIcon(locationTypeId: string): string {
     const bc = this.resolveBreadcrumb(locationTypeId);
     return bc?.subCategory.icon ?? '📍';
   }

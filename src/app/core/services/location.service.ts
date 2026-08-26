@@ -60,10 +60,10 @@ export class LocationService {
     /**
      * Recupera las localizaciones que pertenecen a un tipo concreto.
      *
-     * @param locationTypeId id numérico del LocationType
+     * @param locationTypeId id del LocationType (ObjectId de Mongo)
      * @returns Observable con las localizaciones filtradas por tipo
      */
-    getByLocationType(locationTypeId: number): Observable<MapLocation[]> {
+    getByLocationType(locationTypeId: string): Observable<MapLocation[]> {
         return this.getAll().pipe(
             map(locations => locations.filter(location => location.locationTypeId === locationTypeId))
         );
@@ -75,7 +75,7 @@ export class LocationService {
      * @param id id de la localización
      * @returns Observable con la localización encontrada o undefined
      */
-    getById(id: number): Observable<MapLocation | undefined> {
+    getById(id: string): Observable<MapLocation | undefined> {
         return this.getAll().pipe(
             map(locations => locations.find(location => location.id === id))
         );

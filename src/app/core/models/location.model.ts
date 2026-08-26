@@ -22,8 +22,8 @@ export type LocationCategory = 'landmark' | 'leisure' | 'sport' | 'transport' | 
  * Sustituida por {@link Place} (sedes) y {@link Publication} (eventos/promociones).
  */
 export interface MapLocation {
-  /** Identificador único de la localización. */
-  id: number;
+  /** Identificador único de la localización — ObjectId de Mongo (string), no un número. */
+  id: string;
 
   /** Nombre descriptivo del punto de interés. */
   name: string;
@@ -35,7 +35,7 @@ export interface MapLocation {
    * Identificador del `LocationType` al que pertenece esta localización.
    * @example 'ciclismo-quedadas' | 'museos-visita'
    */
-  locationTypeId: number;
+  locationTypeId: string;
 
   /** Latitud en grados decimales. */
   lat: number;

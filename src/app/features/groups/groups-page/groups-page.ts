@@ -203,13 +203,9 @@ export class GroupsPageComponent {
     });
   }
 
-  /**
-   * Categoría de un grupo, con fallback si el id no resuelve (categorías aún sin cargar).
-   * Búsqueda local (no `categoryService.getMainCategoryById`, tipado con id `number`
-   * desactualizado respecto al ObjectId real — ver comentario en `Group.categoryId`).
-   */
+  /** Categoría de un grupo, con fallback si el id no resuelve (categorías aún sin cargar). */
   categoryOf(categoryId: string): MainCategory | undefined {
-    return this.categories().find((c) => String(c.id) === categoryId);
+    return this.categoryService.getMainCategoryById(categoryId);
   }
 
   /** Activa la fila de confirmación de borrado/abandono para el grupo indicado. */
@@ -309,13 +305,13 @@ export class GroupsPageComponent {
       });
   }
 
-  selectCreateCategory(categoryId: number): void {
-    this.createForm.controls.categoryId.setValue(String(categoryId));
+  selectCreateCategory(categoryId: string): void {
+    this.createForm.controls.categoryId.setValue(categoryId);
     this.createForm.controls.categoryId.markAsTouched();
   }
 
-  isCreateCategorySelected(categoryId: number): boolean {
-    return this.createForm.controls.categoryId.value === String(categoryId);
+  isCreateCategorySelected(categoryId: string): boolean {
+    return this.createForm.controls.categoryId.value === categoryId;
   }
 
   isAlreadyQueued(user: GroupSearchUser): boolean {
@@ -411,13 +407,13 @@ export class GroupsPageComponent {
       });
   }
 
-  selectEditCategory(categoryId: number): void {
-    this.editForm.controls.categoryId.setValue(String(categoryId));
+  selectEditCategory(categoryId: string): void {
+    this.editForm.controls.categoryId.setValue(categoryId);
     this.editForm.controls.categoryId.markAsTouched();
   }
 
-  isEditCategorySelected(categoryId: number): boolean {
-    return this.editForm.controls.categoryId.value === String(categoryId);
+  isEditCategorySelected(categoryId: string): boolean {
+    return this.editForm.controls.categoryId.value === categoryId;
   }
 
   /**

@@ -36,8 +36,8 @@ export type PublicationVisibility = 'PUBLIC' | 'PRIVATE';
  * Publicación temporal visible en el mapa.
  */
 export interface Publication {
-  /** Identificador único (PK en BD). */
-  id: number;
+  /** Identificador único — ObjectId de Mongo (string), no un número. */
+  id: string;
 
   /** Id del usuario autor. FK → users.id */
   authorId: string;
@@ -51,14 +51,14 @@ export interface Publication {
    * - individual            : null (usa lat/lng propios).
    * FK → places.id
    */
-  placeId: number | null;
+  placeId: string | null;
 
   /**
    * Tipo de localización en la jerarquía de categorías.
    * - Si placeId != null: hereda el locationTypeId del Place.
    * - Si placeId == null: definido explícitamente por el individual.
    */
-  locationTypeId: number;
+  locationTypeId: string;
 
   /** Título de la publicación. */
   title: string;
@@ -152,7 +152,7 @@ export interface EnrolledUser {
 }
 
 export interface PublicationEnrollmentResponse {
-  publicationId: number;
+  publicationId: string;
   userId: string;
   occupiedSlots: number;
   maxSlots: number | null;
@@ -169,7 +169,7 @@ export type PublicationAccessRequestStatus = 'pending' | 'accepted' | 'rejected'
  */
 export interface PublicationAccessRequest {
   id: string;
-  publicationId: number;
+  publicationId: string;
   publicationTitle: string;
   requestedByUserId: string;
   requestedByName: string;

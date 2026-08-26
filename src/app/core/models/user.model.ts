@@ -66,7 +66,7 @@ export interface MapItUser {
   /** Fecha de nacimiento (formato yyyy-MM-dd). */
   birthDate?: string;
   /** Ids de LocationType marcados como favoritos (solo individual). */
-  favoriteLocationTypeIds?: number[];
+  favoriteLocationTypeIds?: string[];
   /** Fecha de creación ISO 8601 */
   createdAt?: string;
   /** Fecha de última actualización ISO 8601 */
@@ -91,7 +91,7 @@ export interface UpdateUserProfileRequest {
   bio?:                    string;
   /** Formato yyyy-MM-dd */
   birthDate?:              string;
-  favoriteLocationTypeIds?: number[];
+  favoriteLocationTypeIds?: string[];
 }
 
 /** Respuesta del endpoint PATCH /users/{id}. */

@@ -496,7 +496,7 @@ export class LocationFieldService {
    * fieldService.getFields('ciclismo-profesional', 'promotion')
    * // → [discountCode, discountPercent, conditions, maxUses]
    */
-  getFields(locationTypeId: number, context: FieldContext): LocationFieldDef[] {
+  getFields(locationTypeId: string, context: FieldContext): LocationFieldDef[] {
     const key = this.resolveSchemaKey(locationTypeId, context);
     return key ? this.registry.get(key)?.fields ?? [] : [];
   }
@@ -507,12 +507,12 @@ export class LocationFieldService {
    * @param locationTypeId - Id del tipo de localización.
    * @param context        - Contexto a consultar.
    */
-  hasSchema(locationTypeId: number, context: FieldContext): boolean {
+  hasSchema(locationTypeId: string, context: FieldContext): boolean {
     const key = this.resolveSchemaKey(locationTypeId, context);
     return key ? this.registry.has(key) : false;
   }
 
-  private resolveSchemaKey(locationTypeId: number, context: FieldContext): string | null {
+  private resolveSchemaKey(locationTypeId: string, context: FieldContext): string | null {
     const directKey = `${locationTypeId}::${context}`;
     if (this.registry.has(directKey)) {
       return directKey;
@@ -525,7 +525,7 @@ export class LocationFieldService {
     return `${legacyKey}::${context}`;
   }
 
-  private buildLegacySchemaKey(locationTypeId: number): string | null {
+  private buildLegacySchemaKey(locationTypeId: string): string | null {
     const locationType = this.categoryService.getLocationTypeById(locationTypeId);
     if (!locationType) {
       return null;

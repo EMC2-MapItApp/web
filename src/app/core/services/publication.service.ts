@@ -68,28 +68,28 @@ export class PublicationService {
     /**
      * Elimina definitivamente una publicación.
      */
-    remove(id: number): Observable<void> {
+    remove(id: string): Observable<void> {
         return this.http.delete<void>(`${this.baseUrl}/${id}`);
     }
 
     /**
      * Apunta al usuario autenticado a una publicación.
      */
-    enroll(id: number): Observable<PublicationEnrollmentResponse> {
+    enroll(id: string): Observable<PublicationEnrollmentResponse> {
         return this.http.post<PublicationEnrollmentResponse>(`${this.baseUrl}/${id}/enroll`, {});
     }
 
     /**
  * Obtiene la lista de usuarios inscritos en una publicación.
  */
-    getEnrollments(id: number): Observable<EnrolledUser[]> {
+    getEnrollments(id: string): Observable<EnrolledUser[]> {
         return this.http.get<EnrolledUser[]>(`${this.baseUrl}/${id}/enrollments`);
     }
 
     /**
  * Desapunta al usuario autenticado de una publicación.
  */
-    unenroll(id: number): Observable<void> {
+    unenroll(id: string): Observable<void> {
         return this.http.delete<void>(`${this.baseUrl}/${id}/unenroll`);
     }
 
@@ -98,7 +98,7 @@ export class PublicationService {
      * solicitud es de la publicación, no de ningún grupo — la aprueba su autor (ver
      * `getPendingAccessRequests`/`acceptAccessRequest`/`rejectAccessRequest`).
      */
-    requestAccess(id: number): Observable<PublicationAccessRequest> {
+    requestAccess(id: string): Observable<PublicationAccessRequest> {
         return this.http.post<ApiPublicationAccessRequest>(`${this.baseUrl}/${id}/access-requests`, {}).pipe(
             map(api => this.mapAccessRequest(api))
         );
@@ -108,7 +108,7 @@ export class PublicationService {
      * Lista las solicitudes de acceso pendientes de una publicación propia. Solo el autor (o un
      * ADMIN) puede verlas.
      */
-    getPendingAccessRequests(id: number): Observable<PublicationAccessRequest[]> {
+    getPendingAccessRequests(id: string): Observable<PublicationAccessRequest[]> {
         return this.http.get<ApiPublicationAccessRequest[]>(`${this.baseUrl}/${id}/access-requests`).pipe(
             map(list => list.map(api => this.mapAccessRequest(api)))
         );
@@ -131,10 +131,7 @@ export class PublicationService {
     private mapAccessRequest(api: ApiPublicationAccessRequest): PublicationAccessRequest {
         return {
             id: api.id,
-            // `Publication.id`/`publicationId` están tipados `number` pero en realidad son el
-            // ObjectId de Mongo (string) — se pasa tal cual, igual que el resto del servicio;
-            // convertirlo con Number() lo convertiría en NaN.
-            publicationId: api.publicationId as unknown as number,
+            publicationId: api.publicationId,
             publicationTitle: api.publicationTitle,
             requestedByUserId: api.requestedByUserId,
             requestedByName: api.requestedByName,
@@ -150,7 +147,7 @@ export class PublicationService {
      * permitido; `→ PRIVATE` puede rechazarse (409 `FOREIGN_ENROLLMENTS`) si hay apuntados sin
      * invitación.
      */
-    changeVisibility(id: number, visibility: PublicationVisibility): Observable<Publication> {
+    changeVisibility(id: string, visibility: PublicationVisibility): Observable<Publication> {
         return this.http.patch<Publication>(`${this.baseUrl}/${id}/visibility`, { visibility });
     }
 }

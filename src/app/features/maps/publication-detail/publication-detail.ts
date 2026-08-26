@@ -22,10 +22,10 @@ import { EnrolledUser, PublicationVisibility } from '@core/models/publication.mo
  * Compatible con MapLocation (legacy), Place y Publication.
  */
 export interface PublicationDetailInput {
-  id: number;
+  id: string;
   name: string;
   description?: string;
-  locationTypeId: number;
+  locationTypeId: string;
   metadata?: Record<string, unknown>;
   /** Solo Publication: tipo de publicación. */
   publicationType?: 'event' | 'promotion';

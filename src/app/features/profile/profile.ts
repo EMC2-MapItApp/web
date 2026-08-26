@@ -111,10 +111,10 @@ export class ProfilePageComponent {
   // ── Solicitudes de acceso a publicaciones privadas ──────────────────────────
 
   /** Nº de solicitudes pendientes por publicación, para el badge de la fila cerrada. */
-  pendingAccessRequestCountByPublication = signal<Record<number, number>>({});
+  pendingAccessRequestCountByPublication = signal<Record<string, number>>({});
 
   /** Id de la publicación cuyo panel de solicitudes está expandido (null = ninguna). */
-  accessRequestsPanelId = signal<number | null>(null);
+  accessRequestsPanelId = signal<string | null>(null);
 
   /** Solicitudes pendientes de la publicación con el panel expandido. */
   openAccessRequests = signal<PublicationAccessRequest[]>([]);
@@ -127,19 +127,19 @@ export class ProfilePageComponent {
   // ── Cambio de visibilidad ────────────────────────────────────────────────────
 
   /** Id de la publicación cuyo control de "Cambiar visibilidad" está expandido (null = ninguna). */
-  visibilityEditId = signal<number | null>(null);
+  visibilityEditId = signal<string | null>(null);
 
   /** Id de la publicación con un cambio de visibilidad en curso, para deshabilitar sus botones. */
-  changingVisibilityId = signal<number | null>(null);
+  changingVisibilityId = signal<string | null>(null);
 
   // ── Árbol de categorías para el selector de favoritos ──────────────────────
   categories = signal<MainCategory[]>([]);
 
   /** Categoría expandida en el selector de favoritos (null = ninguna). */
-  expandedMain = signal<number | null>(null);
+  expandedMain = signal<string | null>(null);
 
   /** Subcategoría expandida (null = ninguna). */
-  expandedSub = signal<number | null>(null);
+  expandedSub = signal<string | null>(null);
 
   constructor() {
     this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
@@ -232,7 +232,7 @@ export class ProfilePageComponent {
     });
   }
 
-  private decrementPendingAccessRequestCount(publicationId: number): void {
+  private decrementPendingAccessRequestCount(publicationId: string): void {
     this.pendingAccessRequestCountByPublication.update(prev => ({
       ...prev,
       [publicationId]: Math.max(0, (prev[publicationId] ?? 1) - 1),
@@ -611,18 +611,18 @@ export class ProfilePageComponent {
   // ── Favoritos ──────────────────────────────────────────────────────────────
 
   /** Alterna expansión de una categoría principal. */
-  toggleMain(catId: number): void {
+  toggleMain(catId: string): void {
     this.expandedMain.update(v => v === catId ? null : catId);
     this.expandedSub.set(null);
   }
 
   /** Alterna expansión de una subcategoría. */
-  toggleSub(subId: number): void {
+  toggleSub(subId: string): void {
     this.expandedSub.update(v => v === subId ? null : subId);
   }
 
   /** Comprueba si un locationTypeId está en favoritos. */
-  isFavorite(typeId: number): boolean {
+  isFavorite(typeId: string): boolean {
     return this.cu.favoriteTypeIds().includes(typeId);
   }
 
@@ -656,7 +656,7 @@ export class ProfilePageComponent {
   }
 
   /** Añade o quita un locationTypeId de favoritos. */
-  toggleFavorite(typeId: number): void {
+  toggleFavorite(typeId: string): void {
     const current = [...this.cu.favoriteTypeIds()];
     const idx = current.indexOf(typeId);
     if (idx >= 0) current.splice(idx, 1);
@@ -674,7 +674,7 @@ export class ProfilePageComponent {
    * Comprueba si un locationTypeId corresponde a un tipo profesional.
    * Por convención todos los tipos profesionales terminan en '-profesional'.
    */
-  isProfessionalType(typeId: number): boolean {
+  isProfessionalType(typeId: string): boolean {
     const type = this.categoryService.getLocationTypeById(typeId);
     return type?.name.toLowerCase() === 'profesional';
   }
@@ -684,7 +684,7 @@ export class ProfilePageComponent {
    * Los tipos profesionales requieren nivel 10.
    * El resto están siempre disponibles.
    */
-  canToggleFavorite(typeId: number): boolean {
+  canToggleFavorite(typeId: string): boolean {
     if (!this.isProfessionalType(typeId)) return true;
     return (this.cu.userLevel() ?? 0) >= this.PROFESSIONAL_TYPE_REQUIRED_LEVEL;
   }
@@ -692,7 +692,7 @@ export class ProfilePageComponent {
   /**
    * Versión protegida de toggleFavorite: ignora la acción si no tiene nivel.
    */
-  toggleFavoriteIfAllowed(typeId: number): void {
+  toggleFavoriteIfAllowed(typeId: string): void {
     if (this.canToggleFavorite(typeId)) this.toggleFavorite(typeId);
   }
 

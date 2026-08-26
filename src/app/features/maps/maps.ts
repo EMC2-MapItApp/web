@@ -90,7 +90,7 @@ export class MapsPageComponent implements AfterViewInit, OnDestroy {
   selectedSub = signal<SubCategory | null>(null);
 
   /** Id del tipo de localización seleccionado (null = todos). */
-  selectedTypeId = signal<number | null>(null);
+  selectedTypeId = signal<string | null>(null);
 
   /** Subcategorías visibles según la categoría principal elegida. */
   visibleSubs = computed(() => this.selectedMain()?.subcategories ?? []);
@@ -182,7 +182,7 @@ export class MapsPageComponent implements AfterViewInit, OnDestroy {
   selectedContext = signal<FieldContext>('place');
 
   /** Número de usuarios apuntados por localización (estado de sesión en cliente). */
-  joinedByLocation = signal<Record<number, number>>({});
+  joinedByLocation = signal<Record<string, number>>({});
 
   /** Marca de apuntado por combinación usuario+localización (estado de sesión). */
   joinedByUserAndLocation = signal<Record<string, true>>({});
@@ -192,7 +192,7 @@ export class MapsPageComponent implements AfterViewInit, OnDestroy {
    * `location.accessRequestPending` (ya calculado por backend, sobrevive a recargar la página) y
    * se actualiza localmente al solicitar — mismo patrón que `joinedByUserAndLocation`.
    */
-  accessRequestedByLocation = signal<Record<number, boolean>>({});
+  accessRequestedByLocation = signal<Record<string, boolean>>({});
 
   /** Cierra el panel de detalle. */
   closeDetail(): void {
@@ -200,7 +200,7 @@ export class MapsPageComponent implements AfterViewInit, OnDestroy {
   }
 
   /** Devuelve cuántos usuarios están apuntados en la localización indicada. */
-  getJoinedCount(locationId: number): number {
+  getJoinedCount(locationId: string): number {
     const fromState = this.joinedByLocation()[locationId];
     if (typeof fromState === 'number') return fromState;
     const location = this.allLocations.find((l) => l.id === locationId);
@@ -208,7 +208,7 @@ export class MapsPageComponent implements AfterViewInit, OnDestroy {
   }
 
   /** Indica si el usuario actual ya está apuntado a una localización. */
-  hasJoined(locationId: number): boolean {
+  hasJoined(locationId: string): boolean {
     return !!this.joinedByUserAndLocation()[this.buildJoinKey(locationId)];
   }
 
@@ -289,21 +289,21 @@ export class MapsPageComponent implements AfterViewInit, OnDestroy {
   }
 
   /** Recarga la lista de apuntados del detalle abierto tras un join/leave. */
-  private reloadEnrollments(locationId: number): void {
+  private reloadEnrollments(locationId: string): void {
     this.publicationService.getEnrollments(locationId).subscribe((users) => {
       this.selectedDetail.update((d) => (d ? { ...d, enrolledUsers: users } : null));
     });
   }
 
   /** Recarga el detalle completo de una localización (p. ej. tras obtener acceso). */
-  private reloadFullDetail(locationId: number): void {
-    this.publicationService.getById(String(locationId)).subscribe((full) => {
+  private reloadFullDetail(locationId: string): void {
+    this.publicationService.getById(locationId).subscribe((full) => {
       this.selectedDetail.update((d) => (d ? { ...d, ...full } : null));
     });
   }
 
   /** Construye una clave estable de apuntado por usuario y localización. */
-  private buildJoinKey(locationId: number): string {
+  private buildJoinKey(locationId: string): string {
     const userId = this.currentUser.user()?.id;
     return `${userId ?? 'anon'}:${locationId}`;
   }
@@ -402,7 +402,7 @@ export class MapsPageComponent implements AfterViewInit, OnDestroy {
   private loadLocations(): void {
     this.locationService.getAll().subscribe((locations) => {
       this.allLocations = locations;
-      const occupancy = locations.reduce<Record<number, number>>((acc, location) => {
+      const occupancy = locations.reduce<Record<string, number>>((acc, location) => {
         acc[location.id] = location.occupiedSlots ?? 0;
         return acc;
       }, {});
@@ -521,7 +521,7 @@ export class MapsPageComponent implements AfterViewInit, OnDestroy {
   }
 
   /** Selecciona / deselecciona un tipo de localización. */
-  selectType(typeId: number): void {
+  selectType(typeId: string): void {
     const isSame = this.selectedTypeId() === typeId;
     this.selectedTypeId.set(isSame ? null : typeId);
     this.applyFilter();

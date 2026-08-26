@@ -108,10 +108,8 @@ export class GroupInvitationPageComponent implements OnInit {
 
         // El árbol de categorías se carga bajo demanda (esta página, a diferencia del resto de
         // páginas de Grupos, es standalone y puede ser la primera en cargar, sin cache previa).
-        // Búsqueda local (no `categoryService.getMainCategoryById`, tipado con id `number`
-        // desactualizado respecto al ObjectId real — ver comentario en `Group.categoryId`).
-        this.categoryService.getAll().subscribe(categories => {
-          this.category.set(categories.find(c => String(c.id) === invitation.groupCategoryId));
+        this.categoryService.getAll().subscribe(() => {
+          this.category.set(this.categoryService.getMainCategoryById(invitation.groupCategoryId));
         });
       },
       // 401: el enlace del correo se abrió sin sesión iniciada en este navegador (caso

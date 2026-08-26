@@ -163,7 +163,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    * Id de la publicación en foco (recién creada o cargada para editar/repetir).
    * Se excluye de los markers POI planos porque ya se muestra resaltada aparte.
    */
-  private focusedPublicationId = signal<number | null>(null);
+  private focusedPublicationId = signal<string | null>(null);
 
   /** Última lista de publicaciones ajenas cargada para pintarlas como POIs no interactivos. */
   private otherLocations: MapLocation[] = [];
@@ -248,7 +248,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
   description = '';
 
   /** ID del tipo de ubicación seleccionado (obligatorio) */
-  locationTypeId: number | null = null;
+  locationTypeId: string | null = null;
 
   /** Fecha de la actividad en formato YYYY-MM-DD (obligatorio) */
   activityDate = this.getTodayDate();
@@ -776,7 +776,7 @@ export class CreatePublicationPageComponent implements AfterViewInit {
    *
    * @param typeId - ID del tipo de ubicación a seleccionar
    */
-  selectLocationType(typeId: number): void {
+  selectLocationType(typeId: string): void {
     this.locationTypeId = this.locationTypeId === typeId ? null : typeId;
     if (this.marker && this.lat !== null) {
       this.marker.setIcon(

@@ -25,9 +25,9 @@ describe('PublicationService', () => {
     ];
 
     let result: EnrolledUser[] | undefined;
-    service.getEnrollments(7).subscribe(r => (result = r));
+    service.getEnrollments('pub-7').subscribe(r => (result = r));
 
-    const req = httpMock.expectOne(`${environment.apiPublicationsUrl}/7/enrollments`);
+    const req = httpMock.expectOne(`${environment.apiPublicationsUrl}/pub-7/enrollments`);
     expect(req.request.method).toBe('GET');
     req.flush(enrolled);
 
@@ -35,17 +35,17 @@ describe('PublicationService', () => {
   });
 
   it('enroll hace POST al endpoint de inscripción', () => {
-    service.enroll(7).subscribe();
+    service.enroll('pub-7').subscribe();
 
-    const req = httpMock.expectOne(`${environment.apiPublicationsUrl}/7/enroll`);
+    const req = httpMock.expectOne(`${environment.apiPublicationsUrl}/pub-7/enroll`);
     expect(req.request.method).toBe('POST');
-    req.flush({ publicationId: 7, userId: 'u1', occupiedSlots: 1, maxSlots: 10, full: false });
+    req.flush({ publicationId: 'pub-7', userId: 'u1', occupiedSlots: 1, maxSlots: 10, full: false });
   });
 
   it('remove hace DELETE de la publicación', () => {
-    service.remove(7).subscribe();
+    service.remove('pub-7').subscribe();
 
-    const req = httpMock.expectOne(`${environment.apiPublicationsUrl}/7`);
+    const req = httpMock.expectOne(`${environment.apiPublicationsUrl}/pub-7`);
     expect(req.request.method).toBe('DELETE');
     req.flush(null);
   });

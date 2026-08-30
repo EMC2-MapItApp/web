@@ -12,7 +12,6 @@ import { AppNotification } from '../models/notification.model';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-
   private readonly http = inject(HttpClient);
   private readonly cu = inject(CurrentUserService);
   private readonly baseUrl = environment.apiNotificationsUrl;
@@ -25,7 +24,9 @@ export class NotificationService {
 
   constructor() {
     effect(() => {
-      if (this.cu.user()) {
+      // this.cu.userId(), no this.cu.user(): un patch() de perfil (p. ej. marcar un favorito)
+      // crea un MapItUser nuevo por referencia sin cambiar la sesión, y no debe recargar esto.
+      if (this.cu.userId()) {
         this.refresh();
       } else {
         this._notifications.set([]);
@@ -37,51 +38,55 @@ export class NotificationService {
   /** Recarga el histórico y el contador de no-leídas del usuario actual. */
   refresh(): void {
     this.http.get<AppNotification[]>(this.baseUrl).subscribe({
-      next: list => this._notifications.set(list),
+      next: (list) => this._notifications.set(list),
       // Fallo silencioso: el centro de notificaciones es una mejora de UX, no debe romper la navegación.
       error: () => this._notifications.set([]),
     });
     this.http.get<{ count: number }>(`${this.baseUrl}/unread-count`).subscribe({
-      next: res => this._unreadCount.set(res.count),
+      next: (res) => this._unreadCount.set(res.count),
       error: () => this._unreadCount.set(0),
     });
   }
 
   markRead(id: string): void {
-    const notification = this._notifications().find(n => n.id === id);
+    const notification = this._notifications().find((n) => n.id === id);
     if (!notification || notification.read) return;
 
     this.http.patch<void>(`${this.baseUrl}/${id}/read`, {}).subscribe(() => {
-      this._notifications.update(list => list.map(n => (n.id === id ? { ...n, read: true } : n)));
-      this._unreadCount.update(count => Math.max(0, count - 1));
+      this._notifications.update((list) =>
+        list.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      );
+      this._unreadCount.update((count) => Math.max(0, count - 1));
     });
   }
 
   markAllRead(): void {
     this.http.post<void>(`${this.baseUrl}/read-all`, {}).subscribe(() => {
-      this._notifications.update(list => list.map(n => ({ ...n, read: true })));
+      this._notifications.update((list) => list.map((n) => ({ ...n, read: true })));
       this._unreadCount.set(0);
     });
   }
 
   markUnread(id: string): void {
-    const notification = this._notifications().find(n => n.id === id);
+    const notification = this._notifications().find((n) => n.id === id);
     if (!notification || !notification.read) return;
 
     this.http.patch<void>(`${this.baseUrl}/${id}/unread`, {}).subscribe(() => {
-      this._notifications.update(list => list.map(n => (n.id === id ? { ...n, read: false } : n)));
-      this._unreadCount.update(count => count + 1);
+      this._notifications.update((list) =>
+        list.map((n) => (n.id === id ? { ...n, read: false } : n)),
+      );
+      this._unreadCount.update((count) => count + 1);
     });
   }
 
   delete(id: string): void {
-    const notification = this._notifications().find(n => n.id === id);
+    const notification = this._notifications().find((n) => n.id === id);
     if (!notification) return;
 
     this.http.delete<void>(`${this.baseUrl}/${id}`).subscribe(() => {
-      this._notifications.update(list => list.filter(n => n.id !== id));
+      this._notifications.update((list) => list.filter((n) => n.id !== id));
       if (!notification.read) {
-        this._unreadCount.update(count => Math.max(0, count - 1));
+        this._unreadCount.update((count) => Math.max(0, count - 1));
       }
     });
   }

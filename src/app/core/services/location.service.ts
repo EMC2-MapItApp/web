@@ -60,10 +60,10 @@ export class LocationService {
     /**
      * Recupera las localizaciones que pertenecen a un tipo concreto.
      *
-     * @param locationTypeId id numérico del LocationType
+     * @param locationTypeId id del LocationType (ObjectId de Mongo)
      * @returns Observable con las localizaciones filtradas por tipo
      */
-    getByLocationType(locationTypeId: number): Observable<MapLocation[]> {
+    getByLocationType(locationTypeId: string): Observable<MapLocation[]> {
         return this.getAll().pipe(
             map(locations => locations.filter(location => location.locationTypeId === locationTypeId))
         );
@@ -75,7 +75,7 @@ export class LocationService {
      * @param id id de la localización
      * @returns Observable con la localización encontrada o undefined
      */
-    getById(id: number): Observable<MapLocation | undefined> {
+    getById(id: string): Observable<MapLocation | undefined> {
         return this.getAll().pipe(
             map(locations => locations.find(location => location.id === id))
         );
@@ -92,8 +92,10 @@ export class LocationService {
             .filter(publication => publication.lat !== null && publication.lng !== null)
             .map(publication => ({
                 id: publication.id,
-                name: publication.title,
-                description: publication.description,
+                // El backend enmascara `title`/`description` a null en publicaciones PRIVATE sin
+                // acceso — el pin sigue siendo descubrible, pero sin revelar el contenido.
+                name: publication.title ?? 'Publicación privada',
+                description: publication.description ?? undefined,
                 locationTypeId: publication.locationTypeId,
                 lat: publication.lat as number,
                 lng: publication.lng as number,
@@ -105,10 +107,7 @@ export class LocationService {
                 occupiedSlots: publication.occupiedSlots,
                 active: publication.active,
                 visibility: publication.visibility,
-                groupId: publication.groupId,
-                groupName: publication.groupName,
-                groupMemberCount: publication.groupMemberCount,
-                isGroupMember: publication.isGroupMember,
+                hasAccess: publication.hasAccess,
                 accessRequestPending: publication.accessRequestPending,
             }));
     }

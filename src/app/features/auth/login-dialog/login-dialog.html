@@ -1,5 +1,5 @@
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
 <div class="login-dialog" (click)="$event.stopPropagation()">
-
   <button class="close-btn" mat-icon-button (click)="dialogRef.close()" aria-label="Cerrar">
     <mat-icon>close</mat-icon>
   </button>
@@ -14,9 +14,14 @@
   <form [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
     <mat-form-field appearance="outline">
       <mat-label>Correo o nombre de usuario</mat-label>
-      <input matInput type="text" formControlName="identifier" autocomplete="username"
-             placeholder="tu@email.com o @tunick" />
-      @if (identifierCtrl.hasError('required')) {
+      <input
+        matInput
+        type="text"
+        formControlName="identifier"
+        autocomplete="username"
+        placeholder="tu@email.com o @tunick"
+      />
+      @if (identifierCtrl.hasError('required') && identifierCtrl.touched) {
         <mat-error>El correo o nombre de usuario es obligatorio</mat-error>
       }
     </mat-form-field>
@@ -29,23 +34,39 @@
         formControlName="password"
         autocomplete="current-password"
       />
-      <button mat-icon-button matSuffix type="button"
-              (click)="hidePassword = !hidePassword"
-              [attr.aria-label]="'Mostrar u ocultar contraseña'">
+      <button
+        mat-icon-button
+        matSuffix
+        type="button"
+        (click)="hidePassword = !hidePassword"
+        [attr.aria-label]="'Mostrar u ocultar contraseña'"
+      >
         <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
       </button>
-      @if (passwordCtrl.hasError('required')) {
+      @if (passwordCtrl.hasError('required') && passwordCtrl.touched) {
         <mat-error>La contraseña es obligatoria</mat-error>
       }
-      @if (passwordCtrl.hasError('minlength')) {
+      @if (passwordCtrl.hasError('minlength') && passwordCtrl.touched) {
         <mat-error>Mínimo 6 caracteres</mat-error>
       }
     </mat-form-field>
 
-    <a class="forgot-password-link" (click)="openForgotPassword()" role="button">¿Olvidaste tu contraseña?</a>
+    <a
+      class="forgot-password-link"
+      role="button"
+      tabindex="0"
+      (click)="openForgotPassword()"
+      (keydown.enter)="openForgotPassword()"
+      (keydown.space)="openForgotPassword(); $event.preventDefault()"
+      >¿Olvidaste tu contraseña?</a
+    >
 
     <button mat-flat-button type="submit" class="submit-btn" [disabled]="loading()">
-      @if (loading()) { <mat-spinner diameter="20" /> } @else { Entrar }
+      @if (loading()) {
+        <mat-spinner diameter="20" />
+      } @else {
+        Entrar
+      }
     </button>
   </form>
 
@@ -55,7 +76,13 @@
 
   <p class="login-dialog__hint">
     ¿No tienes cuenta?
-    <a (click)="goToRegister()" role="button">Regístrate aquí</a>
+    <a
+      role="button"
+      tabindex="0"
+      (click)="goToRegister()"
+      (keydown.enter)="goToRegister()"
+      (keydown.space)="goToRegister(); $event.preventDefault()"
+      >Regístrate aquí</a
+    >
   </p>
-
 </div>

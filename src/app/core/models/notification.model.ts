@@ -16,9 +16,9 @@ export type NotificationType =
   | 'GROUP_INVITATION'
   | 'GROUP_ORGANIZER_NOTICE'
   | 'GROUP_BROADCAST'
-  | 'GROUP_JOIN_REQUEST'
-  | 'GROUP_JOIN_REQUEST_RESOLVED'
-  | 'PUBLICATION_INVITATION';
+  | 'PUBLICATION_INVITATION'
+  | 'PUBLICATION_ACCESS_REQUEST'
+  | 'PUBLICATION_ACCESS_REQUEST_RESOLVED';
 
 /** Notificación in-app persistida (centro de notificaciones / campana). */
 export interface AppNotification {
@@ -49,7 +49,10 @@ export interface NotificationPreference {
  * en Ajustes → Notificaciones. Único punto a extender cuando se añada un tipo nuevo — mantener en
  * espejo con el enum `emc.mapIt.notifications.NotificationType` del backend.
  */
-export const NOTIFICATION_TYPE_META: Record<NotificationType, { label: string; description: string; icon: string }> = {
+export const NOTIFICATION_TYPE_META: Record<
+  NotificationType,
+  { label: string; description: string; icon: string }
+> = {
   GROUP_INVITATION: {
     label: 'Invitaciones a grupos',
     icon: 'group_add',
@@ -65,19 +68,19 @@ export const NOTIFICATION_TYPE_META: Record<NotificationType, { label: string; d
     icon: 'forum',
     description: 'Cuando el organizador de un grupo envía un mensaje a los miembros.',
   },
-  GROUP_JOIN_REQUEST: {
-    label: 'Solicitudes de acceso a grupo',
-    icon: 'person_add',
-    description: 'Cuando alguien solicita unirse a un grupo que organizas.',
-  },
-  GROUP_JOIN_REQUEST_RESOLVED: {
-    label: 'Solicitudes resueltas',
-    icon: 'how_to_reg',
-    description: 'Cuando el organizador acepta o rechaza tu solicitud de unirte a un grupo.',
-  },
   PUBLICATION_INVITATION: {
     label: 'Invitaciones a eventos',
     icon: 'event_available',
     description: 'Cuando alguien te invita individualmente a un evento.',
+  },
+  PUBLICATION_ACCESS_REQUEST: {
+    label: 'Solicitudes de acceso a eventos',
+    icon: 'person_add',
+    description: 'Cuando alguien solicita apuntarse a un evento privado tuyo.',
+  },
+  PUBLICATION_ACCESS_REQUEST_RESOLVED: {
+    label: 'Solicitudes de acceso resueltas',
+    icon: 'how_to_reg',
+    description: 'Cuando el autor acepta o rechaza tu solicitud para apuntarte a un evento.',
   },
 };

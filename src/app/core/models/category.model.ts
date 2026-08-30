@@ -26,14 +26,14 @@
  * - PROFESIONAL: negocio, servicio o entidad relacionada con la subcategoría.
  */
 export interface LocationType {
-  /** Identificador único. Debe ser único en todo el árbol. */
-  id: number;
+  /** Identificador único — ObjectId de Mongo (string), no un número. */
+  id: string;
   /** Nombre visible al usuario (p.ej. "Quedadas", "Profesional"). */
   name: string;
   /** Descripción de qué tipo de puntos agrupa este tipo de localización. */
   description: string;
   /** Identificador de la subcategoría padre. */
-  subcategoryId: number;
+  subcategoryId: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -46,14 +46,14 @@ export interface LocationType {
  * @example CICLISMO, RUNNING, FÚTBOL (dentro de DEPORTES)
  */
 export interface SubCategory {
-  /** Identificador único. */
-  id: number;
+  /** Identificador único — ObjectId de Mongo (string), no un número. */
+  id: string;
   /** Nombre visible al usuario (p.ej. "Ciclismo"). */
   name: string;
   /** Emoji o identificador de icono representativo. */
   icon: string;
   /** Identificador de la categoría principal padre. */
-  mainCategoryId: number;
+  mainCategoryId: string;
   /** Lista de tipos de localización que cuelgan de esta subcategoría. */
   locationTypes: LocationType[];
 }
@@ -69,8 +69,8 @@ export interface SubCategory {
  * @example DEPORTES, CULTURA, GASTRONOMÍA, NATURALEZA
  */
 export interface MainCategory {
-  /** Identificador único. */
-  id: number;
+  /** Identificador único — ObjectId de Mongo (string), no un número. */
+  id: string;
   /** Nombre visible al usuario (p.ej. "Deportes"). */
   name: string;
   /** Emoji o identificador de icono representativo. */

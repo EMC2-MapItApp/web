@@ -1,17 +1,21 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { AuthService } from '@core/services/auth.service';
 import { CurrentUserService } from '@core/services/current-user.service';
 import { GroupService } from '@core/services/group.service';
 import { SlicePipe } from '@angular/common';
 import { WelcomeDialogComponent } from '@shared/welcome-dialog/welcome-dialog';
 import { ShareMenuComponent } from '@shared/share-menu/share-menu';
 import { MatDialog } from '@angular/material/dialog';
-import { WELCOME_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
+import {
+  WELCOME_DIALOG_CONFIG,
+  withResponsiveDialogLayout,
+} from '@core/constants/dialog.constants';
 import { ResponsiveService } from '@core/responsive/responsive.service';
 import { PushNotificationService } from '@core/services/push-notification.service';
 import { DEFAULT_SHARE_CONTENT } from '@core/constants/share.constants';
@@ -31,17 +35,18 @@ import { NotificationBellComponent } from './notification-bell/notification-bell
     MatButtonModule,
     SlicePipe,
     NotificationBellComponent,
-    ShareMenuComponent
+    ShareMenuComponent,
   ],
   templateUrl: './home-shell.html',
-  styleUrls: ['./home-shell.scss']
+  styleUrls: ['./home-shell.scss'],
 })
-export class HomeShellComponent {
+export class HomeShellComponent implements OnInit {
   private router = inject(Router);
   private dialog = inject(MatDialog);
   private responsiveService = inject(ResponsiveService);
 
   readonly currentUser = inject(CurrentUserService);
+  private readonly authService = inject(AuthService);
   private readonly groupService = inject(GroupService);
   private readonly pushNotificationService = inject(PushNotificationService);
 
@@ -63,7 +68,10 @@ export class HomeShellComponent {
       sessionStorage.setItem('welcome-dialog-shown', '1');
       const responsiveState = this.responsiveService.state();
       const compactViewport = responsiveState.isMobile || responsiveState.isTablet;
-      this.dialog.open(WelcomeDialogComponent, withResponsiveDialogLayout(WELCOME_DIALOG_CONFIG, compactViewport));
+      this.dialog.open(
+        WelcomeDialogComponent,
+        withResponsiveDialogLayout(WELCOME_DIALOG_CONFIG, compactViewport),
+      );
     }
   }
 
@@ -101,7 +109,8 @@ export class HomeShellComponent {
     if (!target) return;
 
     if (target.closest('.app-sidenav')) return;
-    if (target.closest('button, a, input, select, textarea, [role="button"], [role="menuitem"]')) return;
+    if (target.closest('button, a, input, select, textarea, [role="button"], [role="menuitem"]'))
+      return;
 
     this.closeSidenav();
   }
@@ -119,9 +128,7 @@ export class HomeShellComponent {
       // Best-effort: un fallo al dar de baja el push no debe impedir cerrar sesión.
     }
 
-    localStorage.removeItem('token');
-    this.currentUser.clear();
+    this.authService.logout();
     this.router.navigate(['/']);
   }
 }
-

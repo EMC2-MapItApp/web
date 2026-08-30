@@ -8,15 +8,15 @@ describe('PublicationDetailComponent', () => {
   let component: PublicationDetailComponent;
 
   const breadcrumb: CategoryBreadcrumb = {
-    mainCategory: { id: 1, name: 'Deporte', icon: '🏃', color: '#3f51b5', subcategories: [] },
-    subCategory: { id: 1, name: 'Ciclismo', icon: '🚴', mainCategoryId: 1, locationTypes: [] },
-    locationType: { id: 1, name: 'Quedadas', description: 'Rutas en grupo', subcategoryId: 1 },
+    mainCategory: { id: 'main-1', name: 'Deporte', icon: '🏃', color: '#3f51b5', subcategories: [] },
+    subCategory: { id: 'sub-1', name: 'Ciclismo', icon: '🚴', mainCategoryId: 'main-1', locationTypes: [] },
+    locationType: { id: 'type-1', name: 'Quedadas', description: 'Rutas en grupo', subcategoryId: 'sub-1' },
   };
 
   const baseItem: PublicationDetailInput = {
-    id: 1,
+    id: 'pub-1',
     name: 'Ruta en bici',
-    locationTypeId: 1,
+    locationTypeId: 'type-1',
     startDate: '2026-08-10T10:00:00Z',
   };
 
@@ -45,39 +45,35 @@ describe('PublicationDetailComponent', () => {
     expect(component.joinDisabled).toBe(false);
   });
 
-  it('publicación privada, usuario miembro: muestra el aforo real y el CTA "Apuntarse"', () => {
-    component.visibility = 'PRIVATE_GROUP';
-    component.isGroupMember = true;
-    component.groupName = 'Club de Ciclismo';
-    component.groupMemberCount = 8;
+  it('publicación privada, usuario con acceso: muestra el aforo real y el CTA "Apuntarse"', () => {
+    component.visibility = 'PRIVATE';
+    component.hasAccess = true;
     component.joinedCount = 3;
     render();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('3 plazas de 8 miembros del grupo');
+    expect(text).toContain('3 personas apuntadas');
     expect(component.joinButtonText).toBe('Apuntarse');
   });
 
-  it('publicación privada, usuario no miembro: badge de candado, sin números de aforo, CTA "Solicitar invitación"', () => {
-    component.visibility = 'PRIVATE_GROUP';
-    component.isGroupMember = false;
-    component.groupName = 'Club de Ciclismo';
-    component.groupMemberCount = 8;
+  it('publicación privada, sin acceso: badge de candado, sin números de aforo, CTA "Solicitar acceso"', () => {
+    component.visibility = 'PRIVATE';
+    component.hasAccess = false;
     component.joinedCount = 3;
     render();
 
     const text = fixture.nativeElement.textContent as string;
-    expect(text).toContain('Plazas visibles solo para miembros del grupo');
-    // No debe filtrarse ningún número de aforo real (3 apuntados / 8 miembros) a quien no es miembro.
-    expect(text).not.toContain('3 plazas');
-    expect(text).not.toContain('3 / 8');
-    expect(component.joinButtonText).toBe('Solicitar invitación');
+    expect(text).toContain('Plazas visibles solo para invitados');
+    // No debe filtrarse ningún número de aforo real (3 apuntados) a quien no tiene acceso.
+    expect(text).not.toContain('3 personas apuntadas');
+    expect(text).not.toContain('3 / ');
+    expect(component.joinButtonText).toBe('Solicitar acceso');
     expect(component.joinDisabled).toBe(false);
   });
 
-  it('publicación privada, no miembro con solicitud pendiente: CTA deshabilitado con texto "Solicitud enviada"', () => {
-    component.visibility = 'PRIVATE_GROUP';
-    component.isGroupMember = false;
+  it('publicación privada, sin acceso con solicitud pendiente: CTA deshabilitado con texto "Solicitud enviada"', () => {
+    component.visibility = 'PRIVATE';
+    component.hasAccess = false;
     component.accessRequestPending = true;
     render();
 
@@ -89,9 +85,9 @@ describe('PublicationDetailComponent', () => {
     expect(button.textContent?.trim()).toBe('Solicitud enviada');
   });
 
-  it('onJoin() emite joinRequestRequested (no joinRequested) cuando la publicación es privada y no se es miembro', () => {
-    component.visibility = 'PRIVATE_GROUP';
-    component.isGroupMember = false;
+  it('onJoin() emite joinRequestRequested (no joinRequested) cuando la publicación es privada y no hay acceso', () => {
+    component.visibility = 'PRIVATE';
+    component.hasAccess = false;
     render();
 
     const joinRequestedSpy = vi.fn();

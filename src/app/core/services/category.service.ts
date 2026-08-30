@@ -1,8 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, tap } from 'rxjs';
+import { Observable, map, shareReplay, tap } from 'rxjs';
 import { environment } from '@env/environment';
-import { CategoryBreadcrumb, LocationType, MainCategory, SubCategory } from '../models/category.model';
+import {
+  CategoryBreadcrumb,
+  LocationType,
+  MainCategory,
+  SubCategory,
+} from '../models/category.model';
 
 /**
  * @file category.service.ts
@@ -13,20 +18,20 @@ import { CategoryBreadcrumb, LocationType, MainCategory, SubCategory } from '../
  */
 
 interface ApiLocationType {
-  id: number;
+  id: string;
   name: string;
   description: string;
 }
 
 interface ApiSubCategory {
-  id: number;
+  id: string;
   name: string;
   icon: string;
   locationTypes: ApiLocationType[];
 }
 
 interface ApiMainCategory {
-  id: number;
+  id: string;
   name: string;
   icon: string;
   color: string;
@@ -37,45 +42,54 @@ interface ApiMainCategory {
 export class CategoryService {
   private readonly baseUrl = environment.apiCategoriesUrl;
   private treeCache: MainCategory[] = [];
+  private tree$?: Observable<MainCategory[]>;
 
-  constructor(private http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
-  /** Descarga el árbol completo y lo cachea para los métodos de lookup síncronos. */
+  /**
+   * Descarga el árbol completo y lo cachea para los métodos de lookup síncronos. El observable
+   * de red se memoiza con {@link shareReplay}: varios componentes llamando a `getAll()` en la
+   * misma sesión comparten una única petición HTTP en vez de disparar una por consumidor.
+   */
   getAll(): Observable<MainCategory[]> {
-    return this.http.get<ApiMainCategory[]>(this.baseUrl + '/tree').pipe(
-      map(api => this.mapTree(api)),
-      tap(tree => {
-        this.treeCache = tree;
-      })
-    );
+    if (!this.tree$) {
+      this.tree$ = this.http.get<ApiMainCategory[]>(this.baseUrl + '/tree').pipe(
+        map((api) => this.mapTree(api)),
+        tap((tree) => {
+          this.treeCache = tree;
+        }),
+        shareReplay(1),
+      );
+    }
+    return this.tree$;
   }
 
-  getMainCategoryById(id: number): MainCategory | undefined {
-    return this.treeCache.find(c => c.id === id);
+  getMainCategoryById(id: string): MainCategory | undefined {
+    return this.treeCache.find((c) => c.id === id);
   }
 
-  getSubCategoryById(id: number): SubCategory | undefined {
+  getSubCategoryById(id: string): SubCategory | undefined {
     for (const main of this.treeCache) {
-      const found = main.subcategories.find(s => s.id === id);
+      const found = main.subcategories.find((s) => s.id === id);
       if (found) return found;
     }
     return undefined;
   }
 
-  getLocationTypeById(id: number): LocationType | undefined {
+  getLocationTypeById(id: string): LocationType | undefined {
     for (const main of this.treeCache) {
       for (const sub of main.subcategories) {
-        const found = sub.locationTypes.find(lt => lt.id === id);
+        const found = sub.locationTypes.find((lt) => lt.id === id);
         if (found) return found;
       }
     }
     return undefined;
   }
 
-  resolveBreadcrumb(locationTypeId: number): CategoryBreadcrumb | undefined {
+  resolveBreadcrumb(locationTypeId: string): CategoryBreadcrumb | undefined {
     for (const main of this.treeCache) {
       for (const sub of main.subcategories) {
-        const lt = sub.locationTypes.find(t => t.id === locationTypeId);
+        const lt = sub.locationTypes.find((t) => t.id === locationTypeId);
         if (lt) {
           return { mainCategory: main, subCategory: sub, locationType: lt };
         }
@@ -84,18 +98,18 @@ export class CategoryService {
     return undefined;
   }
 
-  resolveColor(locationTypeId: number): string {
+  resolveColor(locationTypeId: string): string {
     const bc = this.resolveBreadcrumb(locationTypeId);
     return bc?.mainCategory.color ?? '#6b7280';
   }
 
-  resolveIcon(locationTypeId: number): string {
+  resolveIcon(locationTypeId: string): string {
     const bc = this.resolveBreadcrumb(locationTypeId);
     return bc?.subCategory.icon ?? '📍';
   }
 
   private mapTree(apiTree: ApiMainCategory[]): MainCategory[] {
-    return apiTree.map(main => {
+    return apiTree.map((main) => {
       const mainId = main.id;
 
       return {
@@ -103,7 +117,7 @@ export class CategoryService {
         name: main.name,
         icon: main.icon,
         color: main.color,
-        subcategories: main.subCategories.map(sub => {
+        subcategories: main.subCategories.map((sub) => {
           const subId = sub.id;
 
           return {
@@ -111,14 +125,14 @@ export class CategoryService {
             name: sub.name,
             icon: sub.icon,
             mainCategoryId: mainId,
-            locationTypes: sub.locationTypes.map(lt => ({
+            locationTypes: sub.locationTypes.map((lt) => ({
               id: lt.id,
               name: lt.name,
               description: lt.description,
-              subcategoryId: subId
-            }))
+              subcategoryId: subId,
+            })),
           };
-        })
+        }),
       };
     });
   }

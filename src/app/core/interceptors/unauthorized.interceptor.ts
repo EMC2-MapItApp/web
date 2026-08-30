@@ -21,12 +21,36 @@ import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular
 import { inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { catchError, throwError } from 'rxjs';
-import { AuthRequiredDialogComponent } from '@shared/auth-required-dialog/auth-required-dialog';
-import { AUTH_REQUIRED_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
+import {
+  AUTH_REQUIRED_DIALOG_CONFIG,
+  withResponsiveDialogLayout,
+} from '@core/constants/dialog.constants';
 import { ResponsiveService } from '@core/responsive/responsive.service';
 
 /** Contexto para excluir una petición del diálogo global de "Acceso restringido" en 401. */
 export const SKIP_UNAUTHORIZED_DIALOG = new HttpContextToken<boolean>(() => false);
+
+/**
+ * Import dinámico: igual que los guards que abren este mismo diálogo, para que quede fuera
+ * del bundle inicial pese a que este interceptor sí se registra eager en `app.config.ts`.
+ */
+async function openAuthRequiredDialogOnce(
+  dialog: MatDialog,
+  responsiveService: ResponsiveService,
+): Promise<void> {
+  const { AuthRequiredDialogComponent } =
+    await import('@shared/auth-required-dialog/auth-required-dialog');
+
+  const alreadyOpen = dialog.openDialogs.some(
+    (ref) => ref.componentInstance instanceof AuthRequiredDialogComponent,
+  );
+  if (alreadyOpen) return;
+
+  dialog.open(
+    AuthRequiredDialogComponent,
+    withResponsiveDialogLayout(AUTH_REQUIRED_DIALOG_CONFIG, responsiveService.isCompact()),
+  );
+}
 
 export const unauthorizedInterceptor: HttpInterceptorFn = (req, next) => {
   const dialog = inject(MatDialog);
@@ -34,16 +58,10 @@ export const unauthorizedInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((err: HttpErrorResponse) => {
-      const alreadyOpen = dialog.openDialogs.some(ref => ref.componentInstance instanceof AuthRequiredDialogComponent);
       const isAuthRequired = err.status === 401 && err.error?.error?.code === 'UNAUTHORIZED';
 
-      if (isAuthRequired && !req.context.get(SKIP_UNAUTHORIZED_DIALOG) && !alreadyOpen) {
-        const responsiveState = responsiveService.state();
-        const compactViewport = responsiveState.isMobile || responsiveState.isTablet;
-        dialog.open(
-          AuthRequiredDialogComponent,
-          withResponsiveDialogLayout(AUTH_REQUIRED_DIALOG_CONFIG, compactViewport),
-        );
+      if (isAuthRequired && !req.context.get(SKIP_UNAUTHORIZED_DIALOG)) {
+        void openAuthRequiredDialogOnce(dialog, responsiveService);
       }
 
       return throwError(() => err);

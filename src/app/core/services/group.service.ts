@@ -9,7 +9,7 @@
  * modelo de frontend (ver `group.model.ts`) — mismo patrón que `CategoryService.mapTree` aplica
  * al árbol de categorías. Los componentes consumidores no conocen esta diferencia.
  */
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import { environment } from '@env/environment';
@@ -19,8 +19,6 @@ import {
   Group,
   GroupInvitation,
   GroupInvitationStatus,
-  GroupJoinRequest,
-  GroupJoinRequestStatus,
   GroupMember,
   GroupRole,
   GroupSearchUser,
@@ -86,26 +84,12 @@ interface ApiUserSearchResult {
   avatarUrl: string | null;
 }
 
-interface ApiGroupJoinRequest {
-  id: string;
-  groupId: string;
-  groupName: string;
-  requestedByUserId: string;
-  requestedByName: string;
-  requestedByNick: string;
-  publicationId: string | null;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
-  createdAt: string;
-  respondedAt: string | null;
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Servicio
 // ─────────────────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
 export class GroupService {
-
   private readonly http = inject(HttpClient);
   private readonly cu = inject(CurrentUserService);
   private readonly baseUrl = environment.apiGroupsUrl;
@@ -121,7 +105,9 @@ export class GroupService {
     // invitación nueva creada mientras la sesión está abierta no actualiza el badge hasta la
     // próxima recarga o hasta que se resuelva otra invitación (ver acceptInvitation/declineInvitation).
     effect(() => {
-      if (this.cu.user()) {
+      // this.cu.userId(), no this.cu.user(): un patch() de perfil crea un MapItUser nuevo
+      // por referencia sin cambiar la sesión, y no debe recargar el badge de invitaciones.
+      if (this.cu.userId()) {
         this.refreshPendingInvitationsCount();
       } else {
         this._pendingInvitationsCount.set(0);
@@ -133,9 +119,9 @@ export class GroupService {
 
   /** Grupos donde el usuario actual es organizador o miembro. */
   getMyGroups(): Observable<Group[]> {
-    return this.http.get<ApiGroup[]>(`${this.baseUrl}/mine`).pipe(
-      map(groups => groups.map(g => this.mapGroup(g)))
-    );
+    return this.http
+      .get<ApiGroup[]>(`${this.baseUrl}/mine`)
+      .pipe(map((groups) => groups.map((g) => this.mapGroup(g))));
   }
 
   /**
@@ -145,16 +131,16 @@ export class GroupService {
    */
   getGroupById(id: string): Observable<Group | undefined> {
     return this.http.get<ApiGroup>(`${this.baseUrl}/${id}`).pipe(
-      map(g => this.mapGroup(g)),
+      map((g) => this.mapGroup(g)),
       catchError(() => of(undefined)),
     );
   }
 
   /** Invitaciones pendientes recibidas por el usuario actual. */
   getPendingInvitations(): Observable<GroupInvitation[]> {
-    return this.http.get<ApiGroupInvitation[]>(`${this.baseUrl}/invitations/pending`).pipe(
-      map(invitations => invitations.map(i => this.mapInvitation(i)))
-    );
+    return this.http
+      .get<ApiGroupInvitation[]>(`${this.baseUrl}/invitations/pending`)
+      .pipe(map((invitations) => invitations.map((i) => this.mapInvitation(i))));
   }
 
   /**
@@ -165,10 +151,15 @@ export class GroupService {
    * distingue ambos casos de "invitación no disponible" para no confundir "no tienes sesión" con
    * "la sesión activa no es la correcta".
    */
-  getInvitationById(id: string, options?: { context?: HttpContext }): Observable<GroupInvitation | undefined> {
+  getInvitationById(
+    id: string,
+    options?: { context?: HttpContext },
+  ): Observable<GroupInvitation | undefined> {
     return this.http.get<ApiGroupInvitation>(`${this.baseUrl}/invitations/${id}`, options).pipe(
-      map(i => this.mapInvitation(i)),
-      catchError(err => (err.status === 401 || err.status === 403) ? throwError(() => err) : of(undefined)),
+      map((i) => this.mapInvitation(i)),
+      catchError((err) =>
+        err.status === 401 || err.status === 403 ? throwError(() => err) : of(undefined),
+      ),
     );
   }
 
@@ -176,7 +167,7 @@ export class GroupService {
   getMyRole(group: Group): GroupRole | null {
     const userId = this.cu.user()?.id;
     if (!userId) return null;
-    return group.members.find(m => m.userId === userId)?.role ?? null;
+    return group.members.find((m) => m.userId === userId)?.role ?? null;
   }
 
   // ── Búsqueda de usuarios a invitar ──────────────────────────────────────────
@@ -186,35 +177,33 @@ export class GroupService {
     const q = query.trim();
     if (q.length < 2) return of([]);
 
-    return this.http.get<ApiUserSearchResult[]>(`${this.usersBaseUrl}/search`, {
-      params: { q },
-    }).pipe(
-      map(results => results.map(r => this.mapSearchUser(r)))
-    );
+    return this.http
+      .get<ApiUserSearchResult[]>(`${this.usersBaseUrl}/search`, {
+        params: { q },
+      })
+      .pipe(map((results) => results.map((r) => this.mapSearchUser(r))));
   }
 
   // ── Escrituras ────────────────────────────────────────────────────────────
 
   /** Crea un grupo nuevo (organizador = usuario actual) e invita a los usuarios indicados. */
   createGroup(payload: CreateGroupRequest): Observable<Group> {
-    return this.http.post<ApiGroup>(this.baseUrl, payload).pipe(
-      map(g => this.mapGroup(g))
-    );
+    return this.http.post<ApiGroup>(this.baseUrl, payload).pipe(map((g) => this.mapGroup(g)));
   }
 
   updateGroup(id: string, payload: UpdateGroupRequest): Observable<Group> {
-    return this.http.patch<ApiGroup>(`${this.baseUrl}/${id}`, payload).pipe(
-      map(g => this.mapGroup(g))
-    );
+    return this.http
+      .patch<ApiGroup>(`${this.baseUrl}/${id}`, payload)
+      .pipe(map((g) => this.mapGroup(g)));
   }
 
   /** Invita a un usuario ya existente a un grupo ya creado (desde la página de detalle/edición). */
   inviteUser(group: Group, user: GroupSearchUser): Observable<GroupInvitation> {
-    return this.http.post<ApiGroupInvitation>(`${this.baseUrl}/${group.id}/invitations`, {
-      userId: user.id,
-    }).pipe(
-      map(i => this.mapInvitation(i))
-    );
+    return this.http
+      .post<ApiGroupInvitation>(`${this.baseUrl}/${group.id}/invitations`, {
+        userId: user.id,
+      })
+      .pipe(map((i) => this.mapInvitation(i)));
   }
 
   /**
@@ -222,11 +211,11 @@ export class GroupService {
    * el email ya pertenece a un usuario, el backend la resuelve como una invitación normal.
    */
   inviteUserByEmail(group: Group, email: string): Observable<GroupInvitation> {
-    return this.http.post<ApiGroupInvitation>(`${this.baseUrl}/${group.id}/invitations/by-email`, {
-      email,
-    }).pipe(
-      map(i => this.mapInvitation(i))
-    );
+    return this.http
+      .post<ApiGroupInvitation>(`${this.baseUrl}/${group.id}/invitations/by-email`, {
+        email,
+      })
+      .pipe(map((i) => this.mapInvitation(i)));
   }
 
   /**
@@ -238,25 +227,30 @@ export class GroupService {
    */
   inviteErrorMessage(err: { error?: { error?: { code?: string } } }): string {
     switch (err.error?.error?.code) {
-      case 'ALREADY_MEMBER': return 'Este usuario ya pertenece a este grupo.';
-      case 'ALREADY_INVITED': return 'Ya se ha invitado a este usuario o email.';
-      default: return 'No se pudo enviar la invitación. Inténtalo de nuevo.';
+      case 'ALREADY_MEMBER':
+        return 'Este usuario ya pertenece a este grupo.';
+      case 'ALREADY_INVITED':
+        return 'Ya se ha invitado a este usuario o email.';
+      default:
+        return 'No se pudo enviar la invitación. Inténtalo de nuevo.';
     }
   }
 
   /** Acepta una invitación: pasa a miembro del grupo. */
   acceptInvitation(invitationId: string, options?: { context?: HttpContext }): Observable<Group> {
-    return this.http.post<ApiGroup>(`${this.baseUrl}/invitations/${invitationId}/accept`, {}, options).pipe(
-      map(g => this.mapGroup(g)),
-      tap(() => this.refreshPendingInvitationsCount()),
-    );
+    return this.http
+      .post<ApiGroup>(`${this.baseUrl}/invitations/${invitationId}/accept`, {}, options)
+      .pipe(
+        map((g) => this.mapGroup(g)),
+        tap(() => this.refreshPendingInvitationsCount()),
+      );
   }
 
   /** Rechaza una invitación (no se añade al grupo). */
   declineInvitation(invitationId: string, options?: { context?: HttpContext }): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/invitations/${invitationId}/decline`, {}, options).pipe(
-      tap(() => this.refreshPendingInvitationsCount()),
-    );
+    return this.http
+      .post<void>(`${this.baseUrl}/invitations/${invitationId}/decline`, {}, options)
+      .pipe(tap(() => this.refreshPendingInvitationsCount()));
   }
 
   /** Abandona un grupo del que se es miembro (no válido para el organizador). */
@@ -271,31 +265,9 @@ export class GroupService {
 
   /** Devuelve las invitaciones pendientes de un grupo. Solo el organizador puede consultarlas. */
   getGroupPendingInvitations(groupId: string): Observable<GroupInvitation[]> {
-    return this.http.get<ApiGroupInvitation[]>(`${this.baseUrl}/${groupId}/invitations`).pipe(
-      map(list => list.map(i => this.mapInvitation(i)))
-    );
-  }
-
-  /**
-   * Devuelve las solicitudes de acceso pendientes de un grupo (usuarios que intentaron apuntarse
-   * a una publicación privada sin ser miembros). Solo el organizador puede consultarlas.
-   */
-  getGroupPendingJoinRequests(groupId: string): Observable<GroupJoinRequest[]> {
-    return this.http.get<ApiGroupJoinRequest[]>(`${this.baseUrl}/${groupId}/join-requests`).pipe(
-      map(list => list.map(r => this.mapJoinRequest(r)))
-    );
-  }
-
-  /** Acepta una solicitud de acceso: añade al solicitante como miembro del grupo. */
-  acceptJoinRequest(requestId: string): Observable<Group> {
-    return this.http.post<ApiGroup>(`${this.baseUrl}/join-requests/${requestId}/accept`, {}).pipe(
-      map(g => this.mapGroup(g))
-    );
-  }
-
-  /** Rechaza una solicitud de acceso (no se añade al grupo). */
-  rejectJoinRequest(requestId: string): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/join-requests/${requestId}/reject`, {});
+    return this.http
+      .get<ApiGroupInvitation[]>(`${this.baseUrl}/${groupId}/invitations`)
+      .pipe(map((list) => list.map((i) => this.mapInvitation(i))));
   }
 
   /** Cancela una invitación pendiente (la elimina). Puede hacerlo el organizador o el invitado. */
@@ -313,7 +285,10 @@ export class GroupService {
    * sustituye el asunto real del email (fijo, ver `EmailNotificationSender` en el backend).
    */
   notifyOrganizer(group: Group, subject: string, message: string): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/${group.id}/notify-organizer`, { subject, message });
+    return this.http.post<void>(`${this.baseUrl}/${group.id}/notify-organizer`, {
+      subject,
+      message,
+    });
   }
 
   /**
@@ -321,15 +296,24 @@ export class GroupService {
    * organizador; `recipientUserIds` vacío significa "todos los miembros". `subject` se muestra
    * en el cuerpo del correo, no sustituye el asunto real del email (fijo, ver backend).
    */
-  contactMembers(group: Group, subject: string, message: string, recipientUserIds: string[]): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/${group.id}/contact-members`, { subject, message, recipientUserIds });
+  contactMembers(
+    group: Group,
+    subject: string,
+    message: string,
+    recipientUserIds: string[],
+  ): Observable<void> {
+    return this.http.post<void>(`${this.baseUrl}/${group.id}/contact-members`, {
+      subject,
+      message,
+      recipientUserIds,
+    });
   }
 
   // ── Helpers privados ─────────────────────────────────────────────────────
 
   private refreshPendingInvitationsCount(): void {
     this.getPendingInvitations().subscribe({
-      next: list => this._pendingInvitationsCount.set(list.length),
+      next: (list) => this._pendingInvitationsCount.set(list.length),
       // Fallo silencioso: el badge es una mejora de UX, no debe romper la navegación.
       error: () => this._pendingInvitationsCount.set(0),
     });
@@ -352,8 +336,8 @@ export class GroupService {
       name: api.name,
       description: api.description,
       categoryId: api.categoryId,
-      members: api.members.map(m => this.mapMember(m)),
-      pendingInvitees: (api.pendingInvitees ?? []).map(p => ({
+      members: api.members.map((m) => this.mapMember(m)),
+      pendingInvitees: (api.pendingInvitees ?? []).map((p) => ({
         userId: p.userId,
         name: p.name,
         nick: p.nick,
@@ -372,7 +356,7 @@ export class GroupService {
       groupDescription: api.groupDescription,
       groupCategoryId: api.groupCategoryId,
       groupMemberCount: api.groupMemberCount,
-      groupMembers: (api.groupMembers ?? []).map(m => this.mapMember(m)),
+      groupMembers: (api.groupMembers ?? []).map((m) => this.mapMember(m)),
       invitedUserId: api.invitedUserId,
       invitedUserName: api.invitedUserName,
       invitedUserNick: api.invitedUserNick,
@@ -381,21 +365,6 @@ export class GroupService {
       invitedByName: api.invitedByName,
       status: api.status.toLowerCase() as GroupInvitationStatus,
       createdAt: api.createdAt,
-    };
-  }
-
-  private mapJoinRequest(api: ApiGroupJoinRequest): GroupJoinRequest {
-    return {
-      id: api.id,
-      groupId: api.groupId,
-      groupName: api.groupName,
-      requestedByUserId: api.requestedByUserId,
-      requestedByName: api.requestedByName,
-      requestedByNick: api.requestedByNick,
-      publicationId: api.publicationId,
-      status: api.status.toLowerCase() as GroupJoinRequestStatus,
-      createdAt: api.createdAt,
-      respondedAt: api.respondedAt ?? undefined,
     };
   }
 

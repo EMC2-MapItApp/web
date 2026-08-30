@@ -5,11 +5,11 @@
  * que toca `navigator.serviceWorker`/`PushManager`/`Notification` directamente.
  */
 import { Injectable } from '@angular/core';
+import { environment } from '@env/environment';
 import { PushPermissionState, PushProvider, PushSubscriptionData } from './push-provider';
 
 @Injectable({ providedIn: 'root' })
 export class WebPushProvider implements PushProvider {
-
   private readonly swPath = '/push-sw.js';
 
   isSupported(): boolean {
@@ -33,24 +33,41 @@ export class WebPushProvider implements PushProvider {
 
     const permission = await Notification.requestPermission();
     // TODO(debug-push): logs temporales — quitar una vez confirmado el flujo end-to-end.
-    console.log('[push] permiso:', permission);
+    // Gateados por environment.production: el endpoint de la suscripción es un identificador
+    // estable del canal push del dispositivo y no debe quedar en la consola de producción.
+    if (!environment.production) console.log('[push] permiso:', permission);
     if (permission !== 'granted') return null;
 
     const registration = await navigator.serviceWorker.register(this.swPath);
     await navigator.serviceWorker.ready;
-    console.log('[push] service worker registrado, scope:', registration.scope, 'estado:', registration.active?.state);
+    if (!environment.production) {
+      console.log(
+        '[push] service worker registrado, scope:',
+        registration.scope,
+        'estado:',
+        registration.active?.state,
+      );
+    }
 
     const subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: this.urlBase64ToUint8Array(vapidPublicKey),
     });
-    console.log('[push] suscripción del navegador creada, endpoint:', subscription.endpoint);
+    if (!environment.production) {
+      console.log('[push] suscripción del navegador creada, endpoint:', subscription.endpoint);
+    }
 
     const json = subscription.toJSON();
     const p256dh = json.keys?.['p256dh'];
     const auth = json.keys?.['auth'];
     if (!json.endpoint || !p256dh || !auth) {
-      console.warn('[push] suscripción sin endpoint/keys completos', json);
+      // Solo qué campos faltan, nunca el objeto json completo: p256dh/auth son claves de
+      // cifrado de la suscripción push del dispositivo.
+      console.warn('[push] suscripción sin endpoint/keys completos', {
+        endpoint: !!json.endpoint,
+        p256dh: !!p256dh,
+        auth: !!auth,
+      });
       return null;
     }
 

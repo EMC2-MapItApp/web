@@ -25,17 +25,19 @@ export type PublicationType = 'promotion' | 'event';
  * en `group.model.ts`, `publication.service.ts` no tiene ninguna capa `ApiX`→modelo de traducción
  * hoy (es un passthrough directo), así que añadir una traducción para un solo campo sería más
  * inconsistente que ser explícito en que el valor es el enum crudo del backend.
- *  - `PUBLIC`:        cualquiera se apunta hasta completar aforo (comportamiento histórico).
- *  - `PRIVATE_GROUP`: solo miembros del grupo `groupId` pueden apuntarse.
+ *  - `PUBLIC`:  cualquiera se apunta hasta completar aforo (comportamiento histórico).
+ *  - `PRIVATE`: solo los invitados (búsqueda individual o invitando a los miembros de un grupo
+ *    como atajo, ver {@link PublicationCreateRequest.inviteUserIds}) pueden apuntarse. Es
+ *    independiente de cualquier grupo — invitar a un grupo no ata la publicación a él.
  */
-export type PublicationVisibility = 'PUBLIC' | 'PRIVATE_GROUP';
+export type PublicationVisibility = 'PUBLIC' | 'PRIVATE';
 
 /**
  * Publicación temporal visible en el mapa.
  */
 export interface Publication {
-  /** Identificador único (PK en BD). */
-  id: number;
+  /** Identificador único — ObjectId de Mongo (string), no un número. */
+  id: string;
 
   /** Id del usuario autor. FK → users.id */
   authorId: string;
@@ -49,14 +51,14 @@ export interface Publication {
    * - individual            : null (usa lat/lng propios).
    * FK → places.id
    */
-  placeId: number | null;
+  placeId: string | null;
 
   /**
    * Tipo de localización en la jerarquía de categorías.
    * - Si placeId != null: hereda el locationTypeId del Place.
    * - Si placeId == null: definido explícitamente por el individual.
    */
-  locationTypeId: number;
+  locationTypeId: string;
 
   /** Título de la publicación. */
   title: string;
@@ -119,27 +121,23 @@ export interface Publication {
 
   /**
    * Número de personas apuntadas actualmente.
-   * `undefined`/ausente cuando el backend lo enmascara: publicación `PRIVATE_GROUP` y el usuario
-   * actual no es miembro del grupo — no se filtra el aforo real a quien no debe verlo.
+   * `undefined`/ausente cuando el backend lo enmascara: publicación `PRIVATE` y `hasAccess` es
+   * `false` — no se filtra el aforo real a quien no tiene acceso.
    */
   occupiedSlots?: number;
 
   /** Visibilidad de la publicación. `PUBLIC` si el documento es anterior a este campo. */
   visibility: PublicationVisibility;
 
-  /** Id del grupo al que está restringida. `null` si `visibility === 'PUBLIC'`. */
-  groupId: string | null;
+  /**
+   * `true` si el usuario actual puede ver el contenido completo y apuntarse: siempre en
+   * `PUBLIC`; en `PRIVATE`, si es el autor, un ADMIN, o tiene una invitación aceptada/pendiente.
+   * Cuando es `false`, `title`/`description`/`metadata`/`occupiedSlots` llegan vacíos — el
+   * backend los enmascara (ver `PublicationMapper#toResponse`).
+   */
+  hasAccess: boolean;
 
-  /** Nombre del grupo. Solo presente en publicaciones `PRIVATE_GROUP`. */
-  groupName?: string;
-
-  /** Nº de miembros del grupo (no es el aforo — ver `metadata.slots` para el límite real de plazas). */
-  groupMemberCount?: number;
-
-  /** true si el usuario actual es miembro del grupo. Solo presente en publicaciones `PRIVATE_GROUP`. */
-  isGroupMember?: boolean;
-
-  /** true si el usuario actual tiene una solicitud de acceso pendiente para este grupo. */
+  /** true si el usuario actual tiene una solicitud de acceso pendiente. `null` en `PUBLIC`. */
   accessRequestPending?: boolean;
 }
 
@@ -154,7 +152,7 @@ export interface EnrolledUser {
 }
 
 export interface PublicationEnrollmentResponse {
-  publicationId: number;
+  publicationId: string;
   userId: string;
   occupiedSlots: number;
   maxSlots: number | null;
@@ -171,7 +169,7 @@ export type PublicationAccessRequestStatus = 'pending' | 'accepted' | 'rejected'
  */
 export interface PublicationAccessRequest {
   id: string;
-  publicationId: number;
+  publicationId: string;
   publicationTitle: string;
   requestedByUserId: string;
   requestedByName: string;
@@ -186,7 +184,8 @@ export interface PublicationAccessRequest {
  *
  * `id`, `authorId` y `active` son campos gestionados por backend.
  */
-export type PublicationCreateRequest = Omit<Publication, 'id' | 'authorId' | 'active'> & {
+export type PublicationCreateRequest =
+    Omit<Publication, 'id' | 'authorId' | 'active' | 'hasAccess' | 'accessRequestPending'> & {
   /**
    * Ids de usuarios invitados individualmente al evento, sea cual sea su visibilidad. No viene
    * de vuelta en {@link Publication} — es solo de entrada, no se expone en ninguna pantalla de

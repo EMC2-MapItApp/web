@@ -26,18 +26,178 @@ tradicional). Detalles y problemas ya resueltos en `BITACORA.md`:
 - Los límites de bundle en el dashboard de Cloudflare deben ampliarse manualmente si el build crece.
 
 Además del despliegue web, hay una integración en curso de **Capacitor** para publicar una app
-nativa Android en Google Play Store (por ahora solo instalación y configuración base —
-`capacitor.config.ts` — sin la plataforma nativa añadida todavía). Decisiones, pasos ejecutados
-y pendientes documentados en `docs/CAPACITOR.md`.
+nativa Android en Google Play Store — la plataforma nativa ya está añadida (`android/`,
+versionada) y compilando (`assembleDebug`/`assembleRelease`), con keystore de release y registro
+en Android Developer Verification ya hechos; falta completar la ficha de la app en Play Console y
+la subida real. Decisiones, pasos ejecutados y pendientes documentados en `docs/CAPACITOR.md`.
 
 ## Comandos
 
 ```bash
-npm start        # ng serve, http://localhost:4200, recarga en caliente
-npm run build    # ng build (usa environment.prod.ts en config production)
-npm run watch    # build incremental en modo development
-npm test         # ng test (Vitest)
+npm start          # ng serve, http://localhost:4200, recarga en caliente
+npm run build      # ng build (usa environment.prod.ts en config production)
+npm run watch      # build incremental en modo development
+npm test           # ng test (Vitest)
+npm run lint       # ng lint (ESLint sobre src/**/*.ts + src/**/*.html, ver eslint.config.js)
+npm run lint:style # stylelint sobre src/**/*.scss (ver stylelint.config.js)
+npm run format       # prettier --write sobre .ts/.html/.scss
+npm run format:check # prettier --check (sin escribir), lo que corre CI
 ```
+
+### Calidad automatizada (ESLint + Stylelint + Prettier + Husky)
+
+Instalado el 2026-08-16. Antes de asumir que una regla de esta sección sigue vigente,
+confirma que el archivo de config referenciado (`eslint.config.js`, `stylelint.config.js`)
+sigue existiendo y con ese contenido — es tan "documento vivo" como el resto de este
+fichero.
+
+- **ESLint** (`eslint.config.js`, `ng add @angular-eslint/schematics`): reglas TS de
+  `typescript-eslint`/`angular-eslint` sobre `.ts` + reglas de plantilla/accesibilidad de
+  `angular-eslint` sobre `.html`. Además de las reglas de fábrica, dos plugins añadidos a
+  medida para reglas de este documento que antes solo se revisaban a mano:
+  - `eslint-plugin-boundaries` (`boundaries/dependencies`, resuelto vía
+    `eslint-import-resolver-typescript` para que entienda los alias `@core/*` etc.):
+    aplica en código la capa de "Arquitectura" de más abajo — `core` puede depender de
+    `shared` y de una feature concreta (p. ej. los guards que abren un diálogo de auth
+    con `await import(...)`); `shared` solo de `core`/`shared`; `layout` de
+    `core`/`shared`/`layout`; cada **feature** solo de sí misma, `core` y `shared` —
+    nunca de otra feature. Si dos features necesitan el mismo componente, se promueve a
+    `shared/`, no se importa de una feature a otra.
+  - `eslint-plugin-rxjs-x` (`rxjs-x/no-nested-subscribe`, requiere parsing con tipos —
+    `languageOptions.parserOptions.projectService: true`): un `.subscribe()` anidado
+    dentro de otro `.subscribe()` es error. No se activó `no-ignored-subscription`: el
+    patrón dominante del proyecto es HTTP one-shot sin gestión explícita de la
+    suscripción, así que esa regla generaría ruido, no señal.
+- **Stylelint** (`stylelint.config.js`, sobre `stylelint-config-standard-scss`): solo dos
+  reglas de color activas a propósito — `color-no-hex` y una
+  `declaration-property-value-disallowed-list` custom que prohíbe `rgb()/rgba()`
+  literales — automatizan la regla de CLAUDE.md "Colores: solo variables de tema `--c-*`,
+  nunca hex hardcodeados" (exentos `src/styles/_themes.scss` y `_variables.scss`, que SON
+  la fuente de verdad de esos valores). El resto de reglas de
+  `stylelint-config-standard-scss` (modernización de sintaxis de color, notación de media
+  queries, espaciado/líneas en blanco, `selector-class-pattern` sin soporte BEM) están
+  desactivadas explícitamente en `stylelint.config.js` — no son una convención del
+  proyecto y generaban ruido ajeno al objetivo real.
+- **Prettier**: ya estaba como dependencia con `.prettierrc` pero sin script ni uso real.
+  **`format:check` falla hoy en 125 archivos** — el repo nunca se pasó por Prettier de
+  forma sistemática. No se ha aplicado un `npm run format` global todavía (es un diff
+  enorme y merece su propio commit aislado, no un efecto colateral de instalar la
+  herramienta) — pregunta antes de lanzarlo.
+- **Husky + lint-staged**: hook `pre-commit` (`.husky/pre-commit`) que corre
+  `npx lint-staged` — `eslint --fix` + `prettier --write` en `.ts`/`.html` tocados,
+  `stylelint --fix` + `prettier --write` en `.scss` tocados (config en
+  `"lint-staged"` de `package.json`). Solo actúa sobre archivos en stage, no sobre todo
+  el repo.
+- **CI** (`.github/workflows/ci.yml`): `build` es gate real (bloquea el merge). `lint`
+  (ESLint + Stylelint + `format:check`) y `test` corren con `continue-on-error: true` —
+  **informativos, no bloqueantes** — porque a fecha 2026-08-16 el repo arranca con deuda
+  preexistente (~75 avisos de `ng lint`, ~246 de `stylelint`, 125 archivos sin formatear,
+  2 suites de test en rojo — ver `docs/TareasLogin.md`/`src/app/app.routes.spec.ts` y
+  `home-shell.spec.ts` para el detalle de estas últimas). Quitar `continue-on-error`
+  rule por rule según se vaya limpiando la deuda, no todo de golpe.
+
+`angular-conventions-reviewer` y `style-nav-reviewer` ejecutan ESLint/Stylelint sobre los
+archivos tocados como primer paso mecánico de su revisión (ver sus checklists) — no
+sustituye ninguno de los dos, ya que la mayoría de reglas de este documento no tienen
+regla de lint equivalente todavía.
+
+Añadido el 2026-08-17: `angular-performance-reviewer` (tercer subagente exclusivo de este
+repo, `.claude/agents/angular-performance-reviewer.md`) cubre lo que los otros dos
+excluyen explícitamente — rendimiento propio de Angular: `ChangeDetectionStrategy.OnPush`
+(solo lo que ESLint no ve; el decorador que falta ya lo cubre
+`@angular-eslint/prefer-on-push-component-change-detection` dentro del paso mecánico de
+`angular-conventions-reviewer`), pureza de `computed()` frente a `effect()`, y ciclo de
+vida de suscripciones RxJS (cuándo una suscripción nueva necesita `takeUntilDestroyed`
+frente al patrón ya aceptado de HTTP one-shot). Se invoca de forma proactiva igual que los
+otros dos: cada vez que el diff toque `effect()`/`computed()`, añada una suscripción RxJS
+nueva en un componente/directiva, o cree un componente nuevo.
+
+### Revisión proactiva de seguridad
+
+Añadido el 2026-08-17: `security-reviewer` (cuarto subagente exclusivo de este repo,
+`.claude/agents/security-reviewer.md`, comando `/security-review-web`) cubre las
+superficies de seguridad propias de este frontend estático sin SSR que consume la API vía
+JWT: inyección DOM/XSS (`innerHTML`, `bypassSecurityTrust*`, `target="_blank"` sin
+`rel="noopener"`), manejo del JWT/sesión (`TOKEN_KEY`, `auth.interceptor.ts`, guards de
+`core/guards/`), redirecciones abiertas (`returnUrl` u otro parámetro de URL pasado sin
+validar a `navigateByUrl`), secretos de servidor filtrados al bundle cliente,
+vulnerabilidades conocidas en dependencias nuevas/actualizadas (`npm audit`) y cabeceras
+de despliegue en Cloudflare (`wrangler.toml`, `public/_headers`). Se invoca de forma
+**proactiva** — igual que los otros cuatro subagentes — cada vez que un cambio toque
+alguna de estas superficies, antes de dar el trabajo por cerrado:
+- **Autenticación**: login, registro, recuperación/reseteo de contraseña, manejo del JWT,
+  guards de sesión.
+- **Entrada de usuario que termina en el DOM, una URL o una query**: cualquier binding
+  nuevo que no pase por el sanitizado por defecto de Angular.
+- **Llamadas HTTP nuevas**, especialmente las que envían o reciben datos sensibles.
+- **`package.json`/`package-lock.json`**: dependencia añadida o actualizada — corre
+  `npm audit --omit=dev` acotado al paquete tocado por el diff, no una auditoría completa
+  del lockfile.
+- **`wrangler.toml`/`public/_headers`**: config de assets/SPA fallback y, si se añade una
+  CSP, que no bloquee Google Maps ni la API del backend ni abra `unsafe-inline`/
+  `unsafe-eval` en `script-src` sin justificación. `public/_headers` no existe todavía en
+  el repo (a fecha 2026-08-17) — su ausencia no es un finding, solo se revisa si un diff
+  la crea.
+
+No sustituye una revisión de seguridad completa bajo demanda (`/security-review`, el skill
+genérico no exclusivo de este repo) en cambios grandes o antes de un despliegue — sigue
+sin auditar el lockfile completo ni la config de despliegue salvo que el diff actual las
+toque. Es un gate ligero y determinista para que estas superficies no queden sin pasar por
+seguridad solo porque nadie se acordó de invocarlo a mano.
+
+### Revisión proactiva de la superficie nativa Android/Capacitor
+
+Añadido el 2026-08-17: `capacitor-android-reviewer` (quinto subagente exclusivo de este
+repo, `.claude/agents/capacitor-android-reviewer.md`, comando
+`/capacitor-android-review`) cubre lo que ninguno de los otros cuatro mira — están todos
+alcance a `src/app` — sobre el proyecto nativo generado por Capacitor: permisos en
+`AndroidManifest.xml`, componentes exportados (`android:exported`), alcance del tráfico
+cleartext en `network_security_config.xml`, deep links/esquemas de URL personalizados, y
+manejo de credenciales de firma (`signingConfigs`/`key.properties`). Estado ya documentado
+y aceptado, que el agente no debe relitigar: un único permiso (`INTERNET`), `MainActivity`
+como único componente exportado (necesario, `LAUNCHER`), cleartext acotado a
+`10.0.2.2`/`localhost` (backend de dev, ver `docs/CAPACITOR.md`), firma vía
+`key.properties` externo al repo. Se invoca de forma **proactiva** cada vez que un cambio
+toque `AndroidManifest.xml`, `network_security_config.xml`, `capacitor.config.ts`,
+`android/app/build.gradle`, o añada/actualice un plugin `@capacitor/*` que pueda declarar
+permisos o componentes nuevos.
+
+### Revisión proactiva de cobertura de tests
+
+Añadido el 2026-08-26: `test-coverage-reviewer` (sexto subagente exclusivo de este repo,
+`.claude/agents/test-coverage-reviewer.md`, comando `/test-coverage-review`) cubre lo que
+ninguno de los otros cinco mira — todos excluyen tests explícitamente de su alcance —: que
+todo servicio (`*.service.ts`) o guard funcional (`*.guard.ts` que exporta
+`CanActivateFn`/`CanMatchFn`/`CanDeactivateFn`/`CanActivateChildFn`/`ResolveFn`) tocado por
+el diff tenga su `.spec.ts`, que ese test ejercite de verdad el comportamiento
+nuevo/modificado (no un shell trivial) y que pase realmente (`npx vitest run` acotado a los
+specs tocados, nunca la suite completa). No revisa componentes, pipes, interceptors,
+modelos ni directivas, ni exige cobertura exhaustiva de casos límite o porcentaje de
+cobertura — solo existencia y no-trivialidad de test para lo que el diff toca. Se invoca de
+forma **proactiva** cada vez que se crea o modifica un `.service.ts` o un guard funcional.
+
+Estado conocido a fecha 2026-08-26: de 21 servicios, 2 tienen spec
+(`publication.service.spec.ts` ya existía; `auth.service.spec.ts` se añadió hoy mismo,
+primer test escrito con este agente aplicado de forma retroactiva); de los 4 archivos
+`*.guard.ts`, 3 son guards funcionales reales sin spec y el 4º (`auth.guard.ts`) no es un
+guard — solo exporta la constante `TOKEN_KEY`, queda fuera del alcance del agente por
+definición. Este gap (22 archivos pendientes de crear, más las 2 suites existentes en rojo
+documentadas más abajo) ya no vive solo en este párrafo: se trackea en
+`../audit/tests/web/TESTS-DEBT.md`, no en `audit/AUDIT-DEBT.md` — la deuda de tests tiene su
+propio registro desde 2026-08-26, separado del resto de hallazgos de auditoría. Por eso, a
+diferencia de los otros 5, `test-coverage-reviewer` no se ha añadido a
+`docs/SUBAGENT-VALIDATION.md`: se aplica solo hacia delante, sobre diffs nuevos, mientras el
+barrido del backlog existente avanza vía `TESTS-DEBT.md`.
+
+### Barrido retroactivo de los 5 subagentes sobre código ya existente
+
+Añadido el 2026-08-17: los 5 subagentes de arriba nacieron para invocarse sobre el diff
+de una tarea, así que nunca habían pasado por el código ya escrito antes de que
+existieran. `docs/SUBAGENT-VALIDATION.md` registra, bloque a bloque (poco a poco, no en
+una sola sesión), qué zona del código ya se validó con qué subagentes y con qué
+resultado; los hallazgos no triviales que se difieren en vez de arreglarse al momento se
+registran como entradas normales en `audit/AUDIT-DEBT.md` (mismo fichero de deuda que usa
+el proceso `/audit` cross-repo, para no mantener dos listas de deuda distintas).
 
 La API local que consume el frontend en dev es el backend en `http://localhost:8081` (perfil
 `dev` de `../BACK`, ver `src/environments/environment.ts`).
@@ -110,10 +270,11 @@ guard para quedar fuera del bundle inicial — mantener ese patrón en guards/di
   abierto desde `login-dialog` vía `MatDialog`, sin ruta propia) y `reset-password/` (página real
   con formulario de contraseña nueva, análoga a `verify-email/` — se llega desde el enlace del
   correo, sin contexto previo del shell).
-- **Rutas hijas de `HomeShellComponent`**: `dashboard`, `profile`, `settings` y `create-publication`
-  requieren sesión vía `authDialogGuard`; las páginas informativas (`about`, `changelog`, `stack`)
-  también son hijas del shell pero **sin guard** (accesibles sin sesión). Solo `verify-email` y
-  `reset-password` quedan fuera del shell — se llega a ellas desde el enlace de un correo, sin
+- **Rutas hijas de `HomeShellComponent`**: `dashboard`, `profile`, `settings`,
+  `create-publication`, `groups`, `groups/:id/edit` y `feedback` requieren sesión vía
+  `authDialogGuard`; las páginas informativas (`about`, `changelog`, `stack`) también son hijas
+  del shell pero **sin guard** (accesibles sin sesión). `verify-email`, `reset-password` y
+  `group-invitation` quedan fuera del shell — se llega a ellas desde el enlace de un correo, sin
   contexto previo de la app.
 
 ### Páginas nuevas — patrón de integración en el shell

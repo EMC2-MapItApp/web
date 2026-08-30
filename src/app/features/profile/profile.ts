@@ -21,8 +21,6 @@ import { MainCategory, SubCategory } from '@core/models/category.model';
 import { DatePipe, SlicePipe } from '@angular/common';
 import { Publication, PublicationAccessRequest, PublicationVisibility } from '@core/models/publication.model';
 import { PublicationService } from '@core/services/publication.service';
-import { Group } from '@core/models/group.model';
-import { GroupService } from '@core/services/group.service';
 import { ResponsiveService } from '@core/responsive/responsive.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
@@ -66,7 +64,6 @@ export class ProfilePageComponent {
   private userService = inject(UserService);
   private categoryService = inject(CategoryService);
   private publicationService = inject(PublicationService);
-  private groupService = inject(GroupService);
   private snackBar = inject(MatSnackBar);
   private router = inject(Router);
   private fb = inject(FormBuilder);
@@ -114,10 +111,10 @@ export class ProfilePageComponent {
   // ── Solicitudes de acceso a publicaciones privadas ──────────────────────────
 
   /** Nº de solicitudes pendientes por publicación, para el badge de la fila cerrada. */
-  pendingAccessRequestCountByPublication = signal<Record<number, number>>({});
+  pendingAccessRequestCountByPublication = signal<Record<string, number>>({});
 
   /** Id de la publicación cuyo panel de solicitudes está expandido (null = ninguna). */
-  accessRequestsPanelId = signal<number | null>(null);
+  accessRequestsPanelId = signal<string | null>(null);
 
   /** Solicitudes pendientes de la publicación con el panel expandido. */
   openAccessRequests = signal<PublicationAccessRequest[]>([]);
@@ -129,33 +126,24 @@ export class ProfilePageComponent {
 
   // ── Cambio de visibilidad ────────────────────────────────────────────────────
 
-  /** Grupos que el usuario organiza, para el selector inline al pasar una publicación a privada. */
-  myOrganizedGroupsForVisibility = signal<Group[]>([]);
-
   /** Id de la publicación cuyo control de "Cambiar visibilidad" está expandido (null = ninguna). */
-  visibilityEditId = signal<number | null>(null);
+  visibilityEditId = signal<string | null>(null);
 
   /** Id de la publicación con un cambio de visibilidad en curso, para deshabilitar sus botones. */
-  changingVisibilityId = signal<number | null>(null);
+  changingVisibilityId = signal<string | null>(null);
 
   // ── Árbol de categorías para el selector de favoritos ──────────────────────
   categories = signal<MainCategory[]>([]);
 
   /** Categoría expandida en el selector de favoritos (null = ninguna). */
-  expandedMain = signal<number | null>(null);
+  expandedMain = signal<string | null>(null);
 
   /** Subcategoría expandida (null = ninguna). */
-  expandedSub = signal<number | null>(null);
+  expandedSub = signal<string | null>(null);
 
   constructor() {
     this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
     this.loadMyPublications();
-
-    this.groupService.getMyGroups().subscribe(groups => {
-      this.myOrganizedGroupsForVisibility.set(
-        groups.filter(g => this.groupService.getMyRole(g) === 'organizer')
-      );
-    });
   }
 
   /**
@@ -182,7 +170,7 @@ export class ProfilePageComponent {
   /** Carga, para cada publicación privada, cuántas solicitudes de acceso tiene pendientes. */
   private loadPendingAccessRequestCounts(pubs: Publication[]): void {
     pubs
-      .filter(p => p.visibility === 'PRIVATE_GROUP')
+      .filter(p => p.visibility === 'PRIVATE')
       .forEach(pub => {
         this.publicationService.getPendingAccessRequests(pub.id).subscribe(requests => {
           this.pendingAccessRequestCountByPublication.update(prev => ({ ...prev, [pub.id]: requests.length }));
@@ -244,7 +232,7 @@ export class ProfilePageComponent {
     });
   }
 
-  private decrementPendingAccessRequestCount(publicationId: number): void {
+  private decrementPendingAccessRequestCount(publicationId: string): void {
     this.pendingAccessRequestCountByPublication.update(prev => ({
       ...prev,
       [publicationId]: Math.max(0, (prev[publicationId] ?? 1) - 1),
@@ -315,26 +303,27 @@ export class ProfilePageComponent {
    * aforo nunca rompe expectativas de nadie).
    */
   makePublic(publication: Publication): void {
-    this.applyVisibilityChange(publication, 'PUBLIC', null);
+    this.applyVisibilityChange(publication, 'PUBLIC');
   }
 
   /**
-   * Cambia una publicación pública a privada de un grupo que organiza. El backend rechaza el
-   * cambio (409 `FOREIGN_ENROLLMENTS`) si hay apuntados que no son miembros de ese grupo.
+   * Cambia una publicación pública a privada. Solo los ya invitados (o el propio autor) podrán
+   * seguir apuntándose. El backend rechaza el cambio (409 `FOREIGN_ENROLLMENTS`) si hay
+   * apuntados sin invitación.
    */
-  makePrivate(publication: Publication, groupId: string): void {
-    this.applyVisibilityChange(publication, 'PRIVATE_GROUP', groupId);
+  makePrivate(publication: Publication): void {
+    this.applyVisibilityChange(publication, 'PRIVATE');
   }
 
-  private applyVisibilityChange(publication: Publication, visibility: PublicationVisibility, groupId: string | null): void {
+  private applyVisibilityChange(publication: Publication, visibility: PublicationVisibility): void {
     this.changingVisibilityId.set(publication.id);
-    this.publicationService.changeVisibility(publication.id, visibility, groupId).subscribe({
+    this.publicationService.changeVisibility(publication.id, visibility).subscribe({
       next: updated => {
         this.myPublications.update(list => list.map(p => p.id === updated.id ? updated : p));
         this.changingVisibilityId.set(null);
         this.visibilityEditId.set(null);
         this.snackBar.open(
-          visibility === 'PUBLIC' ? 'Publicación ahora abierta a todos' : 'Publicación ahora es privada de grupo',
+          visibility === 'PUBLIC' ? 'Publicación ahora abierta a todos' : 'Publicación ahora es privada',
           'Cerrar', { duration: 3000, horizontalPosition: 'center', verticalPosition: 'top' },
         );
       },
@@ -342,7 +331,7 @@ export class ProfilePageComponent {
         this.changingVisibilityId.set(null);
         const code = error?.error?.error?.code;
         const message = code === 'FOREIGN_ENROLLMENTS'
-          ? (error.error?.error?.message ?? 'No puedes limitar esta publicación a ese grupo: hay personas apuntadas que no son miembros.')
+          ? (error.error?.error?.message ?? 'No puedes hacer privada esta publicación: hay personas apuntadas sin invitación.')
           : 'No se pudo cambiar la visibilidad. Inténtalo de nuevo.';
         this.snackBar.open(message, 'Cerrar', { duration: 6000, horizontalPosition: 'center', verticalPosition: 'top' });
       },
@@ -622,18 +611,18 @@ export class ProfilePageComponent {
   // ── Favoritos ──────────────────────────────────────────────────────────────
 
   /** Alterna expansión de una categoría principal. */
-  toggleMain(catId: number): void {
+  toggleMain(catId: string): void {
     this.expandedMain.update(v => v === catId ? null : catId);
     this.expandedSub.set(null);
   }
 
   /** Alterna expansión de una subcategoría. */
-  toggleSub(subId: number): void {
+  toggleSub(subId: string): void {
     this.expandedSub.update(v => v === subId ? null : subId);
   }
 
   /** Comprueba si un locationTypeId está en favoritos. */
-  isFavorite(typeId: number): boolean {
+  isFavorite(typeId: string): boolean {
     return this.cu.favoriteTypeIds().includes(typeId);
   }
 
@@ -667,7 +656,7 @@ export class ProfilePageComponent {
   }
 
   /** Añade o quita un locationTypeId de favoritos. */
-  toggleFavorite(typeId: number): void {
+  toggleFavorite(typeId: string): void {
     const current = [...this.cu.favoriteTypeIds()];
     const idx = current.indexOf(typeId);
     if (idx >= 0) current.splice(idx, 1);
@@ -685,7 +674,7 @@ export class ProfilePageComponent {
    * Comprueba si un locationTypeId corresponde a un tipo profesional.
    * Por convención todos los tipos profesionales terminan en '-profesional'.
    */
-  isProfessionalType(typeId: number): boolean {
+  isProfessionalType(typeId: string): boolean {
     const type = this.categoryService.getLocationTypeById(typeId);
     return type?.name.toLowerCase() === 'profesional';
   }
@@ -695,7 +684,7 @@ export class ProfilePageComponent {
    * Los tipos profesionales requieren nivel 10.
    * El resto están siempre disponibles.
    */
-  canToggleFavorite(typeId: number): boolean {
+  canToggleFavorite(typeId: string): boolean {
     if (!this.isProfessionalType(typeId)) return true;
     return (this.cu.userLevel() ?? 0) >= this.PROFESSIONAL_TYPE_REQUIRED_LEVEL;
   }
@@ -703,7 +692,7 @@ export class ProfilePageComponent {
   /**
    * Versión protegida de toggleFavorite: ignora la acción si no tiene nivel.
    */
-  toggleFavoriteIfAllowed(typeId: number): void {
+  toggleFavoriteIfAllowed(typeId: string): void {
     if (this.canToggleFavorite(typeId)) this.toggleFavorite(typeId);
   }
 

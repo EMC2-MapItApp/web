@@ -25,7 +25,7 @@ usando piezas estándar de la industria en vez de atajos de proyecto de juguete.
 
 | Pieza | Por qué |
 |---|---|
-| [Google Maps JavaScript API](https://developers.google.com/maps/documentation/javascript) (`@googlemaps/js-api-loader`) | El mapa es el elemento central del producto; Maps es el estándar con mejor cobertura de datos y SDK JS maduro. Clave de API restringida por dominio (HTTP referrer), no por IP — es pública en el bundle del cliente por diseño de este tipo de API. |
+| [Google Maps JavaScript API](https://developers.google.com/maps/documentation/javascript) | El mapa es el elemento central del producto; Maps es el estándar con mejor cobertura de datos y SDK JS maduro. Se carga inyectando el `<script>` a mano (`google-maps.service.ts`); el paquete `@googlemaps/js-api-loader` se retiró de `package.json` por no tener uso real. Clave de API restringida por dominio (HTTP referrer), no por IP — es pública en el bundle del cliente por diseño de este tipo de API. |
 | `GeoIpService` (frontend) + `/api/v1/geo` (backend) | Fallback de ubicación cuando el navegador no da permiso de geolocalización. |
 
 ## Seguridad de contraseñas
@@ -39,7 +39,14 @@ usando piezas estándar de la industria en vez de atajos de proyecto de juguete.
 | Pieza | Por qué |
 |---|---|
 | [Web Push API](https://developer.mozilla.org/en-US/docs/Web/API/Push_API) + Service Worker dedicado (`public/push-sw.js`) | Notificaciones nativas del SO (desktop y móvil) sin empaquetar la app — el Service Worker solo escucha `push`/`notificationclick`, no cachea assets, así que no se usa `@angular/service-worker` (pensado para App Shell/offline, no para push). |
-| `PushProvider` (`core/notifications/`) | Abstracción propia sobre `navigator.serviceWorker`/`PushManager`: el resto de la app (campana, Ajustes) depende de esta interfaz, nunca de las APIs del navegador directamente. Prepara el terreno para añadir un `CapacitorPushProvider` (FCM/APNs) el día que se empaquete con Capacitor, cambiando solo el binding en `app.config.ts`. |
+| `PushProvider` (`core/notifications/`) | Abstracción propia sobre `navigator.serviceWorker`/`PushManager`: el resto de la app (campana, Ajustes) depende de esta interfaz, nunca de las APIs del navegador directamente. La app ya se empaqueta con Capacitor para Android (ver sección siguiente), pero el canal de push dentro del WebView todavía no se ha probado ni migrado — añadir un `CapacitorPushProvider` (FCM) es cambiar solo el binding en `app.config.ts` cuando se aborde. |
+
+## Empaquetado nativo (Android)
+
+| Pieza | Versión | Por qué |
+|---|---|---|
+| [Capacitor](https://capacitorjs.com/) (`@capacitor/core`, `@capacitor/android`, `@capacitor/cli`) | ^8.5.0 | Empaqueta la SPA Angular existente como app Android nativa (WebView) sin reescribir la UI ni mantener un codebase paralelo — mismo bundle web (`dist/mapit-app/browser`), plataforma nativa generada aparte en `android/` (versionada, no generada-y-descartable). |
+| Google Play Console + Android Developer Verification | — | Registro del paquete `com.emc.mapitapp` y keystore de release (fuera del repo). Publicación real en la store todavía no completada — estado detallado y pasos pendientes en `docs/CAPACITOR.md`. |
 
 ## Testing
 

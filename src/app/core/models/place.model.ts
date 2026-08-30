@@ -16,8 +16,8 @@
  * Sede permanente registrada por un profesional o entidad.
  */
 export interface Place {
-  /** Identificador único (PK en BD). */
-  id: number;
+  /** Identificador único — ObjectId de Mongo (string), no un número. */
+  id: string;
 
   /** Id del usuario propietario (professional o entity). FK → users.id */
   ownerId: string;
@@ -33,7 +33,7 @@ export interface Place {
    * FK → location_types.id en BD.
    * @example 'ciclismo-profesional' | 'museos-visita'
    */
-  locationTypeId: number;
+  locationTypeId: string;
 
   /** Latitud en grados decimales. */
   lat: number;

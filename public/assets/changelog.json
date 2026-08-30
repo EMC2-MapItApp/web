@@ -1,5 +1,47 @@
 [
   {
+    "date": "2026-08-17",
+    "type": "improvement",
+    "title": "App más rápida y segura",
+    "description": "Reducimos peticiones innecesarias al usar la app y reforzamos la seguridad al iniciar sesión desde enlaces externos."
+  },
+  {
+    "date": "2026-08-17",
+    "type": "improvement",
+    "title": "Formularios de acceso más claros",
+    "description": "Hemos mejorado la presentación de las pantallas de inicio de sesión, registro y recuperación de contraseña para que sean más fáciles de usar."
+  },
+  {
+    "date": "2026-08-16",
+    "type": "improvement",
+    "title": "Recuerda tu vista del mapa",
+    "description": "El mapa recuerda la zona y el nivel de zoom donde estabas, para que no tengas que volver a buscarlo cada vez."
+  },
+  {
+    "date": "2026-08-16",
+    "type": "improvement",
+    "title": "El mapa recuerda tu posición",
+    "description": "Al volver a la pantalla del mapa, se mantiene la zona y el nivel de zoom que estabas viendo, sin tener que buscarla de nuevo."
+  },
+  {
+    "date": "2026-08-16",
+    "type": "improvement",
+    "title": "Recuerda tu vista del mapa",
+    "description": "Ahora el mapa mantiene la posición y el zoom donde lo dejaste, para que no tengas que volver a buscar tu zona cada vez."
+  },
+  {
+    "date": "2026-08-16",
+    "type": "improvement",
+    "title": "Mapa recuerda tu posición",
+    "description": "El mapa mantiene la vista y el zoom donde lo dejaste al crear publicaciones, para que no tengas que buscar de nuevo la zona."
+  },
+  {
+    "date": "2026-08-13",
+    "type": "improvement",
+    "title": "Publicaciones privadas por invitación",
+    "description": "Ahora las publicaciones privadas se comparten invitando a personas concretas (o a los miembros de un grupo como atajo), sin quedar atadas a ningún grupo. Si no tienes acceso, verás el pin en el mapa pero no su contenido, y podrás pedir acceso al organizador."
+  },
+  {
     "date": "2026-08-12",
     "type": "feature",
     "title": "Solicita apuntarte a eventos privados",

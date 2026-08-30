@@ -49,8 +49,11 @@ export class PushNotificationService {
     const { publicKey } = await firstValueFrom(
       this.http.get<{ publicKey: string }>(`${this.baseUrl}/push/public-key`)
     );
-    // TODO(debug-push): logs temporales — quitar una vez confirmado el flujo end-to-end.
-    console.log('[push] clave pública VAPID recibida:', publicKey ? '(configurada)' : '(VACÍA)');
+    // Gateado por environment.production, igual que WebPushProvider.subscribe(): es solo
+    // depuración de flujo, no un error.
+    if (!environment.production) {
+      console.log('[push] clave pública VAPID recibida:', publicKey ? '(configurada)' : '(VACÍA)');
+    }
 
     // Backend sin claves VAPID configuradas (dev sin exportar MAPIT_VAPID_*): no hay nada a lo
     // que suscribirse todavía, aunque el navegador sí soporte push.
@@ -65,7 +68,7 @@ export class PushNotificationService {
 
     try {
       await firstValueFrom(this.http.post<void>(`${this.baseUrl}/push/subscriptions`, subscription));
-      console.log('[push] suscripción registrada en el backend OK');
+      if (!environment.production) console.log('[push] suscripción registrada en el backend OK');
     } catch (err) {
       console.error('[push] fallo al registrar la suscripción en el backend', err);
       throw err;

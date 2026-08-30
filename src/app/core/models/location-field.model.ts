@@ -110,7 +110,7 @@ export interface LocationFieldSchema {
    * Id del tipo de localización al que aplica este schema.
    * @example 'ciclismo-profesional' | 'museos-visita'
    */
-  locationTypeId: number;
+  locationTypeId: string;
 
   /**
    * Contexto de uso: place, promotion o event.

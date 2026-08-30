@@ -420,11 +420,11 @@
               {{ isFinished(publication) ? 'Terminada' : 'Activa' }}
             </span>
             <span class="activity-item__visibility"
-              [class.activity-item__visibility--private]="publication.visibility === 'PRIVATE_GROUP'">
-              <mat-icon>{{ publication.visibility === 'PRIVATE_GROUP' ? 'lock' : 'public' }}</mat-icon>
-              {{ publication.visibility === 'PRIVATE_GROUP' ? (publication.groupName ?? 'Privada') : 'Pública' }}
+              [class.activity-item__visibility--private]="publication.visibility === 'PRIVATE'">
+              <mat-icon>{{ publication.visibility === 'PRIVATE' ? 'lock' : 'public' }}</mat-icon>
+              {{ publication.visibility === 'PRIVATE' ? 'Privada' : 'Pública' }}
             </span>
-            @if (publication.visibility === 'PRIVATE_GROUP' &&
+            @if (publication.visibility === 'PRIVATE' &&
               ((pendingAccessRequestCountByPublication()[publication.id] ?? 0) > 0 || accessRequestsPanelId() === publication.id)) {
             <button type="button" class="activity-item__pending-requests" (click)="toggleAccessRequests(publication)">
               <mat-icon>person_add</mat-icon>
@@ -463,9 +463,9 @@
 
           @if (visibilityEditId() === publication.id) {
           <div class="visibility-edit">
-            @if (publication.visibility === 'PRIVATE_GROUP') {
+            @if (publication.visibility === 'PRIVATE') {
             <p class="visibility-edit__hint">
-              Privada para <strong>{{ publication.groupName }}</strong>. Pasar a pública siempre está permitido.
+              Privada — solo pueden apuntarse los invitados. Pasar a pública siempre está permitido.
             </p>
             <button mat-flat-button color="primary" type="button" [disabled]="changingVisibilityId() === publication.id"
               (click)="makePublic(publication)">
@@ -475,22 +475,19 @@
               <ng-container><mat-icon>public</mat-icon> Hacer pública</ng-container>
               }
             </button>
-            } @else if (myOrganizedGroupsForVisibility().length === 0) {
-            <p class="visibility-edit__hint">
-              Organiza un grupo para poder limitar esta publicación a sus miembros.
-            </p>
             } @else {
             <p class="visibility-edit__hint">
-              Elige el grupo al que restringir esta publicación. Se bloqueará si hay apuntados que no son miembros.
+              Solo podrán seguir apuntándose los invitados (o tú, como autor). Se bloqueará si hay
+              apuntados sin invitación.
             </p>
-            <div class="visibility-edit__groups">
-              @for (group of myOrganizedGroupsForVisibility(); track group.id) {
-              <button type="button" class="visibility-edit__group-chip"
-                [disabled]="changingVisibilityId() === publication.id" (click)="makePrivate(publication, group.id)">
-                {{ group.name }}
-              </button>
+            <button mat-flat-button color="primary" type="button" [disabled]="changingVisibilityId() === publication.id"
+              (click)="makePrivate(publication)">
+              @if (changingVisibilityId() === publication.id) {
+              <mat-spinner diameter="16" />
+              } @else {
+              <ng-container><mat-icon>lock</mat-icon> Hacer privada</ng-container>
               }
-            </div>
+            </button>
             }
           </div>
           }

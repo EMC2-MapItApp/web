@@ -342,9 +342,9 @@ https://github.com/ionic-team/capacitor/blob/main/core/system-bars.md (mismo con
 
 Se carga con un servicio custom de inyección de `<script>`
 (`src/app/core/services/google-maps.service.ts`), no con `@angular/google-maps` ni con
-`@googlemaps/js-api-loader` (instalado en el repo pero sin usar actualmente). La key está
-hardcodeada e idéntica en `environment.ts` y `environment.prod.ts`, pensada para restricción por
-referrer HTTP (web). **Actualización (iteración 3)**: probado en el emulador y el mapa carga
+`@googlemaps/js-api-loader` (retirado de `package.json` por auditoría, no tenía uso real). La key
+está hardcodeada e idéntica en `environment.ts` y `environment.prod.ts`, pensada para restricción
+por referrer HTTP (web). **Actualización (iteración 3)**: probado en el emulador y el mapa carga
 sin problemas — la restricción de referrer no está bloqueando la carga en el WebView de
 Capacitor. Se deja abierto igualmente si conviene una key separada con restricción por paquete
 Android + SHA-1 antes de publicar en Play Store (buena práctica de seguridad,

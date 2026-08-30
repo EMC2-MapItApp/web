@@ -19,7 +19,7 @@
  * Valor inicial: preferencia del sistema operativo si no hay dato guardado.
  */
 
-import {effect, Injectable, signal} from '@angular/core';
+import { effect, Injectable, signal } from '@angular/core';
 
 /** Clave de `localStorage` para persistir la preferencia de tema. */
 const STORAGE_KEY = 'mapit_theme';
@@ -32,7 +32,6 @@ const MAPS_STYLE_ID = 'mapit-gmaps-dark';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-
   /** Signal interno escribible con el estado del tema oscuro. */
   private readonly _dark = signal(false);
 
@@ -55,9 +54,9 @@ export class ThemeService {
    * (_flash of unstyled content_) y registra el `effect()` de persistencia.
    */
   constructor() {
-    const saved       = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(STORAGE_KEY);
     const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
-    const isDark      = saved === 'dark' || (!saved && prefersDark);
+    const isDark = saved === 'dark' || (!saved && prefersDark);
 
     // Aplicación síncrona antes del primer render para evitar FOUC
     this._applyTheme(isDark);
@@ -71,7 +70,7 @@ export class ThemeService {
 
   /** Alterna entre tema claro y oscuro. */
   toggle(): void {
-    this._dark.update(v => !v);
+    this._dark.update((v) => !v);
   }
 
   /**
@@ -83,7 +82,11 @@ export class ThemeService {
    */
   private _applyTheme(dark: boolean): void {
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-    dark ? this._startObserver() : this._stopObserver();
+    if (dark) {
+      this._startObserver();
+    } else {
+      this._stopObserver();
+    }
   }
 
   /**
@@ -123,7 +126,7 @@ export class ThemeService {
     const iw = document.querySelector<HTMLElement>('.gm-style-iw-c');
     if (iw) {
       delete iw.dataset['darkStyled'];
-      iw.querySelectorAll<HTMLElement>('*').forEach(el => {
+      iw.querySelectorAll<HTMLElement>('*').forEach((el) => {
         el.style.removeProperty('background-color');
         el.style.removeProperty('color');
       });
@@ -152,24 +155,24 @@ export class ThemeService {
     const bg = '#1e293b';
 
     root.style.setProperty('background-color', bg, 'important');
-    root.querySelectorAll<HTMLElement>('div').forEach(el =>
-      el.style.setProperty('background-color', bg, 'important')
-    );
-    root.querySelectorAll<HTMLElement>('.gm-title, h2, h3').forEach(el =>
-      el.style.setProperty('color', '#f1f5f9', 'important')
-    );
-    root.querySelectorAll<HTMLElement>('.address-line, span:not(.gm-ui-hover-effect span)').forEach(el =>
-      el.style.setProperty('color', '#94a3b8', 'important')
-    );
-    root.querySelectorAll<HTMLElement>('a, a span').forEach(el => {
+    root
+      .querySelectorAll<HTMLElement>('div')
+      .forEach((el) => el.style.setProperty('background-color', bg, 'important'));
+    root
+      .querySelectorAll<HTMLElement>('.gm-title, h2, h3')
+      .forEach((el) => el.style.setProperty('color', '#f1f5f9', 'important'));
+    root
+      .querySelectorAll<HTMLElement>('.address-line, span:not(.gm-ui-hover-effect span)')
+      .forEach((el) => el.style.setProperty('color', '#94a3b8', 'important'));
+    root.querySelectorAll<HTMLElement>('a, a span').forEach((el) => {
       el.style.setProperty('color', '#818cf8', 'important');
       el.style.setProperty('background-color', 'transparent', 'important');
     });
     // El botón cerrar usa mask-image SVG: el color del icono se controla
     // con background-color del <span> que actúa como máscara.
-    root.querySelectorAll<HTMLElement>('.gm-ui-hover-effect > span').forEach(el =>
-      el.style.setProperty('background-color', '#94a3b8', 'important')
-    );
+    root
+      .querySelectorAll<HTMLElement>('.gm-ui-hover-effect > span')
+      .forEach((el) => el.style.setProperty('background-color', '#94a3b8', 'important'));
 
     this._injectArrowStyle();
   }

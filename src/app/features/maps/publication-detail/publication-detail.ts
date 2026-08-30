@@ -22,10 +22,10 @@ import { EnrolledUser, PublicationVisibility } from '@core/models/publication.mo
  * Compatible con MapLocation (legacy), Place y Publication.
  */
 export interface PublicationDetailInput {
-  id: number;
+  id: string;
   name: string;
   description?: string;
-  locationTypeId: number;
+  locationTypeId: string;
   metadata?: Record<string, unknown>;
   /** Solo Publication: tipo de publicación. */
   publicationType?: 'event' | 'promotion';
@@ -43,13 +43,9 @@ export interface PublicationDetailInput {
   enrolledUsers?: EnrolledUser[];
   /** Solo Publication: visibilidad ('PUBLIC' por defecto si el item no la trae, p. ej. un Place). */
   visibility?: PublicationVisibility;
-  /** Solo Publication PRIVATE_GROUP: nombre del grupo. */
-  groupName?: string;
-  /** Solo Publication PRIVATE_GROUP: nº de miembros del grupo (no es el aforo, ver metadata.slots). */
-  groupMemberCount?: number;
-  /** Solo Publication PRIVATE_GROUP: true si el usuario actual es miembro del grupo. */
-  isGroupMember?: boolean;
-  /** Solo Publication PRIVATE_GROUP: true si el usuario actual tiene una solicitud de acceso pendiente. */
+  /** Solo Publication: true si el usuario actual puede ver el contenido completo y apuntarse. */
+  hasAccess?: boolean;
+  /** Solo Publication PRIVATE: true si el usuario actual tiene una solicitud de acceso pendiente. */
   accessRequestPending?: boolean;
 }
 
@@ -86,19 +82,13 @@ export class PublicationDetailComponent implements OnChanges {
   /** Visibilidad de la publicación. 'PUBLIC' para cualquier otro tipo de detalle (p. ej. Place). */
   @Input() visibility: PublicationVisibility = 'PUBLIC';
 
-  /** Nombre del grupo, solo relevante si `visibility === 'PRIVATE_GROUP'`. */
-  @Input() groupName?: string;
+  /** true si el usuario actual puede ver el contenido completo y apuntarse. Irrelevante en `PUBLIC`. */
+  @Input() hasAccess = false;
 
-  /** Nº de miembros del grupo, solo relevante si `visibility === 'PRIVATE_GROUP'`. */
-  @Input() groupMemberCount?: number;
-
-  /** true si el usuario actual es miembro del grupo. Solo relevante en publicaciones privadas. */
-  @Input() isGroupMember = false;
-
-  /** true si ya hay una solicitud de acceso pendiente del usuario actual para este grupo. */
+  /** true si ya hay una solicitud de acceso pendiente del usuario actual. */
   @Input() accessRequestPending = false;
 
-  /** Notifica al padre que un no-miembro solicita acceso al grupo de una publicación privada. */
+  /** Notifica al padre que un usuario sin acceso solicita unirse a una publicación privada. */
   @Output() joinRequestRequested = new EventEmitter<void>();
 
   /**
@@ -210,36 +200,36 @@ export class PublicationDetailComponent implements OnChanges {
     return this.joinedCount >= this.maxSlots;
   }
 
-  /** true si la publicación es privada de grupo. */
-  get isPrivateGroup(): boolean {
-    return this.visibility === 'PRIVATE_GROUP';
+  /** true si la publicación es privada. */
+  get isPrivate(): boolean {
+    return this.visibility === 'PRIVATE';
   }
 
-  /** true si es una publicación privada y el usuario actual no pertenece al grupo. */
-  get isPrivateNonMember(): boolean {
-    return this.isPrivateGroup && !this.isGroupMember;
+  /** true si es una publicación privada y el usuario actual no tiene acceso todavía. */
+  get isPrivateNoAccess(): boolean {
+    return this.isPrivate && !this.hasAccess;
   }
 
   /** true si el botón de apuntarse/solicitar debe estar deshabilitado. */
   get joinDisabled(): boolean {
-    if (this.isPrivateNonMember) return this.accessRequestPending;
+    if (this.isPrivateNoAccess) return this.accessRequestPending;
     return this.isFull || this.alreadyJoined;
   }
 
   /** Etiqueta contextual del botón según estado de inscripción/solicitud. */
   get joinButtonText(): string {
-    if (this.isPrivateNonMember) {
-      return this.accessRequestPending ? 'Solicitud enviada' : 'Solicitar invitación';
+    if (this.isPrivateNoAccess) {
+      return this.accessRequestPending ? 'Solicitud enviada' : 'Solicitar acceso';
     }
     if (this.alreadyJoined) return 'Ya apuntado';
     if (this.isFull) return 'Plazas completas';
     return 'Apuntarse';
   }
 
-  /** Solicita el alta en el evento/localización, o el acceso al grupo si no es miembro. */
+  /** Solicita el alta en el evento/localización, o el acceso si no lo tiene todavía. */
   onJoin(): void {
     if (this.joinDisabled) return;
-    if (this.isPrivateNonMember) {
+    if (this.isPrivateNoAccess) {
       this.joinRequestRequested.emit();
       return;
     }

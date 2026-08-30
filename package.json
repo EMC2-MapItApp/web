@@ -8,7 +8,26 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "android:dev": "powershell -ExecutionPolicy Bypass -File scripts/android-dev.ps1",
-    "android:release": "powershell -ExecutionPolicy Bypass -File scripts/android-release.ps1"
+    "android:release": "powershell -ExecutionPolicy Bypass -File scripts/android-release.ps1",
+    "lint": "ng lint",
+    "lint:style": "stylelint \"src/**/*.scss\"",
+    "format": "prettier --write \"src/**/*.{ts,html,scss}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,scss}\"",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.html": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.scss": [
+      "stylelint --fix",
+      "prettier --write"
+    ]
   },
   "private": true,
   "packageManager": "npm@10.9.8",
@@ -23,7 +42,6 @@
     "@angular/router": "^22.0.0",
     "@capacitor/android": "^8.5.0",
     "@capacitor/core": "^8.5.0",
-    "@googlemaps/js-api-loader": "^2.1.0",
     "@zxcvbn-ts/core": "^4.1.2",
     "@zxcvbn-ts/language-common": "^4.1.2",
     "@zxcvbn-ts/language-es-es": "^4.1.1",
@@ -35,12 +53,22 @@
     "@angular/build": "^22.0.0",
     "@angular/cli": "^22.0.0",
     "@angular/compiler-cli": "^22.0.0",
-    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.5.0",
+    "@eslint/js": "^10.0.1",
     "@types/google.maps": "^3.65.0",
+    "angular-eslint": "22.1.0",
+    "eslint": "^10.6.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-boundaries": "^6.0.2",
+    "eslint-plugin-rxjs-x": "^1.0.4",
+    "husky": "^9.1.7",
     "jsdom": "^28.0.0",
+    "lint-staged": "^17.3.0",
     "prettier": "^3.8.1",
+    "stylelint": "^17.14.1",
+    "stylelint-config-standard-scss": "^17.0.0",
     "typescript": "~6.0.2",
+    "typescript-eslint": "8.62.1",
     "vitest": "^4.0.8"
   },
   "engines": {

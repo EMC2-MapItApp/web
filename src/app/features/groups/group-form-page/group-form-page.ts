@@ -123,15 +123,13 @@ export class GroupFormPageComponent {
   get descriptionCtrl() { return this.form.controls['description']; }
   get categoryIdCtrl() { return this.form.controls['categoryId']; }
 
-  selectCategory(categoryId: number): void {
-    // `String()`: `MainCategory.id` está tipado `number` pero el backend real de categorías
-    // usa ObjectId de Mongo (ver comentario en `Group.categoryId`).
-    this.categoryIdCtrl.setValue(String(categoryId));
+  selectCategory(categoryId: string): void {
+    this.categoryIdCtrl.setValue(categoryId);
     this.categoryIdCtrl.markAsTouched();
   }
 
-  isSelectedCategory(categoryId: number): boolean {
-    return this.categoryIdCtrl.value === String(categoryId);
+  isSelectedCategory(categoryId: string): boolean {
+    return this.categoryIdCtrl.value === categoryId;
   }
 
   /** Ya invitado (en cola o, en edición, ya enviado) o ya miembro del grupo. */

@@ -1,4 +1,14 @@
-import { AfterViewInit, Component, ElementRef, ViewChild, inject, signal, computed, effect } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+  inject,
+  signal,
+  computed,
+  effect,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -9,19 +19,25 @@ import { CategoryService } from '@core/services/category.service';
 import { MapLocation } from '@core/models/location.model';
 import { MainCategory, SubCategory } from '@core/models/category.model';
 import { MapSettingsService } from '@core/services/map-settings.service';
-import { PublicationDetailInput, PublicationDetailComponent } from './publication-detail/publication-detail';
+import {
+  PublicationDetailInput,
+  PublicationDetailComponent,
+} from './publication-detail/publication-detail';
 import { CategoryBreadcrumb } from '@core/models/category.model';
 import { FieldContext } from '@core/models/location-field.model';
 import { CurrentUserService } from '@core/services/current-user.service';
 import { AuthRequiredDialogComponent } from '@shared/auth-required-dialog/auth-required-dialog';
-import { AUTH_REQUIRED_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
+import {
+  AUTH_REQUIRED_DIALOG_CONFIG,
+  withResponsiveDialogLayout,
+} from '@core/constants/dialog.constants';
 import { ThemeService } from '@core/services/theme.service';
 import { GeoIpService } from '@core/services/geo-ip.service';
+import { MapViewportService } from '@core/services/map-viewport.service';
 import { DeviceLocationService } from '@core/services/device-location.service';
 import { PublicationService } from '@core/services/publication.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ResponsiveService } from '@core/responsive/responsive.service';
-
 
 /**
  * Componente de la página de mapas.
@@ -38,10 +54,9 @@ import { ResponsiveService } from '@core/responsive/responsive.service';
   standalone: true,
   imports: [MatIconModule, MatButtonModule, PublicationDetailComponent],
   templateUrl: './maps.html',
-  styleUrl: './maps.scss'
+  styleUrl: './maps.scss',
 })
-export class MapsPageComponent implements AfterViewInit {
-
+export class MapsPageComponent implements AfterViewInit, OnDestroy {
   /** Umbral de pulsación larga (táctil) para abrir el detalle de un POI, en ms. */
   private static readonly LONG_PRESS_MS = 1000;
 
@@ -53,6 +68,7 @@ export class MapsPageComponent implements AfterViewInit {
   private currentUser = inject(CurrentUserService);
   private dialog = inject(MatDialog);
   private geoIpService = inject(GeoIpService);
+  private mapViewportService = inject(MapViewportService);
   private deviceLocationService = inject(DeviceLocationService);
   private publicationService = inject(PublicationService);
   private responsiveService = inject(ResponsiveService);
@@ -61,8 +77,7 @@ export class MapsPageComponent implements AfterViewInit {
   // ── Propiedades ──────────────────────────────────────────────────────────────
 
   private themeService = inject(ThemeService);
-  private currentLocations: MapLocation[] = [];  // track para re-render en cambio de tema
-
+  private currentLocations: MapLocation[] = []; // track para re-render en cambio de tema
 
   // ── Estado del panel de filtros ───────────────────────────────────────────
   /** Árbol de categorías cargado desde el servicio. */
@@ -75,7 +90,7 @@ export class MapsPageComponent implements AfterViewInit {
   selectedSub = signal<SubCategory | null>(null);
 
   /** Id del tipo de localización seleccionado (null = todos). */
-  selectedTypeId = signal<number | null>(null);
+  selectedTypeId = signal<string | null>(null);
 
   /** Subcategorías visibles según la categoría principal elegida. */
   visibleSubs = computed(() => this.selectedMain()?.subcategories ?? []);
@@ -88,7 +103,7 @@ export class MapsPageComponent implements AfterViewInit {
 
   /** Alterna la visibilidad del panel de categorías. */
   togglePanel(): void {
-    this.panelVisible.update(v => !v);
+    this.panelVisible.update((v) => !v);
   }
 
   /** Cierra el panel de categorías cuando se toca fuera de él. */
@@ -106,7 +121,11 @@ export class MapsPageComponent implements AfterViewInit {
 
     // Si el clic fue en el panel de filtros o controles interactivos, ignora
     if (target.closest('.filter-panel')) return;
-    if (target.closest('button, a, input, select, textarea, [role="button"], [role="menuitem"], .gm-control-active')) {
+    if (
+      target.closest(
+        'button, a, input, select, textarea, [role="button"], [role="menuitem"], .gm-control-active',
+      )
+    ) {
       return;
     }
 
@@ -152,7 +171,6 @@ export class MapsPageComponent implements AfterViewInit {
   /** true mientras hay una resolución de posición del dispositivo en vuelo. */
   locating = signal(false);
 
-
   // ── Estado del panel de detalle ───────────────────────────────────────────
   /** Localización seleccionada al hacer click en un marker. null = panel cerrado. */
   selectedDetail = signal<PublicationDetailInput | null>(null);
@@ -164,7 +182,7 @@ export class MapsPageComponent implements AfterViewInit {
   selectedContext = signal<FieldContext>('place');
 
   /** Número de usuarios apuntados por localización (estado de sesión en cliente). */
-  joinedByLocation = signal<Record<number, number>>({});
+  joinedByLocation = signal<Record<string, number>>({});
 
   /** Marca de apuntado por combinación usuario+localización (estado de sesión). */
   joinedByUserAndLocation = signal<Record<string, true>>({});
@@ -174,7 +192,7 @@ export class MapsPageComponent implements AfterViewInit {
    * `location.accessRequestPending` (ya calculado por backend, sobrevive a recargar la página) y
    * se actualiza localmente al solicitar — mismo patrón que `joinedByUserAndLocation`.
    */
-  accessRequestedByLocation = signal<Record<number, boolean>>({});
+  accessRequestedByLocation = signal<Record<string, boolean>>({});
 
   /** Cierra el panel de detalle. */
   closeDetail(): void {
@@ -182,15 +200,15 @@ export class MapsPageComponent implements AfterViewInit {
   }
 
   /** Devuelve cuántos usuarios están apuntados en la localización indicada. */
-  getJoinedCount(locationId: number): number {
+  getJoinedCount(locationId: string): number {
     const fromState = this.joinedByLocation()[locationId];
     if (typeof fromState === 'number') return fromState;
-    const location = this.allLocations.find(l => l.id === locationId);
+    const location = this.allLocations.find((l) => l.id === locationId);
     return location?.occupiedSlots ?? 0;
   }
 
   /** Indica si el usuario actual ya está apuntado a una localización. */
-  hasJoined(locationId: number): boolean {
+  hasJoined(locationId: string): boolean {
     return !!this.joinedByUserAndLocation()[this.buildJoinKey(locationId)];
   }
 
@@ -209,25 +227,23 @@ export class MapsPageComponent implements AfterViewInit {
     if (maxSlots !== null && current >= maxSlots) return;
 
     this.publicationService.enroll(detail.id).subscribe({
-      next: response => {
-        this.joinedByLocation.update(prev => ({
+      next: (response) => {
+        this.joinedByLocation.update((prev) => ({
           ...prev,
           [detail.id]: response.occupiedSlots,
         }));
 
-        this.joinedByUserAndLocation.update(prev => ({
+        this.joinedByUserAndLocation.update((prev) => ({
           ...prev,
           [this.buildJoinKey(detail.id)]: true,
         }));
         // Recargar apuntados
-        this.publicationService.getEnrollments(detail.id).subscribe(users => {
-          this.selectedDetail.update(d => d ? { ...d, enrolledUsers: users } : null);
-        });
+        this.reloadEnrollments(detail.id);
       },
       error: (error: HttpErrorResponse) => {
         const message = error?.error?.error?.message ?? '';
         if (typeof message === 'string' && message.toLowerCase().includes('ya estás apuntado')) {
-          this.joinedByUserAndLocation.update(prev => ({
+          this.joinedByUserAndLocation.update((prev) => ({
             ...prev,
             [this.buildJoinKey(detail.id)]: true,
           }));
@@ -237,11 +253,12 @@ export class MapsPageComponent implements AfterViewInit {
   }
 
   /**
-   * Solicita apuntarse a la publicación privada abierta, para un usuario sin acceso todavía. La
-   * revisa el autor de la publicación, no el organizador de ningún grupo. Resiliente al mismo
-   * caso límite que `joinSelectedLocation`: si el backend responde 409 `ALREADY_REQUESTED` (ya
-   * había una solicitud pendiente, p. ej. de otra pestaña), se marca igualmente como pendiente
-   * en vez de mostrar un error.
+   * Solicita acceso a la publicación privada abierta, para un usuario sin acceso todavía. La
+   * revisa el autor de la publicación. Resiliente a dos casos límite (p. ej. otra pestaña ya
+   * resolvió la situación entre tanto): 409 `ALREADY_REQUESTED` (ya había una solicitud
+   * pendiente) se marca como pendiente; 409 `ALREADY_HAS_ACCESS` (ya se le invitó, o ya se le
+   * aceptó la solicitud) recarga el detalle para mostrar el contenido completo en vez de un
+   * error.
    */
   requestAccessToSelectedLocation(): void {
     if (!this.requireAuth()) return;
@@ -251,8 +268,8 @@ export class MapsPageComponent implements AfterViewInit {
 
     this.publicationService.requestAccess(detail.id).subscribe({
       next: () => {
-        this.accessRequestedByLocation.update(prev => ({ ...prev, [detail.id]: true }));
-        this.selectedDetail.update(d => d ? { ...d, accessRequestPending: true } : null);
+        this.accessRequestedByLocation.update((prev) => ({ ...prev, [detail.id]: true }));
+        this.selectedDetail.update((d) => (d ? { ...d, accessRequestPending: true } : null));
         this.snackBar.open('Solicitud enviada. El autor de la publicación la revisará.', 'Cerrar', {
           duration: 4000,
           horizontalPosition: 'center',
@@ -262,15 +279,31 @@ export class MapsPageComponent implements AfterViewInit {
       error: (error: HttpErrorResponse) => {
         const code = error?.error?.error?.code;
         if (code === 'ALREADY_REQUESTED') {
-          this.accessRequestedByLocation.update(prev => ({ ...prev, [detail.id]: true }));
-          this.selectedDetail.update(d => d ? { ...d, accessRequestPending: true } : null);
+          this.accessRequestedByLocation.update((prev) => ({ ...prev, [detail.id]: true }));
+          this.selectedDetail.update((d) => (d ? { ...d, accessRequestPending: true } : null));
+        } else if (code === 'ALREADY_HAS_ACCESS') {
+          this.reloadFullDetail(detail.id);
         }
       },
     });
   }
 
+  /** Recarga la lista de apuntados del detalle abierto tras un join/leave. */
+  private reloadEnrollments(locationId: string): void {
+    this.publicationService.getEnrollments(locationId).subscribe((users) => {
+      this.selectedDetail.update((d) => (d ? { ...d, enrolledUsers: users } : null));
+    });
+  }
+
+  /** Recarga el detalle completo de una localización (p. ej. tras obtener acceso). */
+  private reloadFullDetail(locationId: string): void {
+    this.publicationService.getById(locationId).subscribe((full) => {
+      this.selectedDetail.update((d) => (d ? { ...d, ...full } : null));
+    });
+  }
+
   /** Construye una clave estable de apuntado por usuario y localización. */
-  private buildJoinKey(locationId: number): string {
+  private buildJoinKey(locationId: string): string {
     const userId = this.currentUser.user()?.id;
     return `${userId ?? 'anon'}:${locationId}`;
   }
@@ -324,17 +357,22 @@ export class MapsPageComponent implements AfterViewInit {
   // ── Ciclo de vida ──────────────────────────────────────────────────────────
 
   async ngAfterViewInit(): Promise<void> {
-    this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
+    this.categoryService.getAll().subscribe((cats) => this.categories.set(cats));
     await this.mapsService.load();
 
-    // Resolver centro por IP antes de crear el mapa ──────────────
-    this.geoIpService.resolveCenter().subscribe(center => {
+    // Resolver el viewport compartido de la app antes de crear el mapa ──────────────
+    this.mapViewportService.resolveInitialViewport().subscribe((viewport) => {
       this.map = new google.maps.Map(this.mapContainer.nativeElement, {
-        center: { lat: center.lat, lng: center.lng },
-        zoom: 12,
+        center: { lat: viewport.lat, lng: viewport.lng },
+        zoom: viewport.zoom,
         styles: this.mapSettingsService.mapStyles(),
       });
       this.infoWindow = new google.maps.InfoWindow({ headerDisabled: true });
+
+      // Mantiene el viewport de la app sincronizado con cualquier movimiento de este mapa
+      // (pan, zoom, "usar mi ubicación"...), para que el mapa de nueva publicación abra
+      // siempre en la misma posición.
+      this.map.addListener('idle', () => this.syncViewport());
 
       // Control nativo "Usar mi ubicación", solo en dispositivos de input táctil.
       if (this.deviceLocationService.isTouchPrimaryDevice()) {
@@ -344,22 +382,39 @@ export class MapsPageComponent implements AfterViewInit {
       }
 
       // Cargar localizaciones
-      this.locationService.getAll().subscribe(locations => {
-        this.allLocations = locations;
-        const occupancy = locations.reduce<Record<number, number>>((acc, location) => {
-          acc[location.id] = location.occupiedSlots ?? 0;
-          return acc;
-        }, {});
-        this.joinedByLocation.set(occupancy);
+      this.loadLocations();
+    });
+  }
 
-        const favorites = this.currentUser.favoriteTypeIds();
-        if (favorites.length > 0) {
-          const filtered = locations.filter(l => favorites.includes(l.locationTypeId));
-          this.renderMarkers(filtered.length > 0 ? filtered : locations);
-        } else {
-          this.renderMarkers(locations);
-        }
-      });
+  /**
+   * Libera los listeners nativos de Google Maps registrados sobre `map` y sobre cada
+   * marker — `google.maps.event` no los limpia solo al perder la referencia del objeto,
+   * y esta página se destruye/recrea cada vez que el usuario navega fuera y vuelve al
+   * mapa (ruta lazy-loaded, no singleton).
+   */
+  ngOnDestroy(): void {
+    if (this.map) google.maps.event.clearInstanceListeners(this.map);
+    this.markers.forEach((m) => google.maps.event.clearInstanceListeners(m));
+    this.infoWindow?.close();
+  }
+
+  /** Obtiene las localizaciones del backend y renderiza los markers correspondientes. */
+  private loadLocations(): void {
+    this.locationService.getAll().subscribe((locations) => {
+      this.allLocations = locations;
+      const occupancy = locations.reduce<Record<string, number>>((acc, location) => {
+        acc[location.id] = location.occupiedSlots ?? 0;
+        return acc;
+      }, {});
+      this.joinedByLocation.set(occupancy);
+
+      const favorites = this.currentUser.favoriteTypeIds();
+      if (favorites.length > 0) {
+        const filtered = locations.filter((l) => favorites.includes(l.locationTypeId));
+        this.renderMarkers(filtered.length > 0 ? filtered : locations);
+      } else {
+        this.renderMarkers(locations);
+      }
     });
   }
 
@@ -412,10 +467,18 @@ export class MapsPageComponent implements AfterViewInit {
       { duration: 5000, horizontalPosition: 'center', verticalPosition: 'top' },
     );
 
-    this.geoIpService.resolveCenter().subscribe(center => {
+    this.geoIpService.resolveCenter().subscribe((center) => {
       this.map.panTo({ lat: center.lat, lng: center.lng });
       this.map.setZoom(12);
     });
+  }
+
+  /** Vuelca el centro/zoom actual del mapa al viewport compartido de la app. */
+  private syncViewport(): void {
+    const center = this.map.getCenter();
+    const zoom = this.map.getZoom();
+    if (!center || zoom === undefined) return;
+    this.mapViewportService.setViewport({ lat: center.lat(), lng: center.lng() }, zoom);
   }
 
   /** Refleja el estado de localización en curso en el signal y en el control nativo del mapa. */
@@ -458,7 +521,7 @@ export class MapsPageComponent implements AfterViewInit {
   }
 
   /** Selecciona / deselecciona un tipo de localización. */
-  selectType(typeId: number): void {
+  selectType(typeId: string): void {
     const isSame = this.selectedTypeId() === typeId;
     this.selectedTypeId.set(isSame ? null : typeId);
     this.applyFilter();
@@ -483,15 +546,13 @@ export class MapsPageComponent implements AfterViewInit {
     const main = this.selectedMain();
 
     if (typeId) {
-      filtered = filtered.filter(l => l.locationTypeId === typeId);
+      filtered = filtered.filter((l) => l.locationTypeId === typeId);
     } else if (sub) {
-      const typeIds = new Set(sub.locationTypes.map(t => t.id));
-      filtered = filtered.filter(l => typeIds.has(l.locationTypeId));
+      const typeIds = new Set(sub.locationTypes.map((t) => t.id));
+      filtered = filtered.filter((l) => typeIds.has(l.locationTypeId));
     } else if (main) {
-      const typeIds = new Set(
-        main.subcategories.flatMap(s => s.locationTypes.map(t => t.id))
-      );
-      filtered = filtered.filter(l => typeIds.has(l.locationTypeId));
+      const typeIds = new Set(main.subcategories.flatMap((s) => s.locationTypes.map((t) => t.id)));
+      filtered = filtered.filter((l) => typeIds.has(l.locationTypeId));
     }
 
     this.renderMarkers(filtered);
@@ -502,7 +563,10 @@ export class MapsPageComponent implements AfterViewInit {
   /** Limpia los markers anteriores y pinta los nuevos. */
   private renderMarkers(locations: MapLocation[]): void {
     this.currentLocations = locations;
-    this.markers.forEach(m => m.setMap(null));
+    this.markers.forEach((m) => {
+      google.maps.event.clearInstanceListeners(m);
+      m.setMap(null);
+    });
     this.markers = [];
 
     const isDark = this.themeService.isDark();
@@ -513,11 +577,18 @@ export class MapsPageComponent implements AfterViewInit {
     const canHover = this.responsiveService.state().hasHover;
     const showPressFeedback = !canHover && !!this.currentUser.user();
 
-    locations.forEach(location => {
+    locations.forEach((location) => {
       const color = this.categoryService.resolveColor(location.locationTypeId);
       const icon = this.categoryService.resolveIcon(location.locationTypeId);
-      const groupBadge = this.resolveGroupBadge(location);
-      const baseIcon = this.mapsService.buildMarkerIcon(color, icon, 36, isDark, false, groupBadge);
+      const accessBadge = this.resolveAccessBadge(location);
+      const baseIcon = this.mapsService.buildMarkerIcon(
+        color,
+        icon,
+        36,
+        isDark,
+        false,
+        accessBadge,
+      );
 
       const marker = new google.maps.Marker({
         position: { lat: location.lat, lng: location.lng },
@@ -536,7 +607,7 @@ export class MapsPageComponent implements AfterViewInit {
         // El icono animado solo se aplica mientras dura la pulsación (ver
         // attachPressHandlers) — no se muestra de forma permanente.
         const pressIcon = showPressFeedback
-          ? this.mapsService.buildMarkerIcon(color, icon, 36, isDark, true, groupBadge)
+          ? this.mapsService.buildMarkerIcon(color, icon, 36, isDark, true, accessBadge)
           : null;
         this.attachPressHandlers(marker, location, color, baseIcon, pressIcon);
       }
@@ -546,10 +617,10 @@ export class MapsPageComponent implements AfterViewInit {
   }
 
   /** Distintivo de marker según visibilidad: sin distintivo (pública), candado neutro (privada,
-   * no miembro) o candado en color de acento (privada, miembro) — ver `GoogleMapsService.buildMarkerIcon`. */
-  private resolveGroupBadge(location: MapLocation): 'none' | 'locked' | 'member' {
-    if (location.visibility !== 'PRIVATE_GROUP') return 'none';
-    return location.isGroupMember ? 'member' : 'locked';
+   * sin acceso) o candado en color de acento (privada, con acceso) — ver `GoogleMapsService.buildMarkerIcon`. */
+  private resolveAccessBadge(location: MapLocation): 'none' | 'locked' | 'granted' {
+    if (location.visibility !== 'PRIVATE') return 'none';
+    return location.hasAccess ? 'granted' : 'locked';
   }
 
   /**
@@ -565,7 +636,7 @@ export class MapsPageComponent implements AfterViewInit {
     const bc = this.categoryService.resolveBreadcrumb(location.locationTypeId);
     if (!bc) return;
 
-    this.accessRequestedByLocation.update(prev => ({
+    this.accessRequestedByLocation.update((prev) => ({
       ...prev,
       [location.id]: location.accessRequestPending ?? prev[location.id] ?? false,
     }));
@@ -583,27 +654,25 @@ export class MapsPageComponent implements AfterViewInit {
       active: location.active,
       occupiedSlots: location.occupiedSlots,
       visibility: location.visibility,
-      groupName: location.groupName,
-      groupMemberCount: location.groupMemberCount,
-      isGroupMember: location.isGroupMember,
+      hasAccess: location.hasAccess,
       accessRequestPending: this.accessRequestedByLocation()[location.id] ?? false,
     };
 
     this.selectedBreadcrumb.set(bc);
     this.selectedContext.set(location.publicationType ?? 'place');
 
-    // Publicación privada y el usuario no es miembro: el backend rechaza /enrollments con 403 —
-    // no tiene sentido pedirlo, solo generaría ruido en consola.
-    if (location.visibility === 'PRIVATE_GROUP' && !location.isGroupMember) {
+    // Publicación privada sin acceso: el backend rechaza /enrollments con 403 — no tiene
+    // sentido pedirlo, solo generaría ruido en consola.
+    if (location.visibility === 'PRIVATE' && !location.hasAccess) {
       this.selectedDetail.set(baseDetail);
       return;
     }
 
-    this.publicationService.getEnrollments(location.id).subscribe(users => {
+    this.publicationService.getEnrollments(location.id).subscribe((users) => {
       // Actualizar estado local si el usuario actual está en la lista
       const currentUserId = this.currentUser.user()?.id?.toString();
-      if (currentUserId && users.some(u => u.userId === currentUserId)) {
-        this.joinedByUserAndLocation.update(prev => ({
+      if (currentUserId && users.some((u) => u.userId === currentUserId)) {
+        this.joinedByUserAndLocation.update((prev) => ({
           ...prev,
           [this.buildJoinKey(location.id)]: true,
         }));
@@ -710,20 +779,23 @@ export class MapsPageComponent implements AfterViewInit {
        </span>`
       : '';
 
-    const approximateNotice = location.metadata?.['exactLocation'] === false
-      ? `<div style="margin-top:6px;font-size:11px;color:${approxColor};display:flex;align-items:center;gap:4px">
+    const approximateNotice =
+      location.metadata?.['exactLocation'] === false
+        ? `<div style="margin-top:6px;font-size:11px;color:${approxColor};display:flex;align-items:center;gap:4px">
          <span class="material-icons" style="font-size:14px">gps_not_fixed</span>
          Esta ubicación es aproximada — zona de 5 km
        </div>`
-      : '';
+        : '';
 
     return `
     <div style="max-width:220px;font-family:sans-serif;padding:4px">
       <strong style="font-size:14px;color:${textColor}">${location.name}</strong>
       ${breadcrumb}
-      ${location.description
-        ? `<p style="margin:4px 0 0;color:${descColor};font-size:13px">${location.description}</p>`
-        : ''}
+      ${
+        location.description
+          ? `<p style="margin:4px 0 0;color:${descColor};font-size:13px">${location.description}</p>`
+          : ''
+      }
       ${badge}
       ${approximateNotice}
     </div>
@@ -737,12 +809,12 @@ export class MapsPageComponent implements AfterViewInit {
 
     this.publicationService.unenroll(detail.id).subscribe({
       next: () => {
-        this.joinedByLocation.update(prev => ({
+        this.joinedByLocation.update((prev) => ({
           ...prev,
           [detail.id]: Math.max(0, (prev[detail.id] ?? 0) - 1),
         }));
 
-        this.joinedByUserAndLocation.update(prev => {
+        this.joinedByUserAndLocation.update((prev) => {
           const key = this.buildJoinKey(detail.id);
           const newState = { ...prev };
           delete newState[key];
@@ -750,9 +822,7 @@ export class MapsPageComponent implements AfterViewInit {
         });
 
         // Recargar apuntados
-        this.publicationService.getEnrollments(detail.id).subscribe(users => {
-          this.selectedDetail.update(d => d ? { ...d, enrolledUsers: users } : null);
-        });
+        this.reloadEnrollments(detail.id);
       },
       error: (error: HttpErrorResponse) => {
         console.error('Error al salir del evento', error);

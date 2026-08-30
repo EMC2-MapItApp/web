@@ -22,8 +22,8 @@ export type LocationCategory = 'landmark' | 'leisure' | 'sport' | 'transport' | 
  * Sustituida por {@link Place} (sedes) y {@link Publication} (eventos/promociones).
  */
 export interface MapLocation {
-  /** Identificador único de la localización. */
-  id: number;
+  /** Identificador único de la localización — ObjectId de Mongo (string), no un número. */
+  id: string;
 
   /** Nombre descriptivo del punto de interés. */
   name: string;
@@ -35,7 +35,7 @@ export interface MapLocation {
    * Identificador del `LocationType` al que pertenece esta localización.
    * @example 'ciclismo-quedadas' | 'museos-visita'
    */
-  locationTypeId: number;
+  locationTypeId: string;
 
   /** Latitud en grados decimales. */
   lat: number;
@@ -68,20 +68,11 @@ export interface MapLocation {
   occupiedSlots?: number;
 
   /** Visibilidad de la publicación (solo Publications). 'PUBLIC' si no aplica (p. ej. Places). */
-  visibility?: 'PUBLIC' | 'PRIVATE_GROUP';
+  visibility?: 'PUBLIC' | 'PRIVATE';
 
-  /** Id del grupo al que está restringida. Solo si `visibility === 'PRIVATE_GROUP'`. */
-  groupId?: string | null;
+  /** true si el usuario actual puede ver el contenido completo y apuntarse. Solo en Publications. */
+  hasAccess?: boolean;
 
-  /** Nombre del grupo. Solo presente en publicaciones `PRIVATE_GROUP`. */
-  groupName?: string;
-
-  /** Nº de miembros del grupo. Solo presente en publicaciones `PRIVATE_GROUP`. */
-  groupMemberCount?: number;
-
-  /** true si el usuario actual es miembro del grupo. Solo presente en publicaciones `PRIVATE_GROUP`. */
-  isGroupMember?: boolean;
-
-  /** true si el usuario actual tiene una solicitud de acceso pendiente para este grupo. */
+  /** true si el usuario actual tiene una solicitud de acceso pendiente. */
   accessRequestPending?: boolean;
 }

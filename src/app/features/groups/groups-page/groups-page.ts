@@ -6,8 +6,7 @@
  */
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
-import { SlicePipe } from '@angular/common';
+import { debounceTime, distinctUntilChanged, filter, switchMap } from 'rxjs';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,32 +18,51 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { GroupService } from '@core/services/group.service';
 import { CategoryService } from '@core/services/category.service';
-import { Group, GroupInvitation, GroupJoinRequest, GroupMember, GroupSearchUser, QueuedInvite } from '@core/models/group.model';
+import {
+  Group,
+  GroupInvitation,
+  GroupMember,
+  GroupSearchUser,
+  QueuedInvite,
+} from '@core/models/group.model';
 import { MainCategory } from '@core/models/category.model';
 import { ShareContent } from '@core/models/share.model';
 import { DEFAULT_SHARE_CONTENT } from '@core/constants/share.constants';
 import { ResponsiveService } from '@core/responsive/responsive.service';
-import { CONFIRM_DIALOG_CONFIG, CONTACT_MEMBERS_DIALOG_CONFIG, NOTIFY_ORGANIZER_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
+import {
+  CONFIRM_DIALOG_CONFIG,
+  CONTACT_MEMBERS_DIALOG_CONFIG,
+  NOTIFY_ORGANIZER_DIALOG_CONFIG,
+  withResponsiveDialogLayout,
+} from '@core/constants/dialog.constants';
 import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/confirm-dialog/confirm-dialog';
 import { ShareMenuComponent } from '@shared/share-menu/share-menu';
-import { NotifyOrganizerDialogComponent, NotifyOrganizerDialogResult } from '../notify-organizer-dialog/notify-organizer-dialog';
-import { ContactMembersDialogComponent, ContactMembersDialogResult } from '../contact-members-dialog/contact-members-dialog';
+import {
+  NotifyOrganizerDialogComponent,
+  NotifyOrganizerDialogResult,
+} from '../notify-organizer-dialog/notify-organizer-dialog';
+import {
+  ContactMembersDialogComponent,
+  ContactMembersDialogResult,
+} from '../contact-members-dialog/contact-members-dialog';
 
 @Component({
   selector: 'app-groups-page',
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatIconModule, MatButtonModule,
-    MatExpansionModule, MatProgressSpinnerModule,
-    MatFormFieldModule, MatInputModule,
+    MatIconModule,
+    MatButtonModule,
+    MatExpansionModule,
+    MatProgressSpinnerModule,
+    MatFormFieldModule,
+    MatInputModule,
     ShareMenuComponent,
   ],
   templateUrl: './groups-page.html',
   styleUrl: './groups-page.scss',
 })
 export class GroupsPageComponent {
-
   private readonly groupService = inject(GroupService);
   private readonly categoryService = inject(CategoryService);
   private readonly snackBar = inject(MatSnackBar);
@@ -113,18 +131,6 @@ export class GroupsPageComponent {
   /** Id de miembro/invitado cuya acción de expulsión/cancelación está en curso. */
   readonly editActionInProgressId = signal<string | null>(null);
 
-  /** Solicitudes de acceso pendientes del grupo en edición (usuarios que intentaron apuntarse a
-   * una publicación privada sin ser miembros — cargadas al abrir el form, junto a las invitaciones). */
-  readonly editPendingJoinRequests = signal<GroupJoinRequest[]>([]);
-  readonly editLoadingJoinRequests = signal(false);
-  /** Id de solicitud cuya acción (aceptar/rechazar) está en curso. */
-  readonly joinRequestActionInProgressId = signal<string | null>(null);
-
-  /** Nº de solicitudes pendientes por grupo, para el chip "N solicitudes" en la fila cerrada
-   * (mismo dato que hace falta al entrar en modo edición, cargado por adelantado para todos los
-   * grupos organizados sin esperar a que se abra cada uno). */
-  readonly pendingJoinRequestCountByGroup = signal<Record<string, number>>({});
-
   readonly editForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
     description: ['', [Validators.required, Validators.maxLength(500)]],
@@ -136,83 +142,70 @@ export class GroupsPageComponent {
   readonly editEmailInviteCtrl = new FormControl('', [Validators.email]);
 
   readonly organizedGroups = computed(() =>
-    this.myGroups().filter(g => this.groupService.getMyRole(g) === 'organizer')
+    this.myGroups().filter((g) => this.groupService.getMyRole(g) === 'organizer'),
   );
 
   readonly memberGroups = computed(() =>
-    this.myGroups().filter(g => this.groupService.getMyRole(g) === 'member')
+    this.myGroups().filter((g) => this.groupService.getMyRole(g) === 'member'),
   );
 
   constructor() {
-    this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
+    this.categoryService.getAll().subscribe((cats) => this.categories.set(cats));
     this.loadGroups();
     this.loadInvitations();
 
     // Búsqueda para formulario de creación inline.
-    this.createSearchCtrl.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(query => {
-        this.createSearching.set(true);
-        return this.groupService.searchUsers(query ?? '');
-      }),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(results => {
-      this.createSearching.set(false);
-      this.createSearchResults.set(results);
-      console.log("Result ", results)
-    });
+    this.createSearchCtrl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((query) => {
+          this.createSearching.set(true);
+          return this.groupService.searchUsers(query ?? '');
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((results) => {
+        this.createSearching.set(false);
+        this.createSearchResults.set(results);
+      });
 
     // Búsqueda para formulario de edición inline.
-    this.editSearchCtrl.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(query => {
-        this.editSearching.set(true);
-        return this.groupService.searchUsers(query ?? '');
-      }),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(results => {
-      this.editSearching.set(false);
-      this.editSearchResults.set(results);
-    });
+    this.editSearchCtrl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((query) => {
+          this.editSearching.set(true);
+          return this.groupService.searchUsers(query ?? '');
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((results) => {
+        this.editSearching.set(false);
+        this.editSearchResults.set(results);
+      });
   }
 
   private loadGroups(): void {
     this.loadingGroups.set(true);
-    this.groupService.getMyGroups().subscribe(groups => {
+    this.groupService.getMyGroups().subscribe((groups) => {
       this.myGroups.set(groups);
       this.loadingGroups.set(false);
-      this.loadPendingJoinRequestCounts(groups);
-    });
-  }
-
-  /** Carga el recuento de solicitudes pendientes de cada grupo organizado, para el chip de la
-   * fila cerrada — se adelanta aquí para no esperar a que el usuario entre en modo edición. */
-  private loadPendingJoinRequestCounts(groups: Group[]): void {
-    const organized = groups.filter(g => this.groupService.getMyRole(g) === 'organizer');
-    organized.forEach(group => {
-      this.groupService.getGroupPendingJoinRequests(group.id).subscribe(requests => {
-        this.pendingJoinRequestCountByGroup.update(prev => ({ ...prev, [group.id]: requests.length }));
-      });
     });
   }
 
   private loadInvitations(): void {
     this.loadingInvitations.set(true);
-    this.groupService.getPendingInvitations().subscribe(invitations => {
+    this.groupService.getPendingInvitations().subscribe((invitations) => {
       this.pendingInvitations.set(invitations);
       this.loadingInvitations.set(false);
     });
   }
 
-  /**
-   * Categoría de un grupo, con fallback si el id no resuelve (categorías aún sin cargar).
-   * Búsqueda local (no `categoryService.getMainCategoryById`, tipado con id `number`
-   * desactualizado respecto al ObjectId real — ver comentario en `Group.categoryId`).
-   */
+  /** Categoría de un grupo, con fallback si el id no resuelve (categorías aún sin cargar). */
   categoryOf(categoryId: string): MainCategory | undefined {
-    return this.categories().find(c => String(c.id) === categoryId);
+    return this.categoryService.getMainCategoryById(categoryId);
   }
 
   /** Activa la fila de confirmación de borrado/abandono para el grupo indicado. */
@@ -260,24 +253,28 @@ export class GroupsPageComponent {
    * ({@link GroupService.createGroup}), así que se confirma antes de disparar ambos. */
   private confirmCreateWithInvites(invitesCount: number, name: string, description: string): void {
     const compactViewport = this.responsive.isMobile() || this.responsive.isTablet();
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, withResponsiveDialogLayout(
-      {
-        ...CONFIRM_DIALOG_CONFIG,
-        data: {
-          title: 'Crear grupo',
-          message: invitesCount === 1
-            ? 'Se creará el grupo y se enviará 1 invitación.'
-            : `Se creará el grupo y se enviarán ${invitesCount} invitaciones.`,
-          preview: { title: name, description },
-          icon: 'group_add',
-          acceptText: 'Crear grupo',
-          acceptIcon: 'check',
-        } satisfies ConfirmDialogData,
-      },
-      compactViewport,
-    ));
+    const dialogRef = this.dialog.open(
+      ConfirmDialogComponent,
+      withResponsiveDialogLayout(
+        {
+          ...CONFIRM_DIALOG_CONFIG,
+          data: {
+            title: 'Crear grupo',
+            message:
+              invitesCount === 1
+                ? 'Se creará el grupo y se enviará 1 invitación.'
+                : `Se creará el grupo y se enviarán ${invitesCount} invitaciones.`,
+            preview: { title: name, description },
+            icon: 'group_add',
+            acceptText: 'Crear grupo',
+            acceptIcon: 'check',
+          } satisfies ConfirmDialogData,
+        },
+        compactViewport,
+      ),
+    );
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().subscribe((confirmed) => {
       if (confirmed) this.submitCreateForm();
     });
   }
@@ -286,46 +283,50 @@ export class GroupsPageComponent {
     const { name, description, categoryId } = this.createForm.value;
     this.createSaving.set(true);
     const queue = this.createQueuedInvites();
-    this.groupService.createGroup({
-      name: name!,
-      description: description!,
-      categoryId: categoryId!,
-      inviteUserIds: queue.filter(q => q.kind === 'user').map(q => q.user.id),
-      inviteEmails: queue.filter(q => q.kind === 'email').map(q => q.email),
-    }).subscribe({
-      next: (group) => {
-        this.myGroups.update(list => [...list, group]);
-        this.createSaving.set(false);
-        this.showCreateForm.set(false);
-        this.notify(`Grupo "${group.name}" creado`);
-      },
-      error: () => {
-        this.createSaving.set(false);
-        this.notify('No se pudo crear el grupo. Inténtalo de nuevo.');
-      },
-    });
+    this.groupService
+      .createGroup({
+        name: name!,
+        description: description!,
+        categoryId: categoryId!,
+        inviteUserIds: queue.filter((q) => q.kind === 'user').map((q) => q.user.id),
+        inviteEmails: queue.filter((q) => q.kind === 'email').map((q) => q.email),
+      })
+      .subscribe({
+        next: (group) => {
+          this.myGroups.update((list) => [...list, group]);
+          this.createSaving.set(false);
+          this.showCreateForm.set(false);
+          this.notify(`Grupo "${group.name}" creado`);
+        },
+        error: () => {
+          this.createSaving.set(false);
+          this.notify('No se pudo crear el grupo. Inténtalo de nuevo.');
+        },
+      });
   }
 
-  selectCreateCategory(categoryId: number): void {
-    this.createForm.controls.categoryId.setValue(String(categoryId));
+  selectCreateCategory(categoryId: string): void {
+    this.createForm.controls.categoryId.setValue(categoryId);
     this.createForm.controls.categoryId.markAsTouched();
   }
 
-  isCreateCategorySelected(categoryId: number): boolean {
-    return this.createForm.controls.categoryId.value === String(categoryId);
+  isCreateCategorySelected(categoryId: string): boolean {
+    return this.createForm.controls.categoryId.value === categoryId;
   }
 
   isAlreadyQueued(user: GroupSearchUser): boolean {
-    return this.createQueuedInvites().some(q => q.kind === 'user' && q.user.id === user.id);
+    return this.createQueuedInvites().some((q) => q.kind === 'user' && q.user.id === user.id);
   }
 
   isEmailAlreadyQueued(email: string): boolean {
-    return this.createQueuedInvites().some(q => q.kind === 'email' && q.email.toLowerCase() === email.toLowerCase());
+    return this.createQueuedInvites().some(
+      (q) => q.kind === 'email' && q.email.toLowerCase() === email.toLowerCase(),
+    );
   }
 
   addToCreateQueue(user: GroupSearchUser): void {
     if (!this.isAlreadyQueued(user)) {
-      this.createQueuedInvites.update(list => [...list, { kind: 'user', user }]);
+      this.createQueuedInvites.update((list) => [...list, { kind: 'user', user }]);
     }
   }
 
@@ -334,12 +335,14 @@ export class GroupsPageComponent {
     const email = this.createEmailInviteCtrl.value?.trim();
     if (this.createEmailInviteCtrl.invalid || !email || this.isEmailAlreadyQueued(email)) return;
 
-    this.createQueuedInvites.update(list => [...list, { kind: 'email', email }]);
+    this.createQueuedInvites.update((list) => [...list, { kind: 'email', email }]);
     this.createEmailInviteCtrl.reset();
   }
 
   removeFromCreateQueue(invite: QueuedInvite): void {
-    this.createQueuedInvites.update(list => list.filter(q => !this.isSameQueuedInvite(q, invite)));
+    this.createQueuedInvites.update((list) =>
+      list.filter((q) => !this.isSameQueuedInvite(q, invite)),
+    );
   }
 
   private isSameQueuedInvite(a: QueuedInvite, b: QueuedInvite): boolean {
@@ -360,7 +363,6 @@ export class GroupsPageComponent {
     this.editEmailInviteCtrl.reset();
     this.editSearchResults.set([]);
     this.editPendingInvitations.set([]);
-    this.editPendingJoinRequests.set([]);
     this.editingGroupId.set(group.id);
 
     // Carga las invitaciones pendientes del grupo para mostrarlas en el formulario.
@@ -371,17 +373,6 @@ export class GroupsPageComponent {
         this.editLoadingInvitations.set(false);
       },
       error: () => this.editLoadingInvitations.set(false),
-    });
-
-    // Carga las solicitudes de acceso pendientes del grupo (usuarios que intentaron apuntarse a
-    // una publicación privada sin ser miembros).
-    this.editLoadingJoinRequests.set(true);
-    this.groupService.getGroupPendingJoinRequests(group.id).subscribe({
-      next: (requests) => {
-        this.editPendingJoinRequests.set(requests);
-        this.editLoadingJoinRequests.set(false);
-      },
-      error: () => this.editLoadingJoinRequests.set(false),
     });
   }
 
@@ -396,31 +387,33 @@ export class GroupsPageComponent {
     }
     const { name, description, categoryId } = this.editForm.value;
     this.editSaving.set(true);
-    this.groupService.updateGroup(group.id, {
-      name: name!,
-      description: description!,
-      categoryId: categoryId!,
-    }).subscribe({
-      next: (updated) => {
-        this.myGroups.update(list => list.map(g => g.id === updated.id ? updated : g));
-        this.editingGroupId.set(null);
-        this.editSaving.set(false);
-        this.notify(`Grupo "${updated.name}" actualizado`);
-      },
-      error: () => {
-        this.editSaving.set(false);
-        this.notify('No se pudo guardar. Inténtalo de nuevo.');
-      },
-    });
+    this.groupService
+      .updateGroup(group.id, {
+        name: name!,
+        description: description!,
+        categoryId: categoryId!,
+      })
+      .subscribe({
+        next: (updated) => {
+          this.myGroups.update((list) => list.map((g) => (g.id === updated.id ? updated : g)));
+          this.editingGroupId.set(null);
+          this.editSaving.set(false);
+          this.notify(`Grupo "${updated.name}" actualizado`);
+        },
+        error: () => {
+          this.editSaving.set(false);
+          this.notify('No se pudo guardar. Inténtalo de nuevo.');
+        },
+      });
   }
 
-  selectEditCategory(categoryId: number): void {
-    this.editForm.controls.categoryId.setValue(String(categoryId));
+  selectEditCategory(categoryId: string): void {
+    this.editForm.controls.categoryId.setValue(categoryId);
     this.editForm.controls.categoryId.markAsTouched();
   }
 
-  isEditCategorySelected(categoryId: number): boolean {
-    return this.editForm.controls.categoryId.value === String(categoryId);
+  isEditCategorySelected(categoryId: string): boolean {
+    return this.editForm.controls.categoryId.value === categoryId;
   }
 
   /**
@@ -429,8 +422,8 @@ export class GroupsPageComponent {
    * ninguna de las dos.
    */
   editUserStatus(user: GroupSearchUser, group: Group): 'member' | 'pending' | 'none' {
-    if (group.members.some(m => m.userId === user.id)) return 'member';
-    if (this.editPendingInvitations().some(i => i.invitedUserId === user.id)) return 'pending';
+    if (group.members.some((m) => m.userId === user.id)) return 'member';
+    if (this.editPendingInvitations().some((i) => i.invitedUserId === user.id)) return 'pending';
     return 'none';
   }
 
@@ -440,7 +433,7 @@ export class GroupsPageComponent {
     this.groupService.inviteUser(group, user).subscribe({
       next: (invitation) => {
         this.editInvitingUserId.set(null);
-        this.editPendingInvitations.update(list => [...list, invitation]);
+        this.editPendingInvitations.update((list) => [...list, invitation]);
         this.notify(`Invitación enviada a ${user.name}`);
       },
       error: (err) => {
@@ -460,7 +453,7 @@ export class GroupsPageComponent {
       next: (invitation) => {
         this.editSendingEmailInvite.set(false);
         this.editEmailInviteCtrl.reset();
-        this.editPendingInvitations.update(list => [...list, invitation]);
+        this.editPendingInvitations.update((list) => [...list, invitation]);
         this.notify(`Invitación enviada a ${email}`);
       },
       error: (err) => {
@@ -489,7 +482,7 @@ export class GroupsPageComponent {
     this.editActionInProgressId.set(inv.id);
     this.groupService.cancelGroupInvitation(inv.id).subscribe({
       next: () => {
-        this.editPendingInvitations.update(list => list.filter(i => i.id !== inv.id));
+        this.editPendingInvitations.update((list) => list.filter((i) => i.id !== inv.id));
         this.editActionInProgressId.set(null);
         this.notify(`Invitación a ${inv.invitedUserName ?? inv.invitedEmail} cancelada`);
       },
@@ -500,64 +493,28 @@ export class GroupsPageComponent {
     });
   }
 
-  /** Acepta una solicitud de acceso pendiente: añade al solicitante como miembro del grupo. */
-  acceptEditJoinRequest(request: GroupJoinRequest, group: Group): void {
-    this.joinRequestActionInProgressId.set(request.id);
-    this.groupService.acceptJoinRequest(request.id).subscribe({
-      next: (updated) => {
-        this.myGroups.update(list => list.map(g => g.id === updated.id ? updated : g));
-        this.editPendingJoinRequests.update(list => list.filter(r => r.id !== request.id));
-        this.pendingJoinRequestCountByGroup.update(prev => ({
-          ...prev, [group.id]: Math.max(0, (prev[group.id] ?? 1) - 1),
-        }));
-        this.joinRequestActionInProgressId.set(null);
-        this.notify(`${request.requestedByName} se ha unido al grupo`);
-      },
-      error: () => {
-        this.joinRequestActionInProgressId.set(null);
-        this.notify('No se pudo aceptar la solicitud. Inténtalo de nuevo.');
-      },
-    });
-  }
-
-  /** Rechaza una solicitud de acceso pendiente. No añade al solicitante al grupo. */
-  rejectEditJoinRequest(request: GroupJoinRequest, group: Group): void {
-    this.joinRequestActionInProgressId.set(request.id);
-    this.groupService.rejectJoinRequest(request.id).subscribe({
-      next: () => {
-        this.editPendingJoinRequests.update(list => list.filter(r => r.id !== request.id));
-        this.pendingJoinRequestCountByGroup.update(prev => ({
-          ...prev, [group.id]: Math.max(0, (prev[group.id] ?? 1) - 1),
-        }));
-        this.joinRequestActionInProgressId.set(null);
-        this.notify(`Solicitud de ${request.requestedByName} rechazada`);
-      },
-      error: () => {
-        this.joinRequestActionInProgressId.set(null);
-        this.notify('No se pudo rechazar la solicitud. Inténtalo de nuevo.');
-      },
-    });
-  }
-
   /** Pide confirmación y, si se acepta, expulsa a un miembro del grupo en edición. */
   removeEditMember(member: GroupMember, group: Group): void {
     const compactViewport = this.responsive.isMobile() || this.responsive.isTablet();
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, withResponsiveDialogLayout(
-      {
-        ...CONFIRM_DIALOG_CONFIG,
-        data: {
-          title: 'Eliminar del grupo',
-          message: `¿Seguro que quieres eliminar a ${member.name} del grupo?`,
-          warning: 'Dejará de ver las publicaciones y la actividad del grupo.',
-          icon: 'person_remove',
-          acceptText: 'Eliminar',
-          acceptIcon: 'person_remove',
-        } satisfies ConfirmDialogData,
-      },
-      compactViewport,
-    ));
+    const dialogRef = this.dialog.open(
+      ConfirmDialogComponent,
+      withResponsiveDialogLayout(
+        {
+          ...CONFIRM_DIALOG_CONFIG,
+          data: {
+            title: 'Eliminar del grupo',
+            message: `¿Seguro que quieres eliminar a ${member.name} del grupo?`,
+            warning: 'Dejará de ver las publicaciones y la actividad del grupo.',
+            icon: 'person_remove',
+            acceptText: 'Eliminar',
+            acceptIcon: 'person_remove',
+          } satisfies ConfirmDialogData,
+        },
+        compactViewport,
+      ),
+    );
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().subscribe((confirmed) => {
       if (confirmed) this.doRemoveEditMember(member, group);
     });
   }
@@ -567,10 +524,12 @@ export class GroupsPageComponent {
     this.groupService.removeMember(group.id, member.userId).subscribe({
       next: () => {
         // Actualiza la lista local de miembros sin recargar el grupo completo.
-        this.myGroups.update(list =>
-          list.map(g => g.id === group.id
-            ? { ...g, members: g.members.filter(m => m.userId !== member.userId) }
-            : g)
+        this.myGroups.update((list) =>
+          list.map((g) =>
+            g.id === group.id
+              ? { ...g, members: g.members.filter((m) => m.userId !== member.userId) }
+              : g,
+          ),
         );
         this.editActionInProgressId.set(null);
         this.notify(`${member.name} ha sido eliminado del grupo`);
@@ -592,21 +551,24 @@ export class GroupsPageComponent {
 
     this.deleteInProgress.set(true);
 
-    const action$ = confirm.role === 'organizer'
-      ? this.groupService.deleteGroup(group.id)
-      : this.groupService.leaveGroup(group.id);
+    const action$ =
+      confirm.role === 'organizer'
+        ? this.groupService.deleteGroup(group.id)
+        : this.groupService.leaveGroup(group.id);
 
-    const successMsg = confirm.role === 'organizer'
-      ? `Grupo "${group.name}" eliminado`
-      : `Has abandonado "${group.name}"`;
+    const successMsg =
+      confirm.role === 'organizer'
+        ? `Grupo "${group.name}" eliminado`
+        : `Has abandonado "${group.name}"`;
 
-    const errorMsg = confirm.role === 'organizer'
-      ? 'No se pudo eliminar el grupo. Inténtalo de nuevo.'
-      : 'No se pudo abandonar el grupo. Inténtalo de nuevo.';
+    const errorMsg =
+      confirm.role === 'organizer'
+        ? 'No se pudo eliminar el grupo. Inténtalo de nuevo.'
+        : 'No se pudo abandonar el grupo. Inténtalo de nuevo.';
 
     action$.subscribe({
       next: () => {
-        this.myGroups.update(list => list.filter(g => g.id !== group.id));
+        this.myGroups.update((list) => list.filter((g) => g.id !== group.id));
         this.deleteConfirmGroup.set(null);
         this.deleteInProgress.set(false);
         this.notify(successMsg);
@@ -621,50 +583,74 @@ export class GroupsPageComponent {
 
   /** Avisa (email) al organizador de un grupo del que se es miembro. */
   openNotifyOrganizer(group: Group): void {
-    const organizer = group.members.find(m => m.role === 'organizer');
+    const organizer = group.members.find((m) => m.role === 'organizer');
     if (!organizer) return;
 
     const compactViewport = this.responsive.isMobile() || this.responsive.isTablet();
-    const dialogRef = this.dialog.open(NotifyOrganizerDialogComponent, withResponsiveDialogLayout(
-      { ...NOTIFY_ORGANIZER_DIALOG_CONFIG, data: { groupName: group.name, organizerName: organizer.name } },
-      compactViewport,
-    ));
+    const dialogRef = this.dialog.open(
+      NotifyOrganizerDialogComponent,
+      withResponsiveDialogLayout(
+        {
+          ...NOTIFY_ORGANIZER_DIALOG_CONFIG,
+          data: { groupName: group.name, organizerName: organizer.name },
+        },
+        compactViewport,
+      ),
+    );
 
-    dialogRef.afterClosed().subscribe((result: NotifyOrganizerDialogResult | undefined) => {
-      if (!result) return;
-      this.groupService.notifyOrganizer(group, result.subject, result.message).subscribe(() => {
+    dialogRef
+      .afterClosed()
+      .pipe(
+        filter((result): result is NotifyOrganizerDialogResult => !!result),
+        switchMap((result) =>
+          this.groupService.notifyOrganizer(group, result.subject, result.message),
+        ),
+      )
+      .subscribe(() => {
         this.notify('Aviso enviado al organizador');
       });
-    });
   }
 
   /** Envía un mensaje a los miembros seleccionados del grupo (por defecto, todos). Solo organizador. */
   openContactMembers(group: Group): void {
-    const members = group.members.filter(m => m.role !== 'organizer');
+    const members = group.members.filter((m) => m.role !== 'organizer');
     if (members.length === 0) {
       this.notify('Este grupo todavía no tiene miembros a los que contactar');
       return;
     }
 
     const compactViewport = this.responsive.isMobile() || this.responsive.isTablet();
-    const dialogRef = this.dialog.open(ContactMembersDialogComponent, withResponsiveDialogLayout(
-      { ...CONTACT_MEMBERS_DIALOG_CONFIG, data: { groupName: group.name, members } },
-      compactViewport,
-    ));
+    const dialogRef = this.dialog.open(
+      ContactMembersDialogComponent,
+      withResponsiveDialogLayout(
+        { ...CONTACT_MEMBERS_DIALOG_CONFIG, data: { groupName: group.name, members } },
+        compactViewport,
+      ),
+    );
 
-    dialogRef.afterClosed().subscribe((result: ContactMembersDialogResult | undefined) => {
-      if (!result) return;
-      this.groupService.contactMembers(group, result.subject, result.message, result.recipientUserIds).subscribe(() => {
+    dialogRef
+      .afterClosed()
+      .pipe(
+        filter((result): result is ContactMembersDialogResult => !!result),
+        switchMap((result) =>
+          this.groupService.contactMembers(
+            group,
+            result.subject,
+            result.message,
+            result.recipientUserIds,
+          ),
+        ),
+      )
+      .subscribe(() => {
         this.notify('Mensaje enviado a los miembros seleccionados');
       });
-    });
   }
 
   acceptInvitation(invitation: GroupInvitation): void {
     this.invitationActionInProgress.set(invitation.id);
     this.groupService.acceptInvitation(invitation.id).subscribe({
       next: () => {
-        this.pendingInvitations.update(list => list.filter(i => i.id !== invitation.id));
+        this.pendingInvitations.update((list) => list.filter((i) => i.id !== invitation.id));
         this.invitationActionInProgress.set(null);
         this.loadGroups();
         this.notify(`Te has unido a "${invitation.groupName}"`);
@@ -680,7 +666,7 @@ export class GroupsPageComponent {
     this.invitationActionInProgress.set(invitation.id);
     this.groupService.declineInvitation(invitation.id).subscribe({
       next: () => {
-        this.pendingInvitations.update(list => list.filter(i => i.id !== invitation.id));
+        this.pendingInvitations.update((list) => list.filter((i) => i.id !== invitation.id));
         this.invitationActionInProgress.set(null);
         this.notify(`Invitación a "${invitation.groupName}" rechazada`);
       },

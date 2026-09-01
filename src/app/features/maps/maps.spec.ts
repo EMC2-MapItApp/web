@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -250,6 +250,7 @@ describe('MapsPageComponent', () => {
     getById: ReturnType<typeof vi.fn>;
   };
   let dialog: { open: ReturnType<typeof vi.fn> };
+  let geoIpService: { resolveCenter: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     installGoogleMapsStub();
@@ -295,6 +296,11 @@ describe('MapsPageComponent', () => {
       getById: vi.fn(),
     };
     dialog = { open: vi.fn() };
+    geoIpService = {
+      resolveCenter: vi.fn().mockReturnValue(
+        of({ lat: 40.4, lng: -3.7, city: null, country: null, resolvedIp: '', source: 'fallback' }),
+      ),
+    };
 
     await TestBed.configureTestingModule({
       imports: [MapsPageComponent],
@@ -302,14 +308,7 @@ describe('MapsPageComponent', () => {
         { provide: LocationService, useValue: locationService },
         { provide: CategoryService, useValue: categoryService },
         { provide: MatDialog, useValue: dialog },
-        {
-          provide: GeoIpService,
-          useValue: {
-            resolveCenter: vi.fn().mockReturnValue(
-              of({ lat: 40.4, lng: -3.7, city: null, country: null, resolvedIp: '', source: 'fallback' }),
-            ),
-          },
-        },
+        { provide: GeoIpService, useValue: geoIpService },
         { provide: MapViewportService, useValue: mapViewport },
         { provide: DeviceLocationService, useValue: deviceLocation },
         { provide: PublicationService, useValue: publicationService },
@@ -661,6 +660,79 @@ describe('MapsPageComponent', () => {
       marker.trigger('click', { domEvent: { stopPropagation } });
 
       expect(stopPropagation).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // ── Geolocalización ("Usar mi ubicación") ───────────────────────────────────
+  // Solo alcanzable a través del control nativo (real, GoogleMapsService.buildMyLocationControl),
+  // que solo se añade al mapa cuando isTouchPrimaryDevice() es true.
+
+  describe('"Usar mi ubicación"', () => {
+    async function renderWithLocationControl(): Promise<HTMLButtonElement> {
+      deviceLocation.isTouchPrimaryDevice.mockReturnValue(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      return createdMaps[0].controls['RIGHT_BOTTOM'][0] as HTMLButtonElement;
+    }
+
+    it('centra el mapa en la posición real del dispositivo con zoom 15', async () => {
+      const button = await renderWithLocationControl();
+
+      button.click();
+
+      expect(createdMaps[0].center).toEqual({ lat: 41.0, lng: -4.0 });
+      expect(createdMaps[0].zoom).toBe(15);
+      expect(component.locating()).toBe(false);
+    });
+
+    it('permiso denegado: cae al fallback por IP con zoom 12', async () => {
+      deviceLocation.getCurrentPosition.mockReturnValue(
+        throwError(() => ({ code: 'PERMISSION_DENIED' })),
+      );
+      const button = await renderWithLocationControl();
+
+      button.click();
+
+      expect(geoIpService.resolveCenter).toHaveBeenCalled();
+      expect(createdMaps[0].center).toEqual({ lat: 40.4, lng: -3.7 });
+      expect(createdMaps[0].zoom).toBe(12);
+    });
+
+    it('error distinto de permiso denegado muestra un snackbar y no cae al fallback por IP', async () => {
+      deviceLocation.getCurrentPosition.mockReturnValue(throwError(() => ({ code: 'TIMEOUT' })));
+      const button = await renderWithLocationControl();
+
+      button.click();
+
+      expect(geoIpService.resolveCenter).not.toHaveBeenCalled();
+      expect(component.locating()).toBe(false);
+    });
+
+    it('una segunda pulsación mientras la primera está en curso no dispara una nueva petición', async () => {
+      // getCurrentPosition que nunca emite, para simular una petición todavía en vuelo.
+      deviceLocation.getCurrentPosition.mockReturnValue(new Observable(() => undefined));
+      const button = await renderWithLocationControl();
+
+      button.click();
+      expect(component.locating()).toBe(true);
+      button.click();
+
+      expect(deviceLocation.getCurrentPosition).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // ── syncViewport (listener idle del mapa) ───────────────────────────────────
+
+  describe('syncViewport', () => {
+    it('el evento idle del mapa vuelca centro/zoom al MapViewportService', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      createdMaps[0].panTo({ lat: 41.5, lng: -3.9 });
+      createdMaps[0].setZoom(14);
+      createdMaps[0].trigger('idle');
+
+      expect(mapViewport.setViewport).toHaveBeenCalledWith({ lat: 41.5, lng: -3.9 }, 14);
     });
   });
 });

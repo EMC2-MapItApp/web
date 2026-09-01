@@ -90,11 +90,13 @@ fichero.
   el repo.
 - **CI** (`.github/workflows/ci.yml`): `build` es gate real (bloquea el merge). `lint`
   (ESLint + Stylelint + `format:check`) y `test` corren con `continue-on-error: true` —
-  **informativos, no bloqueantes** — porque a fecha 2026-08-16 el repo arranca con deuda
+  **informativos, no bloqueantes** — porque a fecha 2026-08-16 el repo arrancó con deuda
   preexistente (~75 avisos de `ng lint`, ~246 de `stylelint`, 125 archivos sin formatear,
-  2 suites de test en rojo — ver `docs/TareasLogin.md`/`src/app/app.routes.spec.ts` y
-  `home-shell.spec.ts` para el detalle de estas últimas). Quitar `continue-on-error`
-  rule por rule según se vaya limpiando la deuda, no todo de golpe.
+  2 suites de test en rojo). La deuda de `lint`/`stylelint`/formato sigue abierta
+  (`D-006-W` en `audit/AUDIT-DEBT.md`) — las 2 suites de test en rojo se cerraron el
+  2026-09-01 (`TP-001-W`/`TP-002-W`, ver `audit/tests/web/TESTS-DEBT.md`) y la suite
+  completa de WEB está verde. Quitar `continue-on-error` rule por rule según se vaya
+  limpiando cada deuda, no todo de golpe — el de `test` es ahora candidato a quitarse.
 
 `angular-conventions-reviewer` y `style-nav-reviewer` ejecutan ESLint/Stylelint sobre los
 archivos tocados como primer paso mecánico de su revisión (ver sus checklists) — no
@@ -176,18 +178,17 @@ modelos ni directivas, ni exige cobertura exhaustiva de casos límite o porcenta
 cobertura — solo existencia y no-trivialidad de test para lo que el diff toca. Se invoca de
 forma **proactiva** cada vez que se crea o modifica un `.service.ts` o un guard funcional.
 
-Estado conocido a fecha 2026-08-26: de 21 servicios, 2 tienen spec
-(`publication.service.spec.ts` ya existía; `auth.service.spec.ts` se añadió hoy mismo,
-primer test escrito con este agente aplicado de forma retroactiva); de los 4 archivos
-`*.guard.ts`, 3 son guards funcionales reales sin spec y el 4º (`auth.guard.ts`) no es un
-guard — solo exporta la constante `TOKEN_KEY`, queda fuera del alcance del agente por
-definición. Este gap (22 archivos pendientes de crear, más las 2 suites existentes en rojo
-documentadas más abajo) ya no vive solo en este párrafo: se trackea en
+Estado a fecha 2026-09-01: el barrido retroactivo detectado el 2026-08-26 (21 servicios, 2 con
+spec; 3 guards funcionales sin spec) está **cerrado por completo** — los 21 servicios y los 3
+guards funcionales tienen `.spec.ts` no trivial. El 4º archivo `*.guard.ts` (`auth.guard.ts`)
+sigue fuera de alcance por definición: no es un guard funcional, solo exporta la constante
+`TOKEN_KEY`. El detalle fichero a fichero (con commit de resolución) vive en
 `../audit/tests/web/TESTS-DEBT.md`, no en `audit/AUDIT-DEBT.md` — la deuda de tests tiene su
 propio registro desde 2026-08-26, separado del resto de hallazgos de auditoría. Por eso, a
 diferencia de los otros 5, `test-coverage-reviewer` no se ha añadido a
-`docs/SUBAGENT-VALIDATION.md`: se aplica solo hacia delante, sobre diffs nuevos, mientras el
-barrido del backlog existente avanza vía `TESTS-DEBT.md`.
+`docs/SUBAGENT-VALIDATION.md`: se aplica solo hacia delante, sobre diffs nuevos — el barrido del
+backlog ya no está en curso, pero `TESTS-DEBT.md` sigue siendo el registro de referencia si
+aparece deuda nueva.
 
 ### Barrido retroactivo de los 5 subagentes sobre código ya existente
 

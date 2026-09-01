@@ -18,11 +18,11 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-  # El repo aún tiene deuda preexistente de lint/tests (ver CLAUDE.md — 75 avisos de
-  # `ng lint`, 246 de `stylelint`, 2 suites de test ya en rojo antes de esta CI). Estos
-  # jobs corren e informan en el PR para que la deuda sea visible, pero no bloquean el
-  # merge (`continue-on-error: true`) hasta que se limpie la base; en ese momento,
-  # quitar `continue-on-error` para que pasen a ser gate real.
+  # El repo aún tiene deuda preexistente de lint (ver CLAUDE.md / D-006-W en
+  # audit/AUDIT-DEBT.md — ~75 avisos de `ng lint`, ~246 de `stylelint`, 125 archivos sin
+  # formatear). Este job corre e informa en el PR para que la deuda sea visible, pero no
+  # bloquea el merge (`continue-on-error: true`) hasta que se limpie la base; en ese
+  # momento, quitar `continue-on-error` para que pase a ser gate real.
   lint:
     name: Lint (informativo)
     runs-on: ubuntu-latest
@@ -38,10 +38,12 @@ jobs:
       - run: npm run lint:style
       - run: npm run format:check
 
+  # Gate real desde 2026-09-01: la suite quedó 100% verde (TP-001-W/TP-002-W resueltos,
+  # deuda completa de audit/tests/web/TESTS-DEBT.md pagada) — un test roto ahora bloquea
+  # el merge, ya no solo informa.
   test:
-    name: Tests (informativo)
+    name: Tests
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

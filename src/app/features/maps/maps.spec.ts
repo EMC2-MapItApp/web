@@ -530,4 +530,74 @@ describe('MapsPageComponent', () => {
       expect(clearInstanceListeners).not.toHaveBeenCalled();
     });
   });
+
+  // ── Click en marker → detalle (openLocationDetail, rama hover) ─────────────
+
+  describe('click en marker (rama hover)', () => {
+    it('mouseover abre el InfoWindow con el tooltip de la localización', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      createdMarkers[0].trigger('mouseover');
+
+      const infoWindow = createdInfoWindows[0];
+      expect(infoWindow.opened).toBe(true);
+      expect(String(infoWindow.content)).toContain('Ruta en bici');
+    });
+
+    it('mouseout cierra el InfoWindow', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      createdMarkers[0].trigger('mouseover');
+
+      createdMarkers[0].trigger('mouseout');
+
+      expect(createdInfoWindows[0].opened).toBe(false);
+    });
+
+    it('click sin usuario logueado abre el dialog de auth y no puebla el detalle', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      createdMarkers[0].trigger('click');
+
+      expect(dialog.open).toHaveBeenCalledTimes(1);
+      expect(component.selectedDetail()).toBeNull();
+    });
+
+    it('click con usuario logueado carga enrollments y puebla selectedDetail/selectedBreadcrumb', async () => {
+      TestBed.inject(CurrentUserService).setUser(USER);
+      publicationService.getEnrollments.mockReturnValue(
+        of([{ userId: 'other', userName: 'Otro', enrolledAt: '2026-01-01' }]),
+      );
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      createdMarkers[0].trigger('click');
+
+      expect(publicationService.getEnrollments).toHaveBeenCalledWith('loc-1');
+      expect(component.selectedDetail()?.id).toBe('loc-1');
+      expect(component.selectedDetail()?.enrolledUsers).toEqual([
+        { userId: 'other', userName: 'Otro', enrolledAt: '2026-01-01' },
+      ]);
+      expect(component.selectedBreadcrumb()).toEqual(BREADCRUMB);
+    });
+
+    it('publicación privada sin acceso: puebla el detalle sin pedir enrollments', async () => {
+      const privateLocation: MapLocation = {
+        ...LOCATIONS[0],
+        visibility: 'PRIVATE',
+        hasAccess: false,
+      };
+      locationService.getAll.mockReturnValue(of([privateLocation]));
+      TestBed.inject(CurrentUserService).setUser(USER);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      createdMarkers[0].trigger('click');
+
+      expect(publicationService.getEnrollments).not.toHaveBeenCalled();
+      expect(component.selectedDetail()?.id).toBe('loc-1');
+    });
+  });
 });

@@ -318,7 +318,7 @@
             <button type="button" class="fav-tree__check"
               [class.fav-tree__check--all]="mainSelectionState(cat) === 'all'"
               [class.fav-tree__check--some]="mainSelectionState(cat) === 'some'" [style.--cat-color]="cat.color"
-              (click)="$event.stopPropagation(); toggleMainFavoritesIfAllowed(cat)">
+              (click)="$event.stopPropagation(); toggleMainFavorites(cat)">
               <mat-icon>{{
                 mainSelectionState(cat) === 'all' ? 'check_box' :
                 mainSelectionState(cat) === 'some' ? 'indeterminate_check_box' :
@@ -340,7 +340,7 @@
                 <button type="button" class="fav-tree__check"
                   [class.fav-tree__check--all]="subSelectionState(sub) === 'all'"
                   [class.fav-tree__check--some]="subSelectionState(sub) === 'some'" [style.--cat-color]="cat.color"
-                  (click)="$event.stopPropagation(); toggleSubFavoritesIfAllowed(sub)">
+                  (click)="$event.stopPropagation(); toggleSubFavorites(sub)">
                   <mat-icon>{{
                     subSelectionState(sub) === 'all' ? 'check_box' :
                     subSelectionState(sub) === 'some' ? 'indeterminate_check_box' :
@@ -357,24 +357,14 @@
               @if (expandedSub() === sub.id) {
               <ul class="fav-tree__types">
                 @for (type of sub.locationTypes; track type.id) {
-                <li class="fav-tree__type" [class.fav-tree__type--locked]="!canToggleFavorite(type.id)">
+                <li class="fav-tree__type">
                   <button type="button" class="fav-tree__check" [class.fav-tree__check--all]="isFavorite(type.id)"
-                    [class.fav-tree__check--locked]="!canToggleFavorite(type.id)" [style.--cat-color]="cat.color"
-                    [disabled]="!canToggleFavorite(type.id)" (click)="toggleFavoriteIfAllowed(type.id)">
-                    @if (!canToggleFavorite(type.id)) {
-                    <mat-icon class="fav-tree__lock-icon">lock</mat-icon>
-                    } @else {
+                    [style.--cat-color]="cat.color" (click)="toggleFavorite(type.id)">
                     <mat-icon>{{ isFavorite(type.id) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-                    }
                   </button>
                   <div class="fav-tree__type-info">
-                    <span class="fav-tree__name" [class.fav-tree__name--locked]="!canToggleFavorite(type.id)">
-                      {{ type.name }}
-                    </span>
+                    <span class="fav-tree__name">{{ type.name }}</span>
                     <span class="fav-tree__desc">{{ type.description }}</span>
-                    @if (!canToggleFavorite(type.id)) {
-                    <span class="fav-tree__lock-hint">Requiere nivel 10</span>
-                    }
                   </div>
                 </li>
                 }
@@ -540,43 +530,6 @@
       }
     </mat-expansion-panel>
 
-    <!--  Nivel y progreso -->
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <mat-icon>trending_up</mat-icon>
-          <span>Nivel y progreso</span>
-        </mat-panel-title>
-        @if (!isMobile()) {
-        <mat-panel-description>XP acumulada y nivel actual</mat-panel-description>
-        }
-      </mat-expansion-panel-header>
-
-      <div class="level-card">
-        <div class="level-card__header">
-          <div class="level-card__badge">
-            <span class="level-card__number">{{ cu.userLevel() }}</span>
-            <span class="level-card__label">Nivel</span>
-          </div>
-          <div class="level-card__xp-info">
-            @if (!isMaxLevel) {
-            <span class="level-card__xp-current">{{ cu.userXp() }} XP</span>
-            <span class="level-card__xp-target">/ {{ xpForNextLevel }}
-              XP para nivel {{ (cu.userLevel() ?? 0) + 1 }}</span>
-            } @else {
-            <span class="level-card__xp-current">Nivel máximo alcanzado 🎉</span>
-            }
-          </div>
-        </div>
-        @if (!isMaxLevel) {
-        <div class="level-card__progress-bar">
-          <div class="level-card__progress-fill" [style.width.%]="levelProgress"></div>
-        </div>
-        <p class="level-card__progress-label">{{ levelProgress }}% completado</p>
-        }
-      </div>
-    </mat-expansion-panel>
-
     <!-- Capacidades -->
     <mat-expansion-panel>
       <mat-expansion-panel-header>
@@ -600,7 +553,7 @@
       } @else {
       <p class="profile-empty">Aún no has desbloqueado ninguna capacidad.</p>
       }
-      <p class="profile-hint">Completa hitos o adquiere capacidades para ampliar tu acceso.</p>
+      <p class="profile-hint">Desbloquea capacidades para ampliar tu acceso.</p>
     </mat-expansion-panel>
 
 

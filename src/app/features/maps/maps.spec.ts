@@ -325,6 +325,11 @@ describe('MapsPageComponent', () => {
   });
 
   afterEach(() => {
+    // Destruir explícitamente ANTES de restaurar window.google: el ngOnDestroy real del
+    // componente llama a google.maps.event.clearInstanceListeners, y el teardown automático
+    // de TestBed (registrado aparte) también destruye la fixture — si el stub ya no está
+    // montado en ese punto, ngOnDestroy revienta con "Cannot read properties of undefined".
+    fixture.destroy();
     (window as unknown as { google?: unknown }).google = originalGoogle;
     document.querySelectorAll('script[src*="maps.googleapis.com"]').forEach((el) => el.remove());
   });
@@ -410,6 +415,44 @@ describe('MapsPageComponent', () => {
       expect(component.selectedMain()).toBeNull();
       expect(component.selectedSub()).toBeNull();
       expect(component.selectedTypeId()).toBeNull();
+    });
+  });
+
+  // ── Arranque del mapa (ngAfterViewInit) ─────────────────────────────────────
+
+  describe('arranque del mapa', () => {
+    it('crea el mapa con el viewport resuelto y carga categorías/localizaciones', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(createdMaps).toHaveLength(1);
+      expect(createdMaps[0].center).toEqual({ lat: 40.0, lng: -3.7 });
+      expect(createdMaps[0].zoom).toBe(12);
+      expect(component.categories()).toEqual([MAIN]);
+      expect(createdMarkers).toHaveLength(2);
+    });
+
+    it('en dispositivo táctil primario añade el control nativo "Usar mi ubicación"', async () => {
+      deviceLocation.isTouchPrimaryDevice.mockReturnValue(true);
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(createdMaps[0].controls['RIGHT_BOTTOM']).toHaveLength(1);
+    });
+
+    it('en dispositivo no táctil no añade el control nativo', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(createdMaps[0].controls['RIGHT_BOTTOM']).toHaveLength(0);
+    });
+
+    it('suscribe el listener idle del mapa para mantener el viewport sincronizado', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(createdMaps[0].listeners['idle']).toHaveLength(1);
     });
   });
 });

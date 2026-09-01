@@ -43,7 +43,7 @@ Consume la API REST del backend hermano en Spring Boot + MongoDB.
 | Crear publicación / inscribirse / perfil / ajustes | ✅ Completo |
 | Arquitectura responsive (mobile / tablet / desktop) | ✅ Completo |
 | Dashboard de gamificación (niveles, XP, capacidades) | 🚧 Deshabilitado en el menú, pendiente del backend |
-| Tests unitarios/e2e | 🚧 No implementados todavía (runner Vitest configurado, sin specs reales) |
+| Tests unitarios | ✅ 221 tests, 32 suites (Vitest) — 100% de servicios y guards funcionales, cobertura parcial de componentes |
 
 ## Arquitectura
 
@@ -137,11 +137,12 @@ controlan acceso a rutas y apertura de diálogos.
 ## Tests
 
 ```bash
-npm test   # Vitest vía @angular/build:unit-test
+npm test   # Vitest vía @angular/build:unit-test — 221 tests, 32 suites
 ```
 
-El runner está configurado pero **no hay specs reales todavía** — es la principal deuda técnica
-pendiente de este repo.
+100% de servicios (`*.service.ts`) y guards funcionales tienen test, verificado en CI (gate
+real, bloquea el merge). La cobertura de componentes es parcial pero creciente — p. ej.
+`MapsPageComponent` tiene 40 tests con un stub propio de la API de Google Maps.
 
 ## Despliegue
 

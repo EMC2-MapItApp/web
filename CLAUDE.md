@@ -11,8 +11,12 @@ Frontend Angular 22 (standalone components, signals) de MapIt — consume la API
 hermano en `../BACK` (Spring Boot + MongoDB). El mapa (Google Maps) es el elemento central de la
 app; el resto de la UI (login, registro, publicaciones, dashboard, perfil) gira en torno a él.
 
-Aún no hay tests escritos (están pendientes de implementar). El runner configurado es Vitest vía
-`@angular/build:unit-test` (`ng test`), pero no lo des por hecho como cobertura real todavía.
+Tests reales desde 2026-09-01 (221 tests, 32 suites, todas verdes — ver `../audit/tests/web/
+TESTS-DEBT.md` para el detalle). El runner es Vitest vía `@angular/build:unit-test` (`ng test`).
+Cobertura garantizada por `test-coverage-reviewer` (ver más abajo): todo `*.service.ts` y guard
+funcional tocado por un diff tiene `.spec.ts` no trivial — no así componentes/pipes/
+interceptors/directivas, cuya cobertura es todavía parcial y voluntaria (p. ej. `maps.spec.ts`,
+reescrito ese mismo día de un smoke test a 40 tests reales con stub propio de `google.maps`).
 
 Tareas de auth pendientes/en curso están documentadas en `docs/TareasLogin.md` — consúltalo antes
 de tocar login/registro para no duplicar trabajo ya planificado.
@@ -89,14 +93,14 @@ fichero.
   `"lint-staged"` de `package.json`). Solo actúa sobre archivos en stage, no sobre todo
   el repo.
 - **CI** (`.github/workflows/ci.yml`): `build` es gate real (bloquea el merge). `lint`
-  (ESLint + Stylelint + `format:check`) y `test` corren con `continue-on-error: true` —
-  **informativos, no bloqueantes** — porque a fecha 2026-08-16 el repo arrancó con deuda
-  preexistente (~75 avisos de `ng lint`, ~246 de `stylelint`, 125 archivos sin formatear,
-  2 suites de test en rojo). La deuda de `lint`/`stylelint`/formato sigue abierta
-  (`D-006-W` en `audit/AUDIT-DEBT.md`) — las 2 suites de test en rojo se cerraron el
-  2026-09-01 (`TP-001-W`/`TP-002-W`, ver `audit/tests/web/TESTS-DEBT.md`) y la suite
-  completa de WEB está verde. Quitar `continue-on-error` rule por rule según se vaya
-  limpiando cada deuda, no todo de golpe — el de `test` es ahora candidato a quitarse.
+  (ESLint + Stylelint + `format:check`) corre con `continue-on-error: true` —
+  **informativo, no bloqueante** — porque a fecha 2026-08-16 el repo arrancó con deuda
+  preexistente (~75 avisos de `ng lint`, ~246 de `stylelint`, 125 archivos sin formatear;
+  `D-006-W` en `audit/AUDIT-DEBT.md`, sigue abierta). `test` **es gate real desde
+  2026-09-01**: las 2 suites en rojo se cerraron ese día (`TP-001-W`/`TP-002-W`, ver
+  `audit/tests/web/TESTS-DEBT.md`), la suite completa de WEB quedó verde y se quitó su
+  `continue-on-error` — un test roto ahora bloquea el merge. Quitar el de `lint` cuando se
+  limpie esa deuda, rule por rule, no todo de golpe.
 
 `angular-conventions-reviewer` y `style-nav-reviewer` ejecutan ESLint/Stylelint sobre los
 archivos tocados como primer paso mecánico de su revisión (ver sus checklists) — no
@@ -189,6 +193,14 @@ diferencia de los otros 5, `test-coverage-reviewer` no se ha añadido a
 `docs/SUBAGENT-VALIDATION.md`: se aplica solo hacia delante, sobre diffs nuevos — el barrido del
 backlog ya no está en curso, pero `TESTS-DEBT.md` sigue siendo el registro de referencia si
 aparece deuda nueva.
+
+Ese mismo día, y sin que lo exija este subagente (fuera de su alcance por ser un componente),
+`maps.spec.ts` (`MapsPageComponent`, el mayor de los 4 candidatos a `D-003-W`/`D-004-W` y el
+único que toca `google.maps.*` nativo) pasó de smoke test (1 test, sin `detectChanges()`) a 40
+tests reales con un stub propio de `google.maps` — iniciativa voluntaria para poder retomar con
+seguridad ese refactor, documentada en `../audit/tests/web/TESTS-DEBT.md` igualmente aunque no
+sea un `TC-`/`TR-` formal. No implica que el resto de componentes tengan cobertura equivalente
+— sigue siendo caso a caso.
 
 ### Barrido retroactivo de los 5 subagentes sobre código ya existente
 

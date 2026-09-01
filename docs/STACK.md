@@ -52,7 +52,7 @@ usando piezas estándar de la industria en vez de atajos de proyecto de juguete.
 
 | Pieza | Por qué |
 |---|---|
-| [Vitest](https://vitest.dev/) vía `@angular/build:unit-test` | Runner de test integrado en el builder oficial de Angular CLI — sin configurar Karma/Jasmine a mano. Configurado pero sin specs reales todavía (deuda técnica pendiente). |
+| [Vitest](https://vitest.dev/) vía `@angular/build:unit-test` | Runner de test integrado en el builder oficial de Angular CLI — sin configurar Karma/Jasmine a mano. 221 tests en 32 suites (gate real en CI): 100% de servicios y guards funcionales, más cobertura creciente de componentes. |
 
 ## Build y calidad
 

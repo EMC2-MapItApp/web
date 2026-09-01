@@ -18,8 +18,10 @@ funcional tocado por un diff tiene `.spec.ts` no trivial — no así componentes
 interceptors/directivas, cuya cobertura es todavía parcial y voluntaria (p. ej. `maps.spec.ts`,
 reescrito ese mismo día de un smoke test a 40 tests reales con stub propio de `google.maps`).
 
-Tareas de auth pendientes/en curso están documentadas en `docs/TareasLogin.md` — consúltalo antes
-de tocar login/registro para no duplicar trabajo ya planificado.
+`docs/TareasLogin.md` (nota local no versionada, `.gitignore`) documentaba tareas de auth
+pendientes/en curso — consúltalo si existe en tu checkout antes de tocar login/registro; no
+está presente en todos los clones (se borró del repo el 2026-07-15, commit `a1e2ad3`), así que
+su ausencia no implica que no queden tareas pendientes.
 
 ## Despliegue
 
@@ -314,8 +316,9 @@ versiones de about/changelog/stack y hubo que rehacerlas):
 ### Responsive — arquitectura obligatoria para toda UI nueva
 
 Implementación técnica del principio mobile-first de la sección anterior. Documento de
-referencia completo: `docs/responsive-architecture-portable.md`. Resumen de las reglas que hay
-que respetar siempre:
+referencia completo (si existe en tu checkout — nota local no versionada, `.gitignore`, borrada
+del repo el 2026-07-15 en `a1e2ad3`): `docs/responsive-architecture-portable.md`. El resumen de
+reglas de abajo es la fuente de verdad cuando ese documento no está presente:
 
 - **Fuente única de verdad**: `core/responsive/responsive.service.ts` (signal `state` +
   `state$`), construido sobre `BreakpointObserver` de Angular CDK y los breakpoints centralizados

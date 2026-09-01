@@ -148,8 +148,7 @@ Tienes un presupuesto de turnos limitado — sé quirúrgico, no exhaustivo:
 
 Tras revisar el contenido, corre `npx vitest run <ruta-del-spec-nuevo-o-tocado>` (uno o
 varios archivos concretos, nunca `npx vitest run` sin argumentos ni `npm run test`/`ng
-test` sobre todo el repo — a fecha 2026-08-26 hay suites en rojo preexistentes documentadas
-en `CLAUDE.md`/`docs/TareasLogin.md` que no son responsabilidad del diff actual). Si el
+test` sobre todo el repo — más lento sin aportar nada que el spec acotado no cubra ya). Si el
 spec que el diff añade o modifica falla al ejecutarlo, es un finding igual de severo que si
 no existiera — un test que no pasa no es cobertura real.
 

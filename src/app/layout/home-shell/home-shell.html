@@ -3,6 +3,7 @@
     <button mat-icon-button (click)="toggleSidenav()" aria-label="Toggle menu">
       <mat-icon>menu</mat-icon>
     </button>
+    <img src="/brand/mapit-logo.svg" alt="" class="app-logo" />
     <span class="title">MapIt</span>
     <span class="spacer"></span>
 
@@ -31,7 +32,7 @@
   <section class="app-body" [class.collapsed]="collapsed()" (click)="handleOutsideMenuClick($event)">
     <aside class="app-sidenav" (click)="$event.stopPropagation()">
       <div class="brand">
-        <mat-icon>map</mat-icon>
+        <img src="/brand/mapit-logo.svg" alt="MapIt" class="brand-logo" />
         @if (!collapsed()) {
         <span>MapIt</span>
         }

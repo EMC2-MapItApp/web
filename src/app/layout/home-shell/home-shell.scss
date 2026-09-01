@@ -26,6 +26,12 @@
   .spacer {
     flex: 1;
   }
+
+  .app-logo {
+    height: 28px;
+    width: 28px;
+    flex-shrink: 0;
+  }
 }
 
 .app-footer {
@@ -82,6 +88,12 @@
     border-bottom: 1px solid var(--c-border-light);
     font-weight: 700;
     color: var(--c-text-primary);
+
+    .brand-logo {
+      height: 28px;
+      width: 28px;
+      flex-shrink: 0;
+    }
   }
 
   .menu {

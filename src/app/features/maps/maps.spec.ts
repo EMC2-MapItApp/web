@@ -600,4 +600,67 @@ describe('MapsPageComponent', () => {
       expect(component.selectedDetail()?.id).toBe('loc-1');
     });
   });
+
+  // ── Rama táctil de markers (attachPressHandlers, hasHover: false) ──────────
+  // Un dispositivo sin hover real nunca dispara mouseover/mouseout de escritorio: el gesto
+  // equivalente es pulsación corta (tooltip) / pulsación larga >= 1000ms (detalle).
+
+  describe('rama táctil de markers (sin hover)', () => {
+    beforeEach(async () => {
+      responsiveState = { ...responsiveState, hasHover: false };
+      TestBed.inject(CurrentUserService).setUser(USER);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('pulsación corta (< 1000ms) abre el tooltip y no abre el detalle', () => {
+      const marker = createdMarkers[0];
+
+      marker.trigger('mousedown');
+      vi.advanceTimersByTime(200);
+      marker.trigger('mouseup');
+
+      expect(component.selectedDetail()).toBeNull();
+      expect(createdInfoWindows[0].opened).toBe(true);
+    });
+
+    it('pulsación larga (>= 1000ms) abre el detalle y no dispara el tooltip de pulsación corta', () => {
+      const marker = createdMarkers[0];
+
+      marker.trigger('mousedown');
+      vi.advanceTimersByTime(1000);
+
+      expect(component.selectedDetail()?.id).toBe('loc-1');
+
+      // El mouseup posterior al long-press ya no debe reabrir el tooltip.
+      createdInfoWindows[0].close();
+      marker.trigger('mouseup');
+      expect(createdInfoWindows[0].opened).toBe(false);
+    });
+
+    it('mouseout durante la pulsación cancela el temporizador (no abre el detalle)', () => {
+      const marker = createdMarkers[0];
+
+      marker.trigger('mousedown');
+      vi.advanceTimersByTime(500);
+      marker.trigger('mouseout');
+      vi.advanceTimersByTime(600);
+
+      expect(component.selectedDetail()).toBeNull();
+    });
+
+    it('el listener click del marker corta la propagación del click sintetizado por el navegador', () => {
+      const marker = createdMarkers[0];
+      const stopPropagation = vi.fn();
+
+      marker.trigger('click', { domEvent: { stopPropagation } });
+
+      expect(stopPropagation).toHaveBeenCalledTimes(1);
+    });
+  });
 });

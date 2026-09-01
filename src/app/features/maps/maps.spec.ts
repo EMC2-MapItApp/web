@@ -455,4 +455,51 @@ describe('MapsPageComponent', () => {
       expect(createdMaps[0].listeners['idle']).toHaveLength(1);
     });
   });
+
+  // ── renderMarkers ────────────────────────────────────────────────────────
+
+  describe('renderMarkers', () => {
+    it('pinta un marker por localización con color resuelto por CategoryService', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(categoryService.resolveColor).toHaveBeenCalledWith('type-1');
+      expect(createdMarkers).toHaveLength(2);
+      expect(createdMarkers[0].position).toEqual({ lat: 40.4, lng: -3.7 });
+      expect(createdMarkers[0].map).toBe(createdMaps[0]);
+    });
+
+    it('un re-render (p. ej. al filtrar) limpia los markers anteriores', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const firstBatch = [...createdMarkers];
+      clearInstanceListeners.mockClear();
+
+      component.selectMain(MAIN); // dispara applyFilter -> renderMarkers de nuevo
+
+      firstBatch.forEach((m) => expect(clearInstanceListeners).toHaveBeenCalledWith(m));
+      firstBatch.forEach((m) => expect(m.map).toBeNull());
+    });
+
+    it('filtrar por tipo solo re-pinta las localizaciones de ese tipo', async () => {
+      const otherTypeLocation: MapLocation = {
+        id: 'loc-3',
+        name: 'Museo',
+        locationTypeId: 'type-other',
+        lat: 40.6,
+        lng: -3.9,
+        visibility: 'PUBLIC',
+      };
+      locationService.getAll.mockReturnValue(of([...LOCATIONS, otherTypeLocation]));
+
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(createdMarkers).toHaveLength(3); // sin filtro: las 3 localizaciones
+
+      component.selectType('type-1');
+
+      const visible = createdMarkers.filter((m) => m.map === createdMaps[0]);
+      expect(visible).toHaveLength(2); // solo las 2 de 'type-1'
+    });
+  });
 });

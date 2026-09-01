@@ -502,4 +502,32 @@ describe('MapsPageComponent', () => {
       expect(visible).toHaveLength(2); // solo las 2 de 'type-1'
     });
   });
+
+  // ── ngOnDestroy ──────────────────────────────────────────────────────────
+  // El propio comentario de maps.ts explicita que esta limpieza evita una fuga de memoria
+  // real: la página se destruye/recrea cada vez que el usuario navega fuera y vuelve (ruta
+  // lazy, no singleton), y google.maps.event no libera los listeners solo con perder la
+  // referencia del objeto.
+
+  describe('ngOnDestroy', () => {
+    it('limpia los listeners del mapa y de cada marker, y cierra el InfoWindow', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const map = createdMaps[0];
+      const markers = [...createdMarkers];
+      const infoWindow = createdInfoWindows[0];
+      clearInstanceListeners.mockClear();
+
+      fixture.destroy();
+
+      expect(clearInstanceListeners).toHaveBeenCalledWith(map);
+      markers.forEach((m) => expect(clearInstanceListeners).toHaveBeenCalledWith(m));
+      expect(infoWindow.opened).toBe(false);
+    });
+
+    it('sin haber llegado a crear el mapa (sin detectChanges), no lanza ningún error', () => {
+      expect(() => fixture.destroy()).not.toThrow();
+      expect(clearInstanceListeners).not.toHaveBeenCalled();
+    });
+  });
 });

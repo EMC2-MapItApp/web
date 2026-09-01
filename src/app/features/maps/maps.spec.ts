@@ -18,6 +18,7 @@ import { ResponsiveState } from '@core/responsive/responsive.model';
 import { MapLocation } from '@core/models/location.model';
 import { MainCategory, CategoryBreadcrumb } from '@core/models/category.model';
 import { MapItUser } from '@core/models/user.model';
+import { PublicationDetailInput } from './publication-detail/publication-detail';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Stub de la API nativa de google.maps — no cargada en el entorno de test.
@@ -251,6 +252,7 @@ describe('MapsPageComponent', () => {
   };
   let dialog: { open: ReturnType<typeof vi.fn> };
   let geoIpService: { resolveCenter: ReturnType<typeof vi.fn> };
+  let snackBar: { open: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     installGoogleMapsStub();
@@ -301,6 +303,7 @@ describe('MapsPageComponent', () => {
         of({ lat: 40.4, lng: -3.7, city: null, country: null, resolvedIp: '', source: 'fallback' }),
       ),
     };
+    snackBar = { open: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [MapsPageComponent],
@@ -313,7 +316,7 @@ describe('MapsPageComponent', () => {
         { provide: DeviceLocationService, useValue: deviceLocation },
         { provide: PublicationService, useValue: publicationService },
         { provide: ResponsiveService, useValue: { state: () => responsiveState } },
-        { provide: MatSnackBar, useValue: { open: vi.fn() } },
+        { provide: MatSnackBar, useValue: snackBar },
         { provide: ThemeService, useValue: { isDark: darkSignal.asReadonly() } },
       ],
     }).compileComponents();
@@ -733,6 +736,138 @@ describe('MapsPageComponent', () => {
       createdMaps[0].trigger('idle');
 
       expect(mapViewport.setViewport).toHaveBeenCalledWith({ lat: 41.5, lng: -3.9 }, 14);
+    });
+  });
+
+  // ── Join / leave / solicitud de acceso ──────────────────────────────────────
+  // Sin google.maps en absoluto: se puebla selectedDetail directamente para aislar la
+  // lógica de negocio del renderizado (no requiere detectChanges/ngAfterViewInit).
+
+  describe('join / leave / solicitud de acceso', () => {
+    function openDetail(overrides: Partial<PublicationDetailInput> = {}) {
+      component.selectedDetail.set({
+        id: 'loc-1',
+        name: 'Ruta en bici',
+        locationTypeId: 'type-1',
+        visibility: 'PUBLIC',
+        ...overrides,
+      });
+    }
+
+    describe('joinSelectedLocation', () => {
+      it('sin usuario logueado abre el dialog de auth y no llama a enroll', () => {
+        openDetail();
+
+        component.joinSelectedLocation();
+
+        expect(dialog.open).toHaveBeenCalledTimes(1);
+        expect(publicationService.enroll).not.toHaveBeenCalled();
+      });
+
+      it('con aforo lleno, aborta sin llamar a enroll', () => {
+        TestBed.inject(CurrentUserService).setUser(USER);
+        openDetail({ metadata: { slots: 2 } });
+        // getJoinedCount lee joinedByLocation() (estado de sesión), no detail.occupiedSlots —
+        // se puebla normalmente desde loadLocations(), aquí a mano por estar aislado del mapa.
+        component.joinedByLocation.set({ 'loc-1': 2 });
+
+        component.joinSelectedLocation();
+
+        expect(publicationService.enroll).not.toHaveBeenCalled();
+      });
+
+      it('éxito actualiza joinedByLocation/joinedByUserAndLocation y recarga enrollments', () => {
+        TestBed.inject(CurrentUserService).setUser(USER);
+        publicationService.enroll.mockReturnValue(
+          of({ publicationId: 'loc-1', userId: 'u1', occupiedSlots: 1, maxSlots: null, full: false }),
+        );
+        openDetail();
+
+        component.joinSelectedLocation();
+
+        expect(component.joinedByLocation()['loc-1']).toBe(1);
+        expect(component.hasJoined('loc-1')).toBe(true);
+        expect(publicationService.getEnrollments).toHaveBeenCalledWith('loc-1');
+      });
+
+      it('ya apuntado (hasJoined), aborta sin volver a llamar a enroll', () => {
+        TestBed.inject(CurrentUserService).setUser(USER);
+        publicationService.enroll.mockReturnValue(
+          of({ publicationId: 'loc-1', userId: 'u1', occupiedSlots: 1, maxSlots: null, full: false }),
+        );
+        openDetail();
+        component.joinSelectedLocation();
+        publicationService.enroll.mockClear();
+
+        component.joinSelectedLocation();
+
+        expect(publicationService.enroll).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('requestAccessToSelectedLocation', () => {
+      it('éxito marca la solicitud como pendiente y muestra un snackbar', () => {
+        TestBed.inject(CurrentUserService).setUser(USER);
+        publicationService.requestAccess.mockReturnValue(
+          of({
+            id: 'req-1', publicationId: 'loc-1', publicationTitle: 'Ruta en bici',
+            requestedByUserId: 'u1', requestedByName: 'Ana', requestedByNick: 'ana',
+            status: 'pending', createdAt: '2026-01-01',
+          }),
+        );
+        openDetail({ visibility: 'PRIVATE', hasAccess: false });
+
+        component.requestAccessToSelectedLocation();
+
+        expect(component.accessRequestedByLocation()['loc-1']).toBe(true);
+        expect(component.selectedDetail()?.accessRequestPending).toBe(true);
+        expect(snackBar.open).toHaveBeenCalledTimes(1);
+      });
+
+      it('error ALREADY_REQUESTED marca la solicitud como pendiente igualmente', () => {
+        TestBed.inject(CurrentUserService).setUser(USER);
+        publicationService.requestAccess.mockReturnValue(
+          throwError(() => ({ error: { error: { code: 'ALREADY_REQUESTED' } } })),
+        );
+        openDetail({ visibility: 'PRIVATE', hasAccess: false });
+
+        component.requestAccessToSelectedLocation();
+
+        expect(component.accessRequestedByLocation()['loc-1']).toBe(true);
+        expect(component.selectedDetail()?.accessRequestPending).toBe(true);
+      });
+
+      it('error ALREADY_HAS_ACCESS recarga el detalle completo', () => {
+        TestBed.inject(CurrentUserService).setUser(USER);
+        publicationService.requestAccess.mockReturnValue(
+          throwError(() => ({ error: { error: { code: 'ALREADY_HAS_ACCESS' } } })),
+        );
+        publicationService.getById.mockReturnValue(
+          of({ id: 'loc-1', title: 'Ruta en bici', hasAccess: true } as never),
+        );
+        openDetail({ visibility: 'PRIVATE', hasAccess: false });
+
+        component.requestAccessToSelectedLocation();
+
+        expect(publicationService.getById).toHaveBeenCalledWith('loc-1');
+        expect(component.selectedDetail()?.hasAccess).toBe(true);
+      });
+    });
+
+    describe('leaveSelectedLocation', () => {
+      it('éxito decrementa el contador y limpia joinedByUserAndLocation', () => {
+        TestBed.inject(CurrentUserService).setUser(USER);
+        publicationService.unenroll.mockReturnValue(of(undefined));
+        openDetail({ occupiedSlots: 1 });
+        component.joinedByLocation.set({ 'loc-1': 1 });
+        component.joinedByUserAndLocation.set({ 'u1:loc-1': true });
+
+        component.leaveSelectedLocation();
+
+        expect(component.joinedByLocation()['loc-1']).toBe(0);
+        expect(component.hasJoined('loc-1')).toBe(false);
+        expect(publicationService.getEnrollments).toHaveBeenCalledWith('loc-1');
+      });
     });
   });
 });

@@ -870,4 +870,24 @@ describe('MapsPageComponent', () => {
       });
     });
   });
+
+  // ── Efecto de tema ───────────────────────────────────────────────────────
+  // El effect() del constructor (maps.ts:337-341) se suscribe a ThemeService.isDark y
+  // CurrentUserService.user() para re-renderizar los markers con el estilo de icono
+  // correcto — la propia animación de los POIs depende del tema.
+
+  describe('efecto de tema', () => {
+    it('cambiar el tema oscuro re-renderiza los markers existentes', async () => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const previousMarkers = [...createdMarkers];
+      clearInstanceListeners.mockClear();
+
+      darkSignal.set(true);
+      await fixture.whenStable();
+
+      previousMarkers.forEach((m) => expect(clearInstanceListeners).toHaveBeenCalledWith(m));
+      expect(createdMarkers.length).toBeGreaterThan(previousMarkers.length);
+    });
+  });
 });

@@ -20,7 +20,7 @@ describe('app.routes', () => {
   const all = flatten(routes);
   const lazy = all.filter(r => r.loadComponent);
 
-  it('declara las 10 páginas lazy esperadas', () => {
+  it('declara las 14 páginas lazy esperadas', () => {
     const paths = lazy.map(r => r.path).sort();
     expect(paths).toEqual([
       '', // maps (hija por defecto del shell)
@@ -28,6 +28,10 @@ describe('app.routes', () => {
       'changelog',
       'create-publication',
       'dashboard',
+      'feedback',
+      'group-invitation',
+      'groups',
+      'groups/:id/edit',
       'profile',
       'reset-password',
       'settings',
@@ -61,7 +65,7 @@ describe('app.routes', () => {
     const guardOf = (path: string) =>
       shell.children!.find(r => r.path === path)?.canActivate ?? [];
 
-    for (const priv of ['dashboard', 'profile', 'settings', 'create-publication']) {
+    for (const priv of ['dashboard', 'profile', 'settings', 'create-publication', 'feedback', 'groups', 'groups/:id/edit']) {
       expect(guardOf(priv), `ruta privada '${priv}'`).toContain(authDialogGuard);
     }
     for (const open of ['', 'about', 'changelog', 'stack']) {

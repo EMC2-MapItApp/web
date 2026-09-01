@@ -174,6 +174,21 @@
     `versionCode`/`versionName` en `android/app/build.gradle` (siguen en `1`/`"1.0"`, nunca se
     ha publicado nada) — el incremento antes de cada subida real a Play Store sigue siendo
     manual.
+- **Iteración 10 (2026-09-01)**: sustituido el placeholder de la Iteración 8 por el logo oficial
+  de MapIt (diseño final del usuario, fuente en `D:\MapIt\imagenes\logo\Logo design from
+  image\brand\mapit-web.svg` — pin de mapa con plano de calles, fuera de este repo).
+  - `assets/logo.svg` reemplazado con el SVG oficial (mismo rol que antes: única fuente que lee
+    `@capacitor/assets`, ver Iteración 8).
+  - Regenerado con el mismo comando y colores de marca ya usados en la Iteración 8 (sin cambios,
+    siguen siendo los de `_themes.scss`): `npx @capacitor/assets generate --android
+    --iconBackgroundColor '#3f51b5' --iconBackgroundColorDark '#1e293b' --splashBackgroundColor
+    '#3f51b5' --splashBackgroundColorDark '#0f172a'` — 74 ficheros regenerados en
+    `android/app/src/main/res/**` (mipmaps adaptativos + splash claro/oscuro). El paquete se
+    invocó como `@capacitor/assets` (no `capacitor-assets`, que da "could not determine
+    executable to run" con la versión de npx de esta máquina) — incidencia de `npx`/registro,
+    ambos nombres resuelven al mismo paquete.
+  - `gradlew assembleDebug` verificado como `BUILD SUCCESSFUL`. Sin verificación visual en
+    emulador todavía — pendiente de que el usuario lo revise la próxima vez que abra un AVD.
 
 ## Decisiones y motivos
 

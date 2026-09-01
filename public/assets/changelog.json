@@ -1,5 +1,11 @@
 [
   {
+    "date": "2026-09-01",
+    "type": "improvement",
+    "title": "Nueva imagen de marca",
+    "description": "Los correos, el icono de la app y las pantallas de inicio ahora muestran el logotipo actualizado de MapIt para una experiencia más cuidada."
+  },
+  {
     "date": "2026-08-17",
     "type": "improvement",
     "title": "App más rápida y segura",

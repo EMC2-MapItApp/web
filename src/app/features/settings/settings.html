@@ -1,12 +1,10 @@
 <div class="settings-page">
-
   <header class="page-header settings-header">
     <h2 class="page-header__title">Ajustes</h2>
     <p class="page-header__subtitle">Configura la aplicación según tus preferencias.</p>
   </header>
 
   <mat-accordion class="settings-accordion">
-
     <!-- ── Sección APARIENCIA ──────────────────────────────────────────── -->
     <mat-expansion-panel [(expanded)]="appearanceExpanded">
       <mat-expansion-panel-header>
@@ -29,7 +27,8 @@
             [checked]="themeService.isDark()"
             (change)="themeService.toggle()"
             color="primary"
-            aria-label="Activar modo oscuro">
+            aria-label="Activar modo oscuro"
+          >
           </mat-slide-toggle>
         </div>
       </section>
@@ -50,8 +49,8 @@
           <div>
             <h3 class="settings-section__title">Notificaciones por email</h3>
             <p class="settings-section__desc">
-              Elige qué eventos quieres recibir también por email. El centro de notificaciones
-              (la campana) muestra siempre todos los eventos, se reciban o no por email.
+              Elige qué eventos quieres recibir también por email. El centro de notificaciones (la
+              campana) muestra siempre todos los eventos, se reciban o no por email.
             </p>
           </div>
         </div>
@@ -62,18 +61,25 @@
           @for (pref of notificationPreferences.preferences(); track pref.type) {
             <li class="notification-item">
               <span class="notification-item__icon-wrap">
-                <mat-icon class="notification-item__icon">{{ notificationTypeMeta[pref.type].icon }}</mat-icon>
+                <mat-icon class="notification-item__icon">{{
+                  notificationTypeMeta[pref.type].icon
+                }}</mat-icon>
               </span>
               <div class="notification-item__text">
-                <span class="notification-item__label">{{ notificationTypeMeta[pref.type].label }}</span>
-                <span class="notification-item__desc">{{ notificationTypeMeta[pref.type].description }}</span>
+                <span class="notification-item__label">{{
+                  notificationTypeMeta[pref.type].label
+                }}</span>
+                <span class="notification-item__desc">{{
+                  notificationTypeMeta[pref.type].description
+                }}</span>
               </div>
               <mat-slide-toggle
                 class="notification-item__toggle"
                 [checked]="pref.emailEnabled"
                 (change)="notificationPreferences.toggleEmail(pref.type)"
                 color="primary"
-                [attr.aria-label]="'Recibir por email: ' + notificationTypeMeta[pref.type].label">
+                [attr.aria-label]="'Recibir por email: ' + notificationTypeMeta[pref.type].label"
+              >
               </mat-slide-toggle>
             </li>
           }
@@ -97,15 +103,16 @@
           <div>
             <h3 class="settings-section__title">Configurar POI</h3>
             <p class="settings-section__desc">
-              Elige qué puntos de interés nativos de Google Maps se muestran.
-              Los marcadores de MapIt siempre son visibles.
+              Elige qué puntos de interés nativos de Google Maps se muestran. Los marcadores de
+              MapIt siempre son visibles.
             </p>
           </div>
           <button
             mat-stroked-button
             class="settings-section__reset"
             (click)="mapSettings.resetToDefaults()"
-            title="Restaurar valores por defecto">
+            title="Restaurar valores por defecto"
+          >
             <mat-icon>restart_alt</mat-icon>
             Restablecer
           </button>
@@ -128,14 +135,13 @@
                 [checked]="poi.visible"
                 (change)="mapSettings.togglePoi(poi.id)"
                 color="primary"
-                [attr.aria-label]="'Mostrar ' + poi.label">
+                [attr.aria-label]="'Mostrar ' + poi.label"
+              >
               </mat-slide-toggle>
             </li>
           }
         </ul>
       </section>
     </mat-expansion-panel>
-
   </mat-accordion>
-
 </div>

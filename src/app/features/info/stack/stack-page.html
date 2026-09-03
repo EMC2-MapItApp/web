@@ -1,15 +1,13 @@
 <div class="stack-page">
-
   <header class="page-header stack-header">
     <h2 class="page-header__title">Stack técnico</h2>
     <p class="page-header__subtitle">
-      Qué usa MapIt y por qué — con enlaces directos al código en GitHub.
-      Proyecto de portfolio: aplicación mínima pero real y desplegada en producción.
+      Qué usa MapIt y por qué — con enlaces directos al código en GitHub. Proyecto de portfolio:
+      aplicación mínima pero real y desplegada en producción.
     </p>
   </header>
 
   <mat-accordion class="stack-accordion" multi>
-
     <mat-expansion-panel [expanded]="true">
       <mat-expansion-panel-header>
         <mat-panel-title>
@@ -59,7 +57,12 @@
                 <span class="stack-item__desc">{{ item.why }}</span>
               </div>
               @if (item.link) {
-                <a [href]="item.link.url" target="_blank" rel="noopener" class="stack-item__code-link">
+                <a
+                  [href]="item.link.url"
+                  target="_blank"
+                  rel="noopener"
+                  class="stack-item__code-link"
+                >
                   <mat-icon>code</mat-icon>
                   {{ item.link.label }}
                 </a>
@@ -69,16 +72,18 @@
         </div>
       </mat-expansion-panel>
     }
-
   </mat-accordion>
 
   <footer class="stack-footer">
     <p>
       Detalle completo, incluido lo que deliberadamente no se usó y por qué:
-      <a [href]="webRepoUrl + '/blob/main_web/docs/STACK.md'" target="_blank" rel="noopener">STACK.md frontend</a>
+      <a [href]="webRepoUrl + '/blob/main_web/docs/STACK.md'" target="_blank" rel="noopener"
+        >STACK.md frontend</a
+      >
       ·
-      <a [href]="backRepoUrl + '/blob/main_back/docs/STACK.md'" target="_blank" rel="noopener">STACK.md backend</a>
+      <a [href]="backRepoUrl + '/blob/main_back/docs/STACK.md'" target="_blank" rel="noopener"
+        >STACK.md backend</a
+      >
     </p>
   </footer>
-
 </div>

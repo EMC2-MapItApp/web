@@ -10,7 +10,6 @@ import { ActivatedRouteSnapshot, DetachedRouteHandle, RouteReuseStrategy } from 
  * por defecto de Angular (destruir/recrear).
  */
 export class MapItReuseStrategy implements RouteReuseStrategy {
-
   /** Almacén interno de handles de rutas reutilizadas. */
   private _handles = new Map<string, DetachedRouteHandle>();
 

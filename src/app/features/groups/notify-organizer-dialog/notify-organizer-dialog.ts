@@ -26,8 +26,11 @@ export interface NotifyOrganizerDialogResult {
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatDialogModule, MatFormFieldModule, MatInputModule,
-    MatButtonModule, MatIconModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
   ],
   templateUrl: './notify-organizer-dialog.html',
   styleUrl: './notify-organizer-dialog.scss',
@@ -42,8 +45,12 @@ export class NotifyOrganizerDialogComponent {
     message: ['', [Validators.required, Validators.maxLength(1000)]],
   });
 
-  get subjectCtrl() { return this.form.controls['subject']; }
-  get messageCtrl() { return this.form.controls['message']; }
+  get subjectCtrl() {
+    return this.form.controls['subject'];
+  }
+  get messageCtrl() {
+    return this.form.controls['message'];
+  }
 
   send(): void {
     if (this.form.invalid) {

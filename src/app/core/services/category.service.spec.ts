@@ -10,10 +10,15 @@ describe('CategoryService', () => {
 
   const apiTree = [
     {
-      id: 'main-1', name: 'Deporte', icon: 'sports', color: '#ff0000',
+      id: 'main-1',
+      name: 'Deporte',
+      icon: 'sports',
+      color: '#ff0000',
       subCategories: [
         {
-          id: 'sub-1', name: 'Ciclismo', icon: 'bike',
+          id: 'sub-1',
+          name: 'Ciclismo',
+          icon: 'bike',
           locationTypes: [{ id: 'lt-1', name: 'Quedadas', description: 'Rutas en grupo' }],
         },
       ],
@@ -32,17 +37,30 @@ describe('CategoryService', () => {
 
   it('getAll pide /tree y mapea el árbol, propagando mainCategoryId/subcategoryId a cada nivel', () => {
     let result: unknown;
-    service.getAll().subscribe(r => (result = r));
+    service.getAll().subscribe((r) => (result = r));
 
     httpMock.expectOne(`${environment.apiCategoriesUrl}/tree`).flush(apiTree);
 
     expect(result).toEqual([
       {
-        id: 'main-1', name: 'Deporte', icon: 'sports', color: '#ff0000',
+        id: 'main-1',
+        name: 'Deporte',
+        icon: 'sports',
+        color: '#ff0000',
         subcategories: [
           {
-            id: 'sub-1', name: 'Ciclismo', icon: 'bike', mainCategoryId: 'main-1',
-            locationTypes: [{ id: 'lt-1', name: 'Quedadas', description: 'Rutas en grupo', subcategoryId: 'sub-1' }],
+            id: 'sub-1',
+            name: 'Ciclismo',
+            icon: 'bike',
+            mainCategoryId: 'main-1',
+            locationTypes: [
+              {
+                id: 'lt-1',
+                name: 'Quedadas',
+                description: 'Rutas en grupo',
+                subcategoryId: 'sub-1',
+              },
+            ],
           },
         ],
       },

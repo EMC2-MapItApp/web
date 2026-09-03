@@ -68,7 +68,10 @@ $pending-chip-color: #92400e;
   padding: v.$space-lg;
   background: var(--c-surface);
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
-  transition: transform v.$transition-fast, box-shadow v.$transition-fast, border-color v.$transition-fast;
+  transition:
+    transform v.$transition-fast,
+    box-shadow v.$transition-fast,
+    border-color v.$transition-fast;
 
   &__header {
     display: flex;
@@ -212,7 +215,10 @@ $pending-chip-color: #92400e;
 
 .group-card {
   cursor: pointer;
-  transition: transform v.$transition-fast, box-shadow v.$transition-fast, border-color v.$transition-fast;
+  transition:
+    transform v.$transition-fast,
+    box-shadow v.$transition-fast,
+    border-color v.$transition-fast;
 
   &:hover {
     transform: translateY(-2px);
@@ -273,7 +279,9 @@ $pending-chip-color: #92400e;
     // cuando hay 3 botones (vista de organizador con "Contacta con todos").
     @include m.mobile {
       flex-wrap: wrap;
-      button { width: 100%; }
+      button {
+        width: 100%;
+      }
     }
   }
 
@@ -316,7 +324,9 @@ $pending-chip-color: #92400e;
     @include m.mobile {
       flex-direction: column-reverse;
 
-      button { width: 100%; }
+      button {
+        width: 100%;
+      }
     }
   }
 }
@@ -393,7 +403,9 @@ $pending-chip-color: #92400e;
   background: var(--c-primary);
   color: #fff;
   box-shadow: 0 2px 8px rgba(63, 81, 181, 0.35);
-  transition: opacity v.$transition-fast, box-shadow v.$transition-fast;
+  transition:
+    opacity v.$transition-fast,
+    box-shadow v.$transition-fast;
   flex-shrink: 0;
 
   mat-icon {
@@ -441,7 +453,9 @@ $pending-chip-color: #92400e;
 
     @include m.mobile {
       flex-direction: column-reverse;
-      button { width: 100%; }
+      button {
+        width: 100%;
+      }
     }
   }
 }
@@ -463,7 +477,9 @@ $pending-chip-color: #92400e;
     gap: 5px;
   }
 
-  &__required { color: #ef4444; }
+  &__required {
+    color: #ef4444;
+  }
 
   &__optional {
     font-weight: 400;
@@ -482,7 +498,9 @@ $pending-chip-color: #92400e;
     background: var(--c-surface-hover);
     font-family: inherit;
     outline: none;
-    transition: border-color v.$transition-fast, background v.$transition-fast;
+    transition:
+      border-color v.$transition-fast,
+      background v.$transition-fast;
     width: 100%;
     box-sizing: border-box;
 
@@ -491,7 +509,9 @@ $pending-chip-color: #92400e;
       background: var(--c-surface);
     }
 
-    &--icon { padding-left: 32px; }
+    &--icon {
+      padding-left: 32px;
+    }
   }
 
   &__input-wrap {
@@ -571,28 +591,42 @@ $pending-chip-color: #92400e;
   font-family: inherit;
   transition: all v.$transition-fast;
 
-  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
 
   &--ghost {
     background: var(--c-surface-alt);
     color: var(--c-text-secondary);
     border-color: var(--c-border);
-    &:hover { background: var(--c-border); }
+    &:hover {
+      background: var(--c-border);
+    }
     &:disabled {
       background: var(--c-surface-alt);
       color: var(--c-text-muted);
       border-color: var(--c-border-light);
       opacity: 0.6;
       cursor: not-allowed;
-      &:hover { background: var(--c-surface-alt); }
+      &:hover {
+        background: var(--c-surface-alt);
+      }
     }
   }
 
   &--primary {
     background: var(--c-primary);
     color: #fff;
-    &:hover { opacity: 0.9; }
-    &:disabled { background: #c7d2fe; color: #818cf8; cursor: not-allowed; }
+    &:hover {
+      opacity: 0.9;
+    }
+    &:disabled {
+      background: #c7d2fe;
+      color: #818cf8;
+      cursor: not-allowed;
+    }
   }
 }
 
@@ -609,7 +643,7 @@ $pending-chip-color: #92400e;
     padding: 2px 0;
     background: var(--c-surface);
     border: 1.5px solid var(--c-border);
-    border-top: none;                        // se pega al input visualmente
+    border-top: none; // se pega al input visualmente
     border-radius: 0 0 9px 9px;
     box-shadow: 0 6px 18px rgba(15, 23, 42, 0.11);
     overflow: hidden;
@@ -727,14 +761,18 @@ $pending-chip-color: #92400e;
       min-width: 0;
     }
 
-    .btn { flex-shrink: 0; }
+    .btn {
+      flex-shrink: 0;
+    }
   }
 
   @include m.mobile {
     &__row {
       flex-direction: column;
 
-      .btn { width: 100%; }
+      .btn {
+        width: 100%;
+      }
     }
   }
 }
@@ -754,7 +792,10 @@ $pending-chip-color: #92400e;
     gap: 0 2px;
     background: var(--c-border); // separador más visible (no border-light)
 
-    .edit-members__hint { grid-column: 1 / -1; background: var(--c-surface); }
+    .edit-members__hint {
+      grid-column: 1 / -1;
+      background: var(--c-surface);
+    }
   }
 
   &__hint {
@@ -774,7 +815,9 @@ $pending-chip-color: #92400e;
   border-bottom: 1px solid var(--c-border-light);
   background: var(--c-surface); // explícito para que el gap del grid sea visible como separador
 
-  &:last-child { border-bottom: none; }
+  &:last-child {
+    border-bottom: none;
+  }
 
   // Pendiente: fondo tintado
   &--pending {
@@ -876,7 +919,9 @@ $pending-chip-color: #92400e;
     flex-shrink: 0;
     color: var(--c-text-muted);
     padding: 0;
-    transition: background v.$transition-fast, color v.$transition-fast;
+    transition:
+      background v.$transition-fast,
+      color v.$transition-fast;
 
     mat-icon {
       font-size: 15px;
@@ -889,7 +934,10 @@ $pending-chip-color: #92400e;
       color: #b91c1c;
     }
 
-    &:disabled { opacity: 0.4; cursor: default; }
+    &:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
 
     // Retirar invitación: ámbar
     &--cancel:hover:not(:disabled) {
@@ -966,7 +1014,9 @@ $pending-chip-color: #92400e;
       height: 14px;
     }
 
-    &:hover { background: var(--c-surface-hover); }
+    &:hover {
+      background: var(--c-surface-hover);
+    }
   }
 
   // Persona sin cuenta todavía: mismo ámbar que el resto de estados "pendiente".

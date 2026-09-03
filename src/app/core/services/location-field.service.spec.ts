@@ -22,44 +22,72 @@ describe('LocationFieldService', () => {
   it('getFields resuelve por clave directa (locationTypeId real del registry) sin tocar CategoryService', () => {
     const fields = service.getFields('ciclismo-profesional', 'place');
 
-    expect(fields.map(f => f.key)).toEqual(['address', 'schedule', 'phone', 'web', 'services']);
+    expect(fields.map((f) => f.key)).toEqual(['address', 'schedule', 'phone', 'web', 'services']);
     expect(categoryService.getLocationTypeById).not.toHaveBeenCalled();
   });
 
   it('getFields devuelve un schema distinto para el mismo locationTypeId con otro context', () => {
-    expect(service.getFields('ciclismo-profesional', 'promotion').map(f => f.key))
-      .toEqual(['discountCode', 'discountPercent', 'conditions', 'maxUses']);
+    expect(service.getFields('ciclismo-profesional', 'promotion').map((f) => f.key)).toEqual([
+      'discountCode',
+      'discountPercent',
+      'conditions',
+      'maxUses',
+    ]);
   });
 
   it('sin clave directa, resuelve por el nombre legado (subcategoría-tipo) vía CategoryService', () => {
     const locationType: LocationType = {
-      id: 'mongo-id-1', name: 'Quedadas', description: '', subcategoryId: 'sub-1',
+      id: 'mongo-id-1',
+      name: 'Quedadas',
+      description: '',
+      subcategoryId: 'sub-1',
     };
     const subCategory: SubCategory = {
-      id: 'sub-1', name: 'Ciclismo', icon: 'bike', mainCategoryId: 'main-1', locationTypes: [],
+      id: 'sub-1',
+      name: 'Ciclismo',
+      icon: 'bike',
+      mainCategoryId: 'main-1',
+      locationTypes: [],
     };
     categoryService.getLocationTypeById.mockReturnValue(locationType);
     categoryService.getSubCategoryById.mockReturnValue(subCategory);
 
     const fields = service.getFields('mongo-id-1', 'event');
 
-    expect(fields.map(f => f.key)).toEqual(['distance', 'elevation', 'level', 'slots', 'contact']);
+    expect(fields.map((f) => f.key)).toEqual([
+      'distance',
+      'elevation',
+      'level',
+      'slots',
+      'contact',
+    ]);
     expect(categoryService.getSubCategoryById).toHaveBeenCalledWith('sub-1');
   });
 
   it('el nombre legado ignora tildes al construir la clave (slugify)', () => {
     // "Quedádas" con tilde debe normalizar igual que "quedadas" en el registry real.
-    categoryService.getLocationTypeById.mockReturnValue(
-      { id: 'x', name: 'Quedádas', description: '', subcategoryId: 'sub-1' } as LocationType,
-    );
-    categoryService.getSubCategoryById.mockReturnValue(
-      { id: 'sub-1', name: 'Ciclismo', icon: 'bike', mainCategoryId: 'main-1', locationTypes: [] } as SubCategory,
-    );
+    categoryService.getLocationTypeById.mockReturnValue({
+      id: 'x',
+      name: 'Quedádas',
+      description: '',
+      subcategoryId: 'sub-1',
+    } as LocationType);
+    categoryService.getSubCategoryById.mockReturnValue({
+      id: 'sub-1',
+      name: 'Ciclismo',
+      icon: 'bike',
+      mainCategoryId: 'main-1',
+      locationTypes: [],
+    } as SubCategory);
 
     expect(service.hasSchema('x', 'event')).toBe(true);
-    expect(service.getFields('x', 'event').map(f => f.key)).toEqual(
-      ['distance', 'elevation', 'level', 'slots', 'contact'],
-    );
+    expect(service.getFields('x', 'event').map((f) => f.key)).toEqual([
+      'distance',
+      'elevation',
+      'level',
+      'slots',
+      'contact',
+    ]);
   });
 
   it('sin clave directa ni CategoryService pudiendo resolver el locationType, devuelve vacío', () => {
@@ -70,12 +98,19 @@ describe('LocationFieldService', () => {
   });
 
   it('sin clave directa ni legada resoluble a un schema real, devuelve vacío', () => {
-    categoryService.getLocationTypeById.mockReturnValue(
-      { id: 'x', name: 'Tipo inventado', description: '', subcategoryId: 'sub-1' } as LocationType,
-    );
-    categoryService.getSubCategoryById.mockReturnValue(
-      { id: 'sub-1', name: 'Categoría inventada', icon: '?', mainCategoryId: 'main-1', locationTypes: [] } as SubCategory,
-    );
+    categoryService.getLocationTypeById.mockReturnValue({
+      id: 'x',
+      name: 'Tipo inventado',
+      description: '',
+      subcategoryId: 'sub-1',
+    } as LocationType);
+    categoryService.getSubCategoryById.mockReturnValue({
+      id: 'sub-1',
+      name: 'Categoría inventada',
+      icon: '?',
+      mainCategoryId: 'main-1',
+      locationTypes: [],
+    } as SubCategory);
 
     expect(service.getFields('x', 'event')).toEqual([]);
     expect(service.hasSchema('x', 'event')).toBe(false);

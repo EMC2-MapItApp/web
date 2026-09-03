@@ -194,7 +194,7 @@
   justify-content: flex-end;
   gap: v.$space-md;
   padding-top: v.$space-sm;
-   padding-bottom: v.$space-sm;
+  padding-bottom: v.$space-sm;
 
   // Mobile: acciones apiladas y a ancho completo para facilitar el toque.
   @include m.mobile {
@@ -367,7 +367,10 @@
   padding: v.$space-lg;
   background: var(--c-surface-primary);
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
-  transition: transform v.$transition-fast, box-shadow v.$transition-fast, border-color v.$transition-fast;
+  transition:
+    transform v.$transition-fast,
+    box-shadow v.$transition-fast,
+    border-color v.$transition-fast;
 
   &:hover {
     transform: translateY(-2px);
@@ -511,7 +514,9 @@
     font-size: v.$font-sm;
     font-weight: 600;
     cursor: pointer;
-    transition: border-color v.$transition-fast, background v.$transition-fast;
+    transition:
+      border-color v.$transition-fast,
+      background v.$transition-fast;
 
     &:hover:not(:disabled) {
       border-color: var(--c-primary);
@@ -641,7 +646,9 @@
     flex-shrink: 0;
     color: var(--c-text-muted);
     padding: 0;
-    transition: background v.$transition-fast, color v.$transition-fast;
+    transition:
+      background v.$transition-fast,
+      color v.$transition-fast;
 
     mat-icon {
       font-size: 15px;

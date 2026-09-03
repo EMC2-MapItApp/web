@@ -184,8 +184,10 @@ export interface PublicationAccessRequest {
  *
  * `id`, `authorId` y `active` son campos gestionados por backend.
  */
-export type PublicationCreateRequest =
-    Omit<Publication, 'id' | 'authorId' | 'active' | 'hasAccess' | 'accessRequestPending'> & {
+export type PublicationCreateRequest = Omit<
+  Publication,
+  'id' | 'authorId' | 'active' | 'hasAccess' | 'accessRequestPending'
+> & {
   /**
    * Ids de usuarios invitados individualmente al evento, sea cual sea su visibilidad. No viene
    * de vuelta en {@link Publication} — es solo de entrada, no se expone en ninguna pantalla de

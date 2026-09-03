@@ -3,7 +3,8 @@
 
 // .settings-page usa .page-main (styles.scss) para el contenedor centrado.
 // Solo se definen aquí estilos propios de la página.
-.settings-page {}
+.settings-page {
+}
 
 // La cabecera usa las clases globales .page-header__title / __subtitle (styles.scss).
 .settings-header {
@@ -66,7 +67,12 @@
     @include m.icon-wrap;
   }
 
-  &__icon { color: var(--c-text-secondary); font-size: 20px; width: 20px; height: 20px; }
+  &__icon {
+    color: var(--c-text-secondary);
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
 
   &__text {
     flex: 1;
@@ -75,10 +81,20 @@
     gap: 2px;
   }
 
-  &__label { font-size: v.$font-md; font-weight: 500; color: var(--c-text-primary); }
-  &__desc  { font-size: v.$font-sm; color: var(--c-text-muted); }
+  &__label {
+    font-size: v.$font-md;
+    font-weight: 500;
+    color: var(--c-text-primary);
+  }
+  &__desc {
+    font-size: v.$font-sm;
+    color: var(--c-text-muted);
+  }
 
-  &__toggle { flex-shrink: 0; margin-left: auto; }
+  &__toggle {
+    flex-shrink: 0;
+    margin-left: auto;
+  }
 }
 
 .notification-list {
@@ -96,7 +112,12 @@
     @include m.icon-wrap;
   }
 
-  &__icon { color: var(--c-text-secondary); font-size: 20px; width: 20px; height: 20px; }
+  &__icon {
+    color: var(--c-text-secondary);
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
 
   &__text {
     flex: 1;
@@ -105,10 +126,20 @@
     gap: 2px;
   }
 
-  &__label { font-size: v.$font-md; font-weight: 500; color: var(--c-text-primary); }
-  &__desc  { font-size: v.$font-sm; color: var(--c-text-muted); }
+  &__label {
+    font-size: v.$font-md;
+    font-weight: 500;
+    color: var(--c-text-primary);
+  }
+  &__desc {
+    font-size: v.$font-sm;
+    color: var(--c-text-muted);
+  }
 
-  &__toggle { flex-shrink: 0; margin-left: auto; }
+  &__toggle {
+    flex-shrink: 0;
+    margin-left: auto;
+  }
 }
 
 @media (max-width: 1023px) {

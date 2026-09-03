@@ -29,7 +29,9 @@ describe('openRegisterDialogGuard', () => {
   });
 
   it('no abre un segundo diálogo si ya hay uno abierto', async () => {
-    dialog.openDialogs.push({ componentInstance: Object.create(RegisterDialogComponent.prototype) });
+    dialog.openDialogs.push({
+      componentInstance: Object.create(RegisterDialogComponent.prototype),
+    });
 
     await runGuard();
 

@@ -1,5 +1,4 @@
 <div class="changelog-page">
-
   <header class="page-header changelog-header">
     <h2 class="page-header__title">Novedades</h2>
     <p class="page-header__subtitle">
@@ -9,7 +8,6 @@
 
   <mat-accordion class="changelog-accordion">
     <mat-expansion-panel [expanded]="true">
-
       <mat-expansion-panel-header>
         <mat-panel-title>
           <mat-icon>history</mat-icon>
@@ -32,13 +30,11 @@
               <span class="changelog-item__badge changelog-item__badge--{{ entry.type }}">
                 {{ typeLabel(entry.type) }}
               </span>
-              <span class="changelog-item__date">{{ entry.date | date:'longDate' }}</span>
+              <span class="changelog-item__date">{{ entry.date | date: 'longDate' }}</span>
             </div>
           </article>
         }
       </div>
-
     </mat-expansion-panel>
   </mat-accordion>
-
 </div>

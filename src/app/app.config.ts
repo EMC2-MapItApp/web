@@ -32,5 +32,5 @@ export const appConfig: ApplicationConfig = {
     // intactos. Único punto de acoplamiento al canal de push concreto — cambiar a Capacitor en
     // el futuro también es reemplazar este binding, sin tocar PushNotificationService ni la UI.
     { provide: PUSH_PROVIDER, useClass: NoopPushProvider },
-  ]
+  ],
 };

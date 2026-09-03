@@ -53,7 +53,9 @@
     color: var(--c-text-secondary);
     text-decoration: none;
 
-    &:hover { color: var(--c-primary); }
+    &:hover {
+      color: var(--c-primary);
+    }
   }
 }
 
@@ -230,7 +232,9 @@
     transform: translateY(-8px) scaleY(0.92);
     opacity: 0;
     pointer-events: none;
-    transition: transform 180ms ease, opacity 180ms ease;
+    transition:
+      transform 180ms ease,
+      opacity 180ms ease;
   }
 
   .app-sidenav .brand {

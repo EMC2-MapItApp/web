@@ -13,24 +13,54 @@ describe('GroupService', () => {
   let httpMock: HttpTestingController;
 
   const apiUser = {
-    id: 'u1', name: 'Ana', nick: 'ana', email: 'ana@test.com', userType: 'individual',
-    level: 0, xp: 0, unlockedCapabilities: [],
+    id: 'u1',
+    name: 'Ana',
+    nick: 'ana',
+    email: 'ana@test.com',
+    userType: 'individual',
+    level: 0,
+    xp: 0,
+    unlockedCapabilities: [],
   } as MapItUser;
 
   const apiMember = (over: object = {}) => ({
-    userId: 'u1', name: 'Ana', nick: 'ana', avatarUrl: null, role: 'ORGANIZER', joinedAt: '2026-08-01T00:00:00Z',
+    userId: 'u1',
+    name: 'Ana',
+    nick: 'ana',
+    avatarUrl: null,
+    role: 'ORGANIZER',
+    joinedAt: '2026-08-01T00:00:00Z',
     ...over,
   });
   const apiGroup = (over: object = {}) => ({
-    id: 'g1', name: 'Ciclistas', description: 'Grupo de ciclismo', categoryId: 'cat-1',
-    organizerId: 'u1', members: [apiMember()], pendingInvitees: [], createdAt: '2026-08-01T00:00:00Z',
-    updatedAt: null, ...over,
+    id: 'g1',
+    name: 'Ciclistas',
+    description: 'Grupo de ciclismo',
+    categoryId: 'cat-1',
+    organizerId: 'u1',
+    members: [apiMember()],
+    pendingInvitees: [],
+    createdAt: '2026-08-01T00:00:00Z',
+    updatedAt: null,
+    ...over,
   });
   const apiInvitation = (over: object = {}) => ({
-    id: 'i1', groupId: 'g1', groupName: 'Ciclistas', groupDescription: 'x', groupCategoryId: 'cat-1',
-    groupMemberCount: 1, groupMembers: [apiMember()], invitedUserId: 'u2', invitedUserName: 'Bea',
-    invitedUserNick: 'bea', invitedEmail: null, invitedByUserId: 'u1', invitedByName: 'Ana',
-    status: 'PENDING', createdAt: '2026-08-02T00:00:00Z', ...over,
+    id: 'i1',
+    groupId: 'g1',
+    groupName: 'Ciclistas',
+    groupDescription: 'x',
+    groupCategoryId: 'cat-1',
+    groupMemberCount: 1,
+    groupMembers: [apiMember()],
+    invitedUserId: 'u2',
+    invitedUserName: 'Bea',
+    invitedUserNick: 'bea',
+    invitedEmail: null,
+    invitedByUserId: 'u1',
+    invitedByName: 'Ana',
+    status: 'PENDING',
+    createdAt: '2026-08-02T00:00:00Z',
+    ...over,
   });
 
   beforeEach(() => {
@@ -55,7 +85,9 @@ describe('GroupService', () => {
       cu.setUser(apiUser);
       TestBed.tick();
 
-      httpMock.expectOne(`${environment.apiGroupsUrl}/invitations/pending`).flush([apiInvitation(), apiInvitation({ id: 'i2' })]);
+      httpMock
+        .expectOne(`${environment.apiGroupsUrl}/invitations/pending`)
+        .flush([apiInvitation(), apiInvitation({ id: 'i2' })]);
 
       expect(service.pendingInvitationsCount()).toBe(2);
     });
@@ -64,7 +96,7 @@ describe('GroupService', () => {
   describe('mapeo de forma API → modelo frontend', () => {
     it('mapGroup traduce roles a minúscula y normaliza pendingInvitees/updatedAt ausentes', () => {
       let result: Group | undefined;
-      service.getMyGroups().subscribe(r => (result = r[0]));
+      service.getMyGroups().subscribe((r) => (result = r[0]));
 
       httpMock.expectOne(`${environment.apiGroupsUrl}/mine`).flush([apiGroup()]);
 
@@ -75,9 +107,11 @@ describe('GroupService', () => {
 
     it('mapInvitation traduce el status a minúscula', () => {
       let result: string | undefined;
-      service.getPendingInvitations().subscribe(r => (result = r[0]?.status));
+      service.getPendingInvitations().subscribe((r) => (result = r[0]?.status));
 
-      httpMock.expectOne(`${environment.apiGroupsUrl}/invitations/pending`).flush([apiInvitation({ status: 'ACCEPTED' })]);
+      httpMock
+        .expectOne(`${environment.apiGroupsUrl}/invitations/pending`)
+        .flush([apiInvitation({ status: 'ACCEPTED' })]);
 
       expect(result).toBe('accepted');
     });
@@ -86,9 +120,11 @@ describe('GroupService', () => {
   describe('getGroupById', () => {
     it('devuelve undefined si el backend responde error (404/403 tratados igual)', () => {
       let result: Group | undefined | 'not-called' = 'not-called';
-      service.getGroupById('g1').subscribe(r => (result = r));
+      service.getGroupById('g1').subscribe((r) => (result = r));
 
-      httpMock.expectOne(`${environment.apiGroupsUrl}/g1`).flush(null, { status: 404, statusText: 'Not Found' });
+      httpMock
+        .expectOne(`${environment.apiGroupsUrl}/g1`)
+        .flush(null, { status: 404, statusText: 'Not Found' });
 
       expect(result).toBeUndefined();
     });
@@ -97,9 +133,11 @@ describe('GroupService', () => {
   describe('getInvitationById', () => {
     it('devuelve undefined en un 404', () => {
       let result: unknown = 'not-called';
-      service.getInvitationById('i1').subscribe(r => (result = r));
+      service.getInvitationById('i1').subscribe((r) => (result = r));
 
-      httpMock.expectOne(`${environment.apiGroupsUrl}/invitations/i1`).flush(null, { status: 404, statusText: 'Not Found' });
+      httpMock
+        .expectOne(`${environment.apiGroupsUrl}/invitations/i1`)
+        .flush(null, { status: 404, statusText: 'Not Found' });
 
       expect(result).toBeUndefined();
     });
@@ -108,7 +146,9 @@ describe('GroupService', () => {
       let errored = false;
       service.getInvitationById('i1').subscribe({ error: () => (errored = true) });
 
-      httpMock.expectOne(`${environment.apiGroupsUrl}/invitations/i1`).flush(null, { status: 401, statusText: 'Unauthorized' });
+      httpMock
+        .expectOne(`${environment.apiGroupsUrl}/invitations/i1`)
+        .flush(null, { status: 401, statusText: 'Unauthorized' });
 
       expect(errored).toBe(true);
     });
@@ -117,7 +157,9 @@ describe('GroupService', () => {
       let errored = false;
       service.getInvitationById('i1').subscribe({ error: () => (errored = true) });
 
-      httpMock.expectOne(`${environment.apiGroupsUrl}/invitations/i1`).flush(null, { status: 403, statusText: 'Forbidden' });
+      httpMock
+        .expectOne(`${environment.apiGroupsUrl}/invitations/i1`)
+        .flush(null, { status: 403, statusText: 'Forbidden' });
 
       expect(errored).toBe(true);
     });
@@ -126,16 +168,16 @@ describe('GroupService', () => {
   describe('searchUsers', () => {
     it('con menos de 2 caracteres, no llama al backend y emite vacío', () => {
       let result: unknown[] | undefined;
-      service.searchUsers('a').subscribe(r => (result = r));
+      service.searchUsers('a').subscribe((r) => (result = r));
 
       expect(result).toEqual([]);
-      httpMock.expectNone(r => r.url === `${environment.apiUsersUrl}/search`);
+      httpMock.expectNone((r) => r.url === `${environment.apiUsersUrl}/search`);
     });
 
     it('con 2+ caracteres, pide al backend con el query recortado', () => {
       service.searchUsers('  an  ').subscribe();
 
-      const req = httpMock.expectOne(r => r.url === `${environment.apiUsersUrl}/search`);
+      const req = httpMock.expectOne((r) => r.url === `${environment.apiUsersUrl}/search`);
       expect(req.request.params.get('q')).toBe('an');
       req.flush([]);
     });
@@ -145,7 +187,9 @@ describe('GroupService', () => {
     it('acceptInvitation dispara un refresh del contador tras aceptar', () => {
       cu.setUser(apiUser);
       TestBed.tick();
-      httpMock.expectOne(`${environment.apiGroupsUrl}/invitations/pending`).flush([apiInvitation()]);
+      httpMock
+        .expectOne(`${environment.apiGroupsUrl}/invitations/pending`)
+        .flush([apiInvitation()]);
 
       service.acceptInvitation('i1').subscribe();
       httpMock.expectOne(`${environment.apiGroupsUrl}/invitations/i1/accept`).flush(apiGroup());
@@ -157,7 +201,9 @@ describe('GroupService', () => {
     it('declineInvitation dispara un refresh del contador tras rechazar', () => {
       cu.setUser(apiUser);
       TestBed.tick();
-      httpMock.expectOne(`${environment.apiGroupsUrl}/invitations/pending`).flush([apiInvitation()]);
+      httpMock
+        .expectOne(`${environment.apiGroupsUrl}/invitations/pending`)
+        .flush([apiInvitation()]);
 
       service.declineInvitation('i1').subscribe();
       httpMock.expectOne(`${environment.apiGroupsUrl}/invitations/i1/decline`).flush(null);
@@ -176,7 +222,12 @@ describe('GroupService', () => {
       httpMock.expectOne(`${environment.apiGroupsUrl}/invitations/pending`).flush([]);
 
       const group: Group = {
-        id: 'g1', name: 'x', description: 'x', categoryId: 'c1', createdAt: 'x', pendingInvitees: [],
+        id: 'g1',
+        name: 'x',
+        description: 'x',
+        categoryId: 'c1',
+        createdAt: 'x',
+        pendingInvitees: [],
         members: [{ userId: 'u1', name: 'Ana', nick: 'ana', role: 'organizer', joinedAt: 'x' }],
       };
 
@@ -185,7 +236,12 @@ describe('GroupService', () => {
 
     it('sin sesión, devuelve null', () => {
       const group: Group = {
-        id: 'g1', name: 'x', description: 'x', categoryId: 'c1', createdAt: 'x', pendingInvitees: [],
+        id: 'g1',
+        name: 'x',
+        description: 'x',
+        categoryId: 'c1',
+        createdAt: 'x',
+        pendingInvitees: [],
         members: [{ userId: 'u1', name: 'Ana', nick: 'ana', role: 'organizer', joinedAt: 'x' }],
       };
 
@@ -195,7 +251,12 @@ describe('GroupService', () => {
     it('con sesión pero sin ser miembro, devuelve null', () => {
       cu.setUser({ ...apiUser, id: 'otro' });
       const group: Group = {
-        id: 'g1', name: 'x', description: 'x', categoryId: 'c1', createdAt: 'x', pendingInvitees: [],
+        id: 'g1',
+        name: 'x',
+        description: 'x',
+        categoryId: 'c1',
+        createdAt: 'x',
+        pendingInvitees: [],
         members: [{ userId: 'u1', name: 'Ana', nick: 'ana', role: 'organizer', joinedAt: 'x' }],
       };
 
@@ -205,14 +266,18 @@ describe('GroupService', () => {
 
   describe('inviteErrorMessage', () => {
     it('traduce ALREADY_MEMBER y ALREADY_INVITED a mensajes concretos, y el resto a uno genérico', () => {
-      expect(service.inviteErrorMessage({ error: { error: { code: 'ALREADY_MEMBER' } } }))
-        .toBe('Este usuario ya pertenece a este grupo.');
-      expect(service.inviteErrorMessage({ error: { error: { code: 'ALREADY_INVITED' } } }))
-        .toBe('Ya se ha invitado a este usuario o email.');
-      expect(service.inviteErrorMessage({ error: { error: { code: 'OTRO' } } }))
-        .toBe('No se pudo enviar la invitación. Inténtalo de nuevo.');
-      expect(service.inviteErrorMessage({}))
-        .toBe('No se pudo enviar la invitación. Inténtalo de nuevo.');
+      expect(service.inviteErrorMessage({ error: { error: { code: 'ALREADY_MEMBER' } } })).toBe(
+        'Este usuario ya pertenece a este grupo.',
+      );
+      expect(service.inviteErrorMessage({ error: { error: { code: 'ALREADY_INVITED' } } })).toBe(
+        'Ya se ha invitado a este usuario o email.',
+      );
+      expect(service.inviteErrorMessage({ error: { error: { code: 'OTRO' } } })).toBe(
+        'No se pudo enviar la invitación. Inténtalo de nuevo.',
+      );
+      expect(service.inviteErrorMessage({})).toBe(
+        'No se pudo enviar la invitación. Inténtalo de nuevo.',
+      );
     });
   });
 
@@ -232,9 +297,15 @@ describe('GroupService', () => {
     });
 
     it('createGroup hace POST con el payload tal cual y mapea la respuesta', () => {
-      const payload = { name: 'x', description: 'y', categoryId: 'c1', inviteUserIds: ['u2'], inviteEmails: [] };
+      const payload = {
+        name: 'x',
+        description: 'y',
+        categoryId: 'c1',
+        inviteUserIds: ['u2'],
+        inviteEmails: [],
+      };
       let result: Group | undefined;
-      service.createGroup(payload).subscribe(r => (result = r));
+      service.createGroup(payload).subscribe((r) => (result = r));
 
       const req = httpMock.expectOne(environment.apiGroupsUrl);
       expect(req.request.method).toBe('POST');

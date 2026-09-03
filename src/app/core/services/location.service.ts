@@ -40,75 +40,75 @@ import { Publication } from '../models/publication.model';
  */
 @Injectable({ providedIn: 'root' })
 export class LocationService {
-    /** Cliente HTTP para consultas a la API. */
-    private readonly http = inject(HttpClient);
+  /** Cliente HTTP para consultas a la API. */
+  private readonly http = inject(HttpClient);
 
-    /** Endpoint base de publicaciones. */
-    private readonly baseUrl = environment.apiPublicationsUrl;
+  /** Endpoint base de publicaciones. */
+  private readonly baseUrl = environment.apiPublicationsUrl;
 
-    /**
-     * Recupera todas las localizaciones activas del mapa.
-     *
-     * @returns Observable con una lista de localizaciones listas para pintar.
-     */
-    getAll(): Observable<MapLocation[]> {
-        return this.http.get<Publication[]>(`${this.baseUrl}?activeOnly=true`).pipe(
-            map(publications => this.toMapLocations(publications))
-        );
-    }
+  /**
+   * Recupera todas las localizaciones activas del mapa.
+   *
+   * @returns Observable con una lista de localizaciones listas para pintar.
+   */
+  getAll(): Observable<MapLocation[]> {
+    return this.http
+      .get<Publication[]>(`${this.baseUrl}?activeOnly=true`)
+      .pipe(map((publications) => this.toMapLocations(publications)));
+  }
 
-    /**
-     * Recupera las localizaciones que pertenecen a un tipo concreto.
-     *
-     * @param locationTypeId id del LocationType (ObjectId de Mongo)
-     * @returns Observable con las localizaciones filtradas por tipo
-     */
-    getByLocationType(locationTypeId: string): Observable<MapLocation[]> {
-        return this.getAll().pipe(
-            map(locations => locations.filter(location => location.locationTypeId === locationTypeId))
-        );
-    }
+  /**
+   * Recupera las localizaciones que pertenecen a un tipo concreto.
+   *
+   * @param locationTypeId id del LocationType (ObjectId de Mongo)
+   * @returns Observable con las localizaciones filtradas por tipo
+   */
+  getByLocationType(locationTypeId: string): Observable<MapLocation[]> {
+    return this.getAll().pipe(
+      map((locations) =>
+        locations.filter((location) => location.locationTypeId === locationTypeId),
+      ),
+    );
+  }
 
-    /**
-     * Recupera una localización concreta por identificador.
-     *
-     * @param id id de la localización
-     * @returns Observable con la localización encontrada o undefined
-     */
-    getById(id: string): Observable<MapLocation | undefined> {
-        return this.getAll().pipe(
-            map(locations => locations.find(location => location.id === id))
-        );
-    }
+  /**
+   * Recupera una localización concreta por identificador.
+   *
+   * @param id id de la localización
+   * @returns Observable con la localización encontrada o undefined
+   */
+  getById(id: string): Observable<MapLocation | undefined> {
+    return this.getAll().pipe(map((locations) => locations.find((location) => location.id === id)));
+  }
 
-    /**
-     * Convierte las publicaciones persistidas a localizaciones de mapa.
-     *
-     * @param publications lista de publicaciones devuelta por backend
-     * @returns lista de localizaciones consumibles por el mapa
-     */
-    private toMapLocations(publications: Publication[]): MapLocation[] {
-        return publications
-            .filter(publication => publication.lat !== null && publication.lng !== null)
-            .map(publication => ({
-                id: publication.id,
-                // El backend enmascara `title`/`description` a null en publicaciones PRIVATE sin
-                // acceso — el pin sigue siendo descubrible, pero sin revelar el contenido.
-                name: publication.title ?? 'Publicación privada',
-                description: publication.description ?? undefined,
-                locationTypeId: publication.locationTypeId,
-                lat: publication.lat as number,
-                lng: publication.lng as number,
-                metadata: publication.metadata,
-                publicationType: publication.publicationType,
-                startDate: publication.startDate,
-                endDate: publication.endDate,
-                requiredLevel: publication.requiredLevel,
-                occupiedSlots: publication.occupiedSlots,
-                active: publication.active,
-                visibility: publication.visibility,
-                hasAccess: publication.hasAccess,
-                accessRequestPending: publication.accessRequestPending,
-            }));
-    }
+  /**
+   * Convierte las publicaciones persistidas a localizaciones de mapa.
+   *
+   * @param publications lista de publicaciones devuelta por backend
+   * @returns lista de localizaciones consumibles por el mapa
+   */
+  private toMapLocations(publications: Publication[]): MapLocation[] {
+    return publications
+      .filter((publication) => publication.lat !== null && publication.lng !== null)
+      .map((publication) => ({
+        id: publication.id,
+        // El backend enmascara `title`/`description` a null en publicaciones PRIVATE sin
+        // acceso — el pin sigue siendo descubrible, pero sin revelar el contenido.
+        name: publication.title ?? 'Publicación privada',
+        description: publication.description ?? undefined,
+        locationTypeId: publication.locationTypeId,
+        lat: publication.lat as number,
+        lng: publication.lng as number,
+        metadata: publication.metadata,
+        publicationType: publication.publicationType,
+        startDate: publication.startDate,
+        endDate: publication.endDate,
+        requiredLevel: publication.requiredLevel,
+        occupiedSlots: publication.occupiedSlots,
+        active: publication.active,
+        visibility: publication.visibility,
+        hasAccess: publication.hasAccess,
+        accessRequestPending: publication.accessRequestPending,
+      }));
+  }
 }

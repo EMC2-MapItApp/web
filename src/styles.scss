@@ -4,7 +4,7 @@
 // Learn more about theming and how to use it for your application's
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
-@use 'styles/themes';  // ← carga :root y [data-theme="dark"]
+@use 'styles/themes'; // ← carga :root y [data-theme="dark"]
 
 html {
   height: 100%;
@@ -49,8 +49,8 @@ body {
 // ── Ocultar el icono nativo "mostrar contraseña" de Edge/IE ───────────────────
 // Duplica visualmente el botón mostrar/ocultar propio de cada formulario
 // (mat-icon-button con visibility/visibility_off) si no se desactiva.
-input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear {
+input[type='password']::-ms-reveal,
+input[type='password']::-ms-clear {
   display: none;
 }
 
@@ -69,7 +69,6 @@ input[type="password"]::-ms-clear {
 //    color: #64748b;
 //  }
 //}
-
 
 // ── Global page header ────────────────────────────────────────────────────────
 .page-header {
@@ -173,7 +172,9 @@ input[type="password"]::-ms-clear {
   // Más visible que un simple giro de icono: anillo de acento pulsante + color destacado,
   // además de girar más rápido — tiene que notarse claramente que se está trabajando.
   &.is-locating {
-    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.25), 0 2px 8px rgba(0, 0, 0, 0.4);
+    box-shadow:
+      0 0 0 6px rgba(37, 99, 235, 0.25),
+      0 2px 8px rgba(0, 0, 0, 0.4);
     animation: gmaps-locating-pulse 1.2s ease-in-out infinite;
 
     .material-icons {
@@ -184,16 +185,29 @@ input[type="password"]::-ms-clear {
 }
 
 @keyframes gmaps-locating-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes gmaps-locating-pulse {
-  0%, 100% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.25), 0 2px 8px rgba(0, 0, 0, 0.4); }
-  50% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0.12), 0 2px 8px rgba(0, 0, 0, 0.4); }
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 6px rgba(37, 99, 235, 0.25),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 0 10px rgba(37, 99, 235, 0.12),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+  }
 }
 
-[data-theme="dark"] .gmaps-my-location-control {
+[data-theme='dark'] .gmaps-my-location-control {
   background: #1e293b;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
 
@@ -206,7 +220,9 @@ input[type="password"]::-ms-clear {
   }
 
   &.is-locating {
-    box-shadow: 0 0 0 6px rgba(96, 165, 250, 0.3), 0 2px 8px rgba(0, 0, 0, 0.7);
+    box-shadow:
+      0 0 0 6px rgba(96, 165, 250, 0.3),
+      0 2px 8px rgba(0, 0, 0, 0.7);
 
     .material-icons {
       color: #60a5fa;
@@ -224,7 +240,7 @@ input[type="password"]::-ms-clear {
 }
 
 // ── Google Maps InfoWindow – tema oscuro ──────────────────────────────────────
-[data-theme="dark"] {
+[data-theme='dark'] {
   // Contenedor y todos sus divs directos
   .gm-style .gm-style-iw-c,
   .gm-style .gm-style-iw-c > div,

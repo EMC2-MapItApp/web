@@ -6,8 +6,15 @@ describe('CurrentUserService', () => {
   let service: CurrentUserService;
 
   const individual: MapItUser = {
-    id: 'u1', name: 'Ana', nick: 'ana', email: 'ana@test.com', userType: 'individual',
-    level: 3, xp: 120, unlockedCapabilities: ['cap-a'], favoriteLocationTypeIds: ['lt-1', 'lt-2'],
+    id: 'u1',
+    name: 'Ana',
+    nick: 'ana',
+    email: 'ana@test.com',
+    userType: 'individual',
+    level: 3,
+    xp: 120,
+    unlockedCapabilities: ['cap-a'],
+    favoriteLocationTypeIds: ['lt-1', 'lt-2'],
   };
 
   beforeEach(() => {

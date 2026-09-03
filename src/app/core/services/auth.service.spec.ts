@@ -13,8 +13,13 @@ describe('AuthService', () => {
   let httpMock: HttpTestingController;
 
   const baseUser: Omit<MapItUser, 'userType'> = {
-    id: 'u1', name: 'Ana', nick: 'ana', email: 'ana@test.com',
-    level: 0, xp: 0, unlockedCapabilities: [],
+    id: 'u1',
+    name: 'Ana',
+    nick: 'ana',
+    email: 'ana@test.com',
+    level: 0,
+    xp: 0,
+    unlockedCapabilities: [],
   };
 
   beforeEach(() => {
@@ -64,7 +69,12 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('hace POST a /register con el payload tal cual', () => {
-      const payload = { name: 'Ana', email: 'ana@test.com', password: 'x', userType: 'PARTICULAR' as const };
+      const payload = {
+        name: 'Ana',
+        email: 'ana@test.com',
+        password: 'x',
+        userType: 'PARTICULAR' as const,
+      };
       service.register(payload).subscribe();
 
       const req = httpMock.expectOne(`${environment.apiAuthUrl}/register`);

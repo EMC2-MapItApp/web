@@ -1,5 +1,4 @@
 <div class="feedback-page">
-
   <header class="page-header feedback-header">
     <h2 class="page-header__title">Enviar feedback</h2>
     <p class="page-header__subtitle">
@@ -13,35 +12,45 @@
       <mat-label>Categoría</mat-label>
       <mat-select formControlName="category">
         @for (option of categoryOptions; track option.value) {
-        <mat-option [value]="option.value">{{ option.label }}</mat-option>
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
         }
       </mat-select>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Asunto</mat-label>
-      <input matInput formControlName="subject" maxlength="200"
-        placeholder="Resume en pocas palabras el problema o la idea" />
+      <input
+        matInput
+        formControlName="subject"
+        maxlength="200"
+        placeholder="Resume en pocas palabras el problema o la idea"
+      />
       @if (subjectCtrl.hasError('required') && subjectCtrl.touched) {
-      <mat-error>El asunto no puede estar vacío</mat-error>
+        <mat-error>El asunto no puede estar vacío</mat-error>
       }
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Mensaje</mat-label>
-      <textarea matInput formControlName="message" rows="6" maxlength="2000"
-        placeholder="Describe con el mayor detalle posible qué ha pasado o qué te gustaría ver..."></textarea>
+      <textarea
+        matInput
+        formControlName="message"
+        rows="6"
+        maxlength="2000"
+        placeholder="Describe con el mayor detalle posible qué ha pasado o qué te gustaría ver..."
+      ></textarea>
       <mat-hint align="end">{{ messageCtrl.value?.length ?? 0 }}/2000</mat-hint>
       @if (messageCtrl.hasError('required') && messageCtrl.touched) {
-      <mat-error>El mensaje no puede estar vacío</mat-error>
+        <mat-error>El mensaje no puede estar vacío</mat-error>
       }
     </mat-form-field>
 
     <button mat-flat-button type="submit" class="submit-btn" [disabled]="sending()">
-      @if (sending()) { <mat-spinner diameter="18" /> } @else {
-      <ng-container><mat-icon>send</mat-icon> Enviar</ng-container>
+      @if (sending()) {
+        <mat-spinner diameter="18" />
+      } @else {
+        <ng-container><mat-icon>send</mat-icon> Enviar</ng-container>
       }
     </button>
   </form>
-
 </div>

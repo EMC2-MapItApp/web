@@ -12,8 +12,14 @@ describe('authDialogGuard', () => {
   let cu: CurrentUserService;
 
   const user: MapItUser = {
-    id: 'u1', name: 'Ana', nick: 'ana', email: 'ana@test.com', userType: 'individual',
-    level: 0, xp: 0, unlockedCapabilities: [],
+    id: 'u1',
+    name: 'Ana',
+    nick: 'ana',
+    email: 'ana@test.com',
+    userType: 'individual',
+    level: 0,
+    xp: 0,
+    unlockedCapabilities: [],
   };
 
   beforeEach(() => {

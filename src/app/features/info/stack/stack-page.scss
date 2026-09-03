@@ -35,7 +35,12 @@
     @include m.icon-wrap;
   }
 
-  &__icon { color: var(--c-text-secondary); font-size: 20px; width: 20px; height: 20px; }
+  &__icon {
+    color: var(--c-text-secondary);
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
 
   &__text {
     flex: 1;
@@ -44,8 +49,16 @@
     gap: 2px;
   }
 
-  &__label { font-size: v.$font-md; font-weight: 500; color: var(--c-text-primary); }
-  &__desc  { font-size: v.$font-sm; color: var(--c-text-muted); line-height: 1.45; }
+  &__label {
+    font-size: v.$font-md;
+    font-weight: 500;
+    color: var(--c-text-primary);
+  }
+  &__desc {
+    font-size: v.$font-sm;
+    color: var(--c-text-muted);
+    line-height: 1.45;
+  }
 
   &__external {
     margin-left: auto;
@@ -66,9 +79,15 @@
     color: var(--c-primary);
     text-decoration: none;
 
-    mat-icon { font-size: 15px; width: 15px; height: 15px; }
+    mat-icon {
+      font-size: 15px;
+      width: 15px;
+      height: 15px;
+    }
 
-    &:hover { text-decoration: underline; }
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 
@@ -77,8 +96,12 @@
   font-size: v.$font-sm;
   color: var(--c-text-secondary);
 
-  p { margin: 0; }
-  a { color: var(--c-primary); }
+  p {
+    margin: 0;
+  }
+  a {
+    color: var(--c-primary);
+  }
 }
 
 @media (max-width: 1023px) {

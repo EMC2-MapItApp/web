@@ -24,7 +24,6 @@ const PANEL_LIMIT = 8;
   styleUrl: './notification-bell.scss',
 })
 export class NotificationBellComponent {
-
   private readonly router = inject(Router);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private readonly snackBar = inject(MatSnackBar);
@@ -32,11 +31,13 @@ export class NotificationBellComponent {
   readonly notificationService = inject(NotificationService);
   readonly open = signal(false);
 
-  readonly visibleNotifications = computed(() => this.notificationService.notifications().slice(0, PANEL_LIMIT));
+  readonly visibleNotifications = computed(() =>
+    this.notificationService.notifications().slice(0, PANEL_LIMIT),
+  );
   readonly hasMore = computed(() => this.notificationService.notifications().length > PANEL_LIMIT);
 
   toggle(): void {
-    this.open.update(v => !v);
+    this.open.update((v) => !v);
   }
 
   select(notification: AppNotification): void {

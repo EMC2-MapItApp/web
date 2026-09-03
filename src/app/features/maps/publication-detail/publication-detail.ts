@@ -57,7 +57,6 @@ export interface PublicationDetailInput {
   styleUrl: './publication-detail.scss',
 })
 export class PublicationDetailComponent implements OnChanges {
-
   private fieldService = inject(LocationFieldService);
   private currentUser = inject(CurrentUserService);
 
@@ -123,7 +122,6 @@ export class PublicationDetailComponent implements OnChanges {
     if (level == 4 || level == 5) return 'Intermedio';
     if (level == 6 || level == 7) return 'Avanzado';
     if (level == 8 || level == 9 || level == 10) return 'Experto';
-
 
     return level.toString();
   }

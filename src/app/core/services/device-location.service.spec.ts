@@ -5,8 +5,11 @@ import { DeviceLocationService } from './device-location.service';
 /** Construye un GeolocationPositionError falso, con los mismos códigos que el real. */
 function fakeGeoError(code: 1 | 2 | 3): GeolocationPositionError {
   return {
-    code, message: 'x',
-    PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3,
+    code,
+    message: 'x',
+    PERMISSION_DENIED: 1,
+    POSITION_UNAVAILABLE: 2,
+    TIMEOUT: 3,
   } as GeolocationPositionError;
 }
 
@@ -23,9 +26,18 @@ describe('DeviceLocationService', () => {
   });
 
   afterEach(() => {
-    Object.defineProperty(navigator, 'geolocation', { value: originalGeolocation, configurable: true });
-    Object.defineProperty(navigator, 'permissions', { value: originalPermissions, configurable: true });
-    Object.defineProperty(navigator, 'maxTouchPoints', { value: originalMaxTouchPoints, configurable: true });
+    Object.defineProperty(navigator, 'geolocation', {
+      value: originalGeolocation,
+      configurable: true,
+    });
+    Object.defineProperty(navigator, 'permissions', {
+      value: originalPermissions,
+      configurable: true,
+    });
+    Object.defineProperty(navigator, 'maxTouchPoints', {
+      value: originalMaxTouchPoints,
+      configurable: true,
+    });
     window.matchMedia = originalMatchMedia;
   });
 
@@ -45,7 +57,9 @@ describe('DeviceLocationService', () => {
 
   describe('isTouchPrimaryDevice', () => {
     function mockPointerCoarse(matches: boolean): void {
-      window.matchMedia = vi.fn(() => ({ matches }) as MediaQueryList) as unknown as typeof window.matchMedia;
+      window.matchMedia = vi.fn(
+        () => ({ matches }) as MediaQueryList,
+      ) as unknown as typeof window.matchMedia;
     }
 
     it('true si pointer:coarse coincide y hay puntos táctiles', () => {
@@ -74,7 +88,9 @@ describe('DeviceLocationService', () => {
     it('sin navigator.permissions, emite "unknown"', async () => {
       Object.defineProperty(navigator, 'permissions', { value: undefined, configurable: true });
 
-      const result = await new Promise(resolve => service.checkPermissionState().subscribe(resolve));
+      const result = await new Promise((resolve) =>
+        service.checkPermissionState().subscribe(resolve),
+      );
 
       expect(result).toBe('unknown');
     });
@@ -85,7 +101,9 @@ describe('DeviceLocationService', () => {
         value: { query: vi.fn().mockResolvedValue({ state: 'granted' }) },
       });
 
-      const result = await new Promise(resolve => service.checkPermissionState().subscribe(resolve));
+      const result = await new Promise((resolve) =>
+        service.checkPermissionState().subscribe(resolve),
+      );
 
       expect(result).toBe('granted');
     });
@@ -96,7 +114,9 @@ describe('DeviceLocationService', () => {
         value: { query: vi.fn().mockRejectedValue(new Error('no soportado')) },
       });
 
-      const result = await new Promise(resolve => service.checkPermissionState().subscribe(resolve));
+      const result = await new Promise((resolve) =>
+        service.checkPermissionState().subscribe(resolve),
+      );
 
       expect(result).toBe('unknown');
     });
@@ -109,7 +129,7 @@ describe('DeviceLocationService', () => {
       Reflect.deleteProperty(navigator, 'geolocation');
 
       let error: unknown;
-      service.getCurrentPosition().subscribe({ error: e => (error = e) });
+      service.getCurrentPosition().subscribe({ error: (e) => (error = e) });
 
       expect(error).toEqual({ code: 'UNSUPPORTED' });
     });
@@ -118,30 +138,45 @@ describe('DeviceLocationService', () => {
       const getCurrentPosition = vi.fn((success: PositionCallback) =>
         success({ coords: { latitude: 40.4, longitude: -3.7 } } as GeolocationPosition),
       );
-      Object.defineProperty(navigator, 'geolocation', { value: { getCurrentPosition }, configurable: true });
+      Object.defineProperty(navigator, 'geolocation', {
+        value: { getCurrentPosition },
+        configurable: true,
+      });
 
       let result: unknown;
-      service.getCurrentPosition().subscribe(r => (result = r));
+      service.getCurrentPosition().subscribe((r) => (result = r));
 
       expect(result).toEqual({ lat: 40.4, lng: -3.7 });
     });
 
     it('pasa enableHighAccuracy=true y maximumAge=0 por defecto a la API nativa', () => {
       const getCurrentPosition = vi.fn();
-      Object.defineProperty(navigator, 'geolocation', { value: { getCurrentPosition }, configurable: true });
+      Object.defineProperty(navigator, 'geolocation', {
+        value: { getCurrentPosition },
+        configurable: true,
+      });
 
       service.getCurrentPosition().subscribe();
 
-      expect(getCurrentPosition.mock.calls[0][2]).toEqual({ enableHighAccuracy: true, maximumAge: 0 });
+      expect(getCurrentPosition.mock.calls[0][2]).toEqual({
+        enableHighAccuracy: true,
+        maximumAge: 0,
+      });
     });
 
     it('respeta las opciones explícitas pasadas por el llamante', () => {
       const getCurrentPosition = vi.fn();
-      Object.defineProperty(navigator, 'geolocation', { value: { getCurrentPosition }, configurable: true });
+      Object.defineProperty(navigator, 'geolocation', {
+        value: { getCurrentPosition },
+        configurable: true,
+      });
 
       service.getCurrentPosition({ enableHighAccuracy: false, maximumAge: 60000 }).subscribe();
 
-      expect(getCurrentPosition.mock.calls[0][2]).toEqual({ enableHighAccuracy: false, maximumAge: 60000 });
+      expect(getCurrentPosition.mock.calls[0][2]).toEqual({
+        enableHighAccuracy: false,
+        maximumAge: 60000,
+      });
     });
 
     it.each([
@@ -152,10 +187,13 @@ describe('DeviceLocationService', () => {
       const getCurrentPosition = vi.fn((_success: PositionCallback, error: PositionErrorCallback) =>
         error(fakeGeoError(code)),
       );
-      Object.defineProperty(navigator, 'geolocation', { value: { getCurrentPosition }, configurable: true });
+      Object.defineProperty(navigator, 'geolocation', {
+        value: { getCurrentPosition },
+        configurable: true,
+      });
 
       let result: unknown;
-      service.getCurrentPosition().subscribe({ error: e => (result = e) });
+      service.getCurrentPosition().subscribe({ error: (e) => (result = e) });
 
       expect(result).toEqual({ code: expected });
     });

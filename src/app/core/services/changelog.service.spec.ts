@@ -26,11 +26,11 @@ describe('ChangelogService', () => {
 
   it('ordena las entradas por fecha descendente', () => {
     let result: ChangelogEntry[] | undefined;
-    service.getAll().subscribe(r => (result = r));
+    service.getAll().subscribe((r) => (result = r));
 
     httpMock.expectOne('/assets/changelog.json').flush(entries);
 
-    expect(result?.map(e => e.date)).toEqual(['2026-08-15', '2026-07-20', '2026-07-01']);
+    expect(result?.map((e) => e.date)).toEqual(['2026-08-15', '2026-07-20', '2026-07-01']);
   });
 
   it('comparte una única petición HTTP entre varios suscriptores (shareReplay)', () => {
@@ -42,7 +42,7 @@ describe('ChangelogService', () => {
     // Un tercer subscriber tras completarse la primera petición reutiliza el valor cacheado,
     // sin disparar una segunda llamada HTTP — httpMock.verify() en afterEach lo confirma.
     let cached: ChangelogEntry[] | undefined;
-    service.getAll().subscribe(r => (cached = r));
+    service.getAll().subscribe((r) => (cached = r));
     expect(cached?.length).toBe(3);
   });
 });

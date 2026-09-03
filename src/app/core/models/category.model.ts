@@ -97,4 +97,3 @@ export interface CategoryBreadcrumb {
   subCategory: SubCategory;
   locationType: LocationType;
 }
-

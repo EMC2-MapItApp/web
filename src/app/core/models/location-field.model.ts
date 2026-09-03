@@ -46,15 +46,7 @@ export type FieldContext = 'place' | 'promotion' | 'event';
  *  - `code`     : texto con estilo monospace (p.ej. código de descuento)
  */
 export type FieldType =
-  | 'text'
-  | 'url'
-  | 'phone'
-  | 'date'
-  | 'datetime'
-  | 'number'
-  | 'badge'
-  | 'boolean'
-  | 'code';
+  'text' | 'url' | 'phone' | 'date' | 'datetime' | 'number' | 'badge' | 'boolean' | 'code';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Definición de campo

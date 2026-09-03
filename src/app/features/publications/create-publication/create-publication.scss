@@ -252,7 +252,9 @@ $panel-gap: 8px;
     background: var(--c-surface-hover);
     font-family: inherit;
     outline: none;
-    transition: border-color v.$transition-fast, background v.$transition-fast;
+    transition:
+      border-color v.$transition-fast,
+      background v.$transition-fast;
     width: 100%;
     box-sizing: border-box;
 
@@ -575,7 +577,7 @@ $panel-gap: 8px;
   border-radius: v.$radius-lg;
   overflow: hidden;
   border: 1.5px solid var(--c-border);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .map-container {
@@ -854,7 +856,7 @@ $panel-gap: 8px;
   padding: 6px 10px;
   background: var(--c-panel-glass-bg);
   border-radius: 999px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   font-size: v.$font-sm;
   font-weight: 600;
   color: var(--c-text-secondary);
@@ -1066,7 +1068,9 @@ $panel-gap: 8px;
   background: var(--c-surface);
   cursor: pointer;
   text-align: left;
-  transition: border-color v.$transition-fast, background v.$transition-fast;
+  transition:
+    border-color v.$transition-fast,
+    background v.$transition-fast;
   min-height: 44px; // objetivo táctil mínimo
 
   mat-icon {
@@ -1247,7 +1251,9 @@ $panel-gap: 8px;
     justify-content: center;
     cursor: pointer;
     color: var(--c-text-muted);
-    transition: background v.$transition-fast, color v.$transition-fast;
+    transition:
+      background v.$transition-fast,
+      color v.$transition-fast;
 
     mat-icon {
       font-size: 14px;
@@ -1596,7 +1602,7 @@ $panel-gap: 8px;
     height: 16px;
     border-radius: 50%;
     background: #fff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     transition: transform v.$transition-fast;
 
     .toggle-switch--on & {

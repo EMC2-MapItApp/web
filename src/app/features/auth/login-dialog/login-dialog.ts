@@ -1,5 +1,10 @@
 import { Component, inject, isDevMode, signal } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogRef,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -47,16 +52,17 @@ export class LoginDialogComponent {
   loading = signal(false);
   errorMsg = signal<string | null>(null);
 
-
-
   loginForm = this.fb.group({
     identifier: ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
-  get identifierCtrl() { return this.loginForm.controls['identifier']; }
-  get passwordCtrl() { return this.loginForm.controls['password']; }
-
+  get identifierCtrl() {
+    return this.loginForm.controls['identifier'];
+  }
+  get passwordCtrl() {
+    return this.loginForm.controls['password'];
+  }
 
   constructor() {
     if (isDevMode()) {
@@ -98,10 +104,11 @@ export class LoginDialogComponent {
       error: (err) => {
         this.loading.set(false);
         this.errorMsg.set(
-          err.status === 401 ? 'Correo o contraseña incorrectos.'
-          : err.status === 403 && err.error?.error?.code === 'EMAIL_NOT_VERIFIED'
-            ? 'Debes verificar tu correo antes de iniciar sesión.'
-            : 'Error al iniciar sesión. Inténtalo de nuevo.'
+          err.status === 401
+            ? 'Correo o contraseña incorrectos.'
+            : err.status === 403 && err.error?.error?.code === 'EMAIL_NOT_VERIFIED'
+              ? 'Debes verificar tu correo antes de iniciar sesión.'
+              : 'Error al iniciar sesión. Inténtalo de nuevo.',
         );
       },
     });

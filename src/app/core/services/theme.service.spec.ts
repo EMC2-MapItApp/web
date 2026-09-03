@@ -28,7 +28,7 @@ describe('ThemeService', () => {
     localStorage.removeItem(STORAGE_KEY);
     document.documentElement.removeAttribute('data-theme');
     document.getElementById(MAPS_STYLE_ID)?.remove();
-    document.querySelectorAll('.gm-style-iw-c').forEach(el => el.remove());
+    document.querySelectorAll('.gm-style-iw-c').forEach((el) => el.remove());
     vi.restoreAllMocks();
   });
 

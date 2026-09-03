@@ -10,7 +10,12 @@ describe('GeoIpService', () => {
   let httpMock: HttpTestingController;
 
   const center: GeoIpCenter = {
-    lat: 40.4, lng: -3.7, city: 'Madrid', country: 'ES', resolvedIp: '1.2.3.4', source: 'geoip',
+    lat: 40.4,
+    lng: -3.7,
+    city: 'Madrid',
+    country: 'ES',
+    resolvedIp: '1.2.3.4',
+    source: 'geoip',
   };
 
   beforeEach(() => {
@@ -41,7 +46,7 @@ describe('GeoIpService', () => {
     service.resolveCenter().subscribe();
 
     const req = httpMock.expectOne(
-      r => r.url === `${environment.apiGeoUrl}/me` && r.params.get('simIp') === '81.2.69.142',
+      (r) => r.url === `${environment.apiGeoUrl}/me` && r.params.get('simIp') === '81.2.69.142',
     );
     req.flush(center);
   });
@@ -52,7 +57,7 @@ describe('GeoIpService', () => {
     service.resolveCenter().subscribe();
 
     const req = httpMock.expectOne(
-      r => r.url === `${environment.apiGeoUrl}/me` && r.params.get('simIp') === '9.9.9.9',
+      (r) => r.url === `${environment.apiGeoUrl}/me` && r.params.get('simIp') === '9.9.9.9',
     );
     req.flush(center);
   });
@@ -64,14 +69,14 @@ describe('GeoIpService', () => {
     service.resolveCenter().subscribe();
 
     const req = httpMock.expectOne(
-      r => r.url === `${environment.apiGeoUrl}/me` && r.params.get('simIp') === '81.2.69.142',
+      (r) => r.url === `${environment.apiGeoUrl}/me` && r.params.get('simIp') === '81.2.69.142',
     );
     req.flush(center);
   });
 
   it('emite el resultado del backend tal cual cuando la petición tiene éxito', () => {
     let result: GeoIpCenter | undefined;
-    service.resolveCenter().subscribe(r => (result = r));
+    service.resolveCenter().subscribe((r) => (result = r));
 
     httpMock.expectOne(`${environment.apiGeoUrl}/me`).flush(center);
 
@@ -81,9 +86,10 @@ describe('GeoIpService', () => {
   it('si el backend falla, emite el fallback local (Madrid) en vez de propagar el error', () => {
     let result: GeoIpCenter | undefined;
     let errored = false;
-    service.resolveCenter().subscribe({ next: r => (result = r), error: () => (errored = true) });
+    service.resolveCenter().subscribe({ next: (r) => (result = r), error: () => (errored = true) });
 
-    httpMock.expectOne(`${environment.apiGeoUrl}/me`)
+    httpMock
+      .expectOne(`${environment.apiGeoUrl}/me`)
       .flush(null, { status: 500, statusText: 'Server Error' });
 
     expect(errored).toBe(false);

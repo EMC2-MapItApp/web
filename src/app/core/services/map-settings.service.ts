@@ -13,9 +13,9 @@
  *   2. {@link buildMapStyles}  — visibilidad de cada POI configurado por el usuario.
  */
 
-import {Injectable, computed, effect, signal, inject} from '@angular/core';
-import {MapSettings, PoiConfig} from '../models/map-settings.model';
-import {ThemeService} from './theme.service';
+import { Injectable, computed, effect, signal, inject } from '@angular/core';
+import { MapSettings, PoiConfig } from '../models/map-settings.model';
+import { ThemeService } from './theme.service';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constantes de módulo
@@ -36,57 +36,63 @@ const DEFAULT_POI: PoiConfig[] = [
     label: 'Negocios',
     icon: 'store',
     description: 'Tiendas, restaurantes y servicios de Google',
-    visible: false
+    visible: false,
   },
   {
     id: 'poi.attraction',
     label: 'Atracciones',
     icon: 'attractions',
     description: 'Lugares turísticos y monumentos',
-    visible: false
+    visible: false,
   },
   {
     id: 'poi.government',
     label: 'Edificios oficiales',
     icon: 'account_balance',
     description: 'Ayuntamientos, juzgados y edificios públicos',
-    visible: false
+    visible: false,
   },
   {
     id: 'poi.medical',
     label: 'Salud',
     icon: 'local_hospital',
     description: 'Hospitales, clínicas y farmacias',
-    visible: false
+    visible: false,
   },
-  {id: 'poi.park', label: 'Parques', icon: 'park', description: 'Parques, jardines y zonas verdes', visible: true},
+  {
+    id: 'poi.park',
+    label: 'Parques',
+    icon: 'park',
+    description: 'Parques, jardines y zonas verdes',
+    visible: true,
+  },
   {
     id: 'poi.place_of_worship',
     label: 'Lugares de culto',
     icon: 'church',
     description: 'Iglesias, mezquitas, sinagogas…',
-    visible: false
+    visible: false,
   },
   {
     id: 'poi.school',
     label: 'Educación',
     icon: 'school',
     description: 'Colegios, institutos y universidades',
-    visible: false
+    visible: false,
   },
   {
     id: 'poi.sports_complex',
     label: 'Deporte',
     icon: 'sports',
     description: 'Estadios, polideportivos y campos deportivos',
-    visible: false
+    visible: false,
   },
   {
     id: 'transit',
     label: 'Transporte público',
     icon: 'directions_transit',
     description: 'Metro, autobús y estaciones de tren',
-    visible: true
+    visible: true,
   },
 ];
 
@@ -108,23 +114,31 @@ const STORAGE_KEY = 'mapit_map_settings';
  * @see {@link https://developers.google.com/maps/documentation/javascript/style-reference}
  */
 const DARK_MAP_STYLES: google.maps.MapTypeStyle[] = [
-  { elementType: 'geometry',                stylers: [{ color: '#242f3e' }] },
-  { elementType: 'labels.text.stroke',      stylers: [{ color: '#242f3e' }] },
-  { elementType: 'labels.text.fill',        stylers: [{ color: '#746855' }] },
-  { featureType: 'administrative.locality', elementType: 'labels.text.fill',    stylers: [{ color: '#d59563' }] },
-  { featureType: 'road',                    elementType: 'geometry',             stylers: [{ color: '#38414e' }] },
-  { featureType: 'road',                    elementType: 'geometry.stroke',      stylers: [{ color: '#212a37' }] },
-  { featureType: 'road',                    elementType: 'labels.text.fill',     stylers: [{ color: '#9ca5b3' }] },
-  { featureType: 'road.highway',            elementType: 'geometry',             stylers: [{ color: '#746855' }] },
-  { featureType: 'road.highway',            elementType: 'geometry.stroke',      stylers: [{ color: '#1f2835' }] },
-  { featureType: 'road.highway',            elementType: 'labels.text.fill',     stylers: [{ color: '#f3d19c' }] },
-  { featureType: 'water',                   elementType: 'geometry',             stylers: [{ color: '#17263c' }] },
-  { featureType: 'water',                   elementType: 'labels.text.fill',     stylers: [{ color: '#515c6d' }] },
-  { featureType: 'water',                   elementType: 'labels.text.stroke',   stylers: [{ color: '#17263c' }] },
-  { featureType: 'poi.park',                elementType: 'geometry',             stylers: [{ color: '#263c3f' }] },
-  { featureType: 'poi.park',                elementType: 'labels.text.fill',     stylers: [{ color: '#6b9a76' }] },
-  { featureType: 'transit',                 elementType: 'geometry',             stylers: [{ color: '#2f3948' }] },
-  { featureType: 'poi', elementType: 'labels.icon',      stylers: [{ lightness: -40 }, { saturation: -30 }] },
+  { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+  {
+    featureType: 'administrative.locality',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#d59563' }],
+  },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#38414e' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#212a37' }] },
+  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#9ca5b3' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#746855' }] },
+  { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1f2835' }] },
+  { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#f3d19c' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17263c' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#515c6d' }] },
+  { featureType: 'water', elementType: 'labels.text.stroke', stylers: [{ color: '#17263c' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#263c3f' }] },
+  { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#6b9a76' }] },
+  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#2f3948' }] },
+  {
+    featureType: 'poi',
+    elementType: 'labels.icon',
+    stylers: [{ lightness: -40 }, { saturation: -30 }],
+  },
   { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#a0aec0' }] },
   { featureType: 'poi', elementType: 'labels.text.stroke', stylers: [{ color: '#1e293b' }] },
 ];
@@ -146,14 +160,11 @@ const DARK_MAP_STYLES: google.maps.MapTypeStyle[] = [
  * @returns Objeto `MapSettings` con todos los POIs conocidos en el orden correcto.
  */
 function mergeWithDefaults(saved: MapSettings): MapSettings {
-  const savedIds = new Set(saved.poi.map(p => p.id));
-  const merged = [
-    ...saved.poi,
-    ...DEFAULT_POI.filter(p => !savedIds.has(p.id)),
-  ];
+  const savedIds = new Set(saved.poi.map((p) => p.id));
+  const merged = [...saved.poi, ...DEFAULT_POI.filter((p) => !savedIds.has(p.id))];
   // Mantener el orden del array de defaults
-  const ordered = DEFAULT_POI.map(def => merged.find(p => p.id === def.id) ?? def);
-  return {poi: ordered};
+  const ordered = DEFAULT_POI.map((def) => merged.find((p) => p.id === def.id) ?? def);
+  return { poi: ordered };
 }
 
 /**
@@ -178,7 +189,7 @@ function buildMapStyles(poi: PoiConfig[]): google.maps.MapTypeStyle[] {
   const styles: google.maps.MapTypeStyle[] = [
     // Ocultar geometría e iconos/texto de TODOS los POIs
     { featureType: 'poi', elementType: 'geometry', stylers: [{ visibility: 'off' }] },
-    { featureType: 'poi', elementType: 'labels',   stylers: [{ visibility: 'off' }] },
+    { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
   ];
 
   for (const p of poi) {
@@ -220,9 +231,8 @@ function buildMapStyles(poi: PoiConfig[]): google.maps.MapTypeStyle[] {
  * - Migración a BD: sustituir `localStorage` por `HttpClient` en
  *   {@link loadSettings} y en el `effect()` del constructor.
  */
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class MapSettingsService {
-
   /**
    * Referencia al {@link ThemeService} para leer {@link ThemeService.isDark}
    * de forma reactiva dentro del computed {@link mapStyles}.
@@ -284,9 +294,9 @@ export class MapSettingsService {
    *   de la API de Google Maps, p.ej. `'poi.park'` o `'transit'`).
    */
   togglePoi(id: string): void {
-    this.settings.update(s => ({
+    this.settings.update((s) => ({
       ...s,
-      poi: s.poi.map(p => p.id === id ? {...p, visible: !p.visible} : p),
+      poi: s.poi.map((p) => (p.id === id ? { ...p, visible: !p.visible } : p)),
     }));
   }
 
@@ -295,7 +305,7 @@ export class MapSettingsService {
    * {@link DEFAULT_POI} y sobreescribe `localStorage`.
    */
   resetToDefaults(): void {
-    this.settings.set({poi: [...DEFAULT_POI]});
+    this.settings.set({ poi: [...DEFAULT_POI] });
   }
 
   /**
@@ -308,8 +318,9 @@ export class MapSettingsService {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) return mergeWithDefaults(JSON.parse(raw) as MapSettings);
-    } catch { /* localStorage no disponible */
+    } catch {
+      /* localStorage no disponible */
     }
-    return {poi: [...DEFAULT_POI]};
+    return { poi: [...DEFAULT_POI] };
   }
 }

@@ -20,7 +20,6 @@ export interface SendFeedbackRequest {
 
 @Injectable({ providedIn: 'root' })
 export class FeedbackService {
-
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiFeedbackUrl;
 

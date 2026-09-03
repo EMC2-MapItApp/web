@@ -16,7 +16,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '@core/services/auth.service';
 import {
-  PasswordStrengthMeterComponent, PasswordStrengthScore,
+  PasswordStrengthMeterComponent,
+  PasswordStrengthScore,
 } from '../password-strength-meter/password-strength-meter';
 import type { ZxcvbnFactory as ZxcvbnFactoryType } from '@zxcvbn-ts/core';
 
@@ -26,9 +27,13 @@ type ResetPasswordState = 'form' | 'success' | 'error';
   selector: 'app-reset-password-page',
   standalone: true,
   imports: [
-    RouterModule, ReactiveFormsModule,
-    MatButtonModule, MatIconModule, MatProgressSpinnerModule,
-    MatFormFieldModule, MatInputModule,
+    RouterModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+    MatFormFieldModule,
+    MatInputModule,
     PasswordStrengthMeterComponent,
   ],
   templateUrl: './reset-password-page.html',
@@ -59,11 +64,15 @@ export class ResetPasswordPageComponent implements OnInit {
       newPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(72)]],
       newPasswordConfirm: ['', Validators.required],
     },
-    { validators: this.passwordMatchValidator }
+    { validators: this.passwordMatchValidator },
   );
 
-  get newPasswordCtrl() { return this.resetPasswordForm.controls['newPassword']; }
-  get newPasswordConfirmCtrl() { return this.resetPasswordForm.controls['newPasswordConfirm']; }
+  get newPasswordCtrl() {
+    return this.resetPasswordForm.controls['newPassword'];
+  }
+  get newPasswordConfirmCtrl() {
+    return this.resetPasswordForm.controls['newPasswordConfirm'];
+  }
 
   ngOnInit(): void {
     const token = this.route.snapshot.queryParamMap.get('token');
@@ -125,7 +134,7 @@ export class ResetPasswordPageComponent implements OnInit {
 
     this.newPasswordCtrl.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(value => this.scorePassword(value));
+      .subscribe((value) => this.scorePassword(value));
     this.scorePassword(this.newPasswordCtrl.value);
   }
 

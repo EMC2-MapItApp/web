@@ -8,9 +8,26 @@ describe('PublicationDetailComponent', () => {
   let component: PublicationDetailComponent;
 
   const breadcrumb: CategoryBreadcrumb = {
-    mainCategory: { id: 'main-1', name: 'Deporte', icon: '🏃', color: '#3f51b5', subcategories: [] },
-    subCategory: { id: 'sub-1', name: 'Ciclismo', icon: '🚴', mainCategoryId: 'main-1', locationTypes: [] },
-    locationType: { id: 'type-1', name: 'Quedadas', description: 'Rutas en grupo', subcategoryId: 'sub-1' },
+    mainCategory: {
+      id: 'main-1',
+      name: 'Deporte',
+      icon: '🏃',
+      color: '#3f51b5',
+      subcategories: [],
+    },
+    subCategory: {
+      id: 'sub-1',
+      name: 'Ciclismo',
+      icon: '🚴',
+      mainCategoryId: 'main-1',
+      locationTypes: [],
+    },
+    locationType: {
+      id: 'type-1',
+      name: 'Quedadas',
+      description: 'Rutas en grupo',
+      subcategoryId: 'sub-1',
+    },
   };
 
   const baseItem: PublicationDetailInput = {

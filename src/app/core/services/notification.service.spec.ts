@@ -13,12 +13,24 @@ describe('NotificationService', () => {
   let httpMock: HttpTestingController;
 
   const user: MapItUser = {
-    id: 'u1', name: 'Ana', nick: 'ana', email: 'ana@test.com', userType: 'individual',
-    level: 0, xp: 0, unlockedCapabilities: [],
+    id: 'u1',
+    name: 'Ana',
+    nick: 'ana',
+    email: 'ana@test.com',
+    userType: 'individual',
+    level: 0,
+    xp: 0,
+    unlockedCapabilities: [],
   };
   const notif = (over: Partial<AppNotification> = {}): AppNotification => ({
-    id: 'n1', type: 'GROUP_INVITATION', title: 't', body: 'b', link: null, read: false,
-    createdAt: '2026-08-01T00:00:00Z', ...over,
+    id: 'n1',
+    type: 'GROUP_INVITATION',
+    title: 't',
+    body: 'b',
+    link: null,
+    read: false,
+    createdAt: '2026-08-01T00:00:00Z',
+    ...over,
   });
 
   beforeEach(() => {
@@ -37,7 +49,9 @@ describe('NotificationService', () => {
     cu.setUser(user);
     TestBed.tick();
     httpMock.expectOne(environment.apiNotificationsUrl).flush(list);
-    httpMock.expectOne(`${environment.apiNotificationsUrl}/unread-count`).flush({ count: unreadCount });
+    httpMock
+      .expectOne(`${environment.apiNotificationsUrl}/unread-count`)
+      .flush({ count: unreadCount });
   }
 
   it('sin sesión, no carga notificaciones', () => {
@@ -88,7 +102,7 @@ describe('NotificationService', () => {
     service.markAllRead();
     httpMock.expectOne(`${environment.apiNotificationsUrl}/read-all`).flush(null);
 
-    expect(service.notifications().every(n => n.read)).toBe(true);
+    expect(service.notifications().every((n) => n.read)).toBe(true);
     expect(service.unreadCount()).toBe(0);
   });
 

@@ -13,10 +13,13 @@ describe('ResponsiveService', () => {
 
   /** Todas las media queries "no", salvo las que se pasen explícitamente a true. */
   function mockMatchMedia(matching: Partial<Record<string, boolean>> = {}): void {
-    window.matchMedia = vi.fn((query: string) => ({
-      matches: matching[query] ?? false,
-      media: query,
-    }) as MediaQueryList) as unknown as typeof window.matchMedia;
+    window.matchMedia = vi.fn(
+      (query: string) =>
+        ({
+          matches: matching[query] ?? false,
+          media: query,
+        }) as MediaQueryList,
+    ) as unknown as typeof window.matchMedia;
   }
 
   function setViewport(width: number, height = 800): void {
@@ -27,14 +30,22 @@ describe('ResponsiveService', () => {
   function configure(): ResponsiveService {
     breakpointChanges = new Subject();
     TestBed.configureTestingModule({
-      providers: [{ provide: BreakpointObserver, useValue: { observe: () => breakpointChanges.asObservable() } }],
+      providers: [
+        {
+          provide: BreakpointObserver,
+          useValue: { observe: () => breakpointChanges.asObservable() },
+        },
+      ],
     });
     return TestBed.inject(ResponsiveService);
   }
 
   afterEach(() => {
     Object.defineProperty(window, 'innerWidth', { value: originalInnerWidth, configurable: true });
-    Object.defineProperty(window, 'innerHeight', { value: originalInnerHeight, configurable: true });
+    Object.defineProperty(window, 'innerHeight', {
+      value: originalInnerHeight,
+      configurable: true,
+    });
     window.matchMedia = originalMatchMedia;
   });
 

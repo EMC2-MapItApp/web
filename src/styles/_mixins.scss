@@ -1,18 +1,42 @@
 @use './variables' as v;
 
 // ── Responsive ────────────────────────────────────────────────────────────────
-@mixin sm { @media (max-width: #{v.$bp-sm}) { @content; } }
-@mixin md { @media (max-width: #{v.$bp-md}) { @content; } }
+@mixin sm {
+  @media (max-width: #{v.$bp-sm}) {
+    @content;
+  }
+}
+@mixin md {
+  @media (max-width: #{v.$bp-md}) {
+    @content;
+  }
+}
 
 // ── Responsive por clase de dispositivo ─────────────────────────────────────────
 // Paridad con `ResponsiveService` / `SCREEN_QUERIES`. Usar estos mixins en lugar
 // de media queries ad hoc mantiene el SCSS alineado con el contrato de dominio
 // (mobile / tablet / desktop) y evita números mágicos repartidos por los estilos.
-@mixin mobile { @media (max-width: #{v.$bp-mobile-max}) { @content; } }
-@mixin tablet { @media (min-width: #{v.$bp-tablet-min}) and (max-width: #{v.$bp-tablet-max}) { @content; } }
-@mixin desktop { @media (min-width: #{v.$bp-desktop-min}) { @content; } }
+@mixin mobile {
+  @media (max-width: #{v.$bp-mobile-max}) {
+    @content;
+  }
+}
+@mixin tablet {
+  @media (min-width: #{v.$bp-tablet-min}) and (max-width: #{v.$bp-tablet-max}) {
+    @content;
+  }
+}
+@mixin desktop {
+  @media (min-width: #{v.$bp-desktop-min}) {
+    @content;
+  }
+}
 // Vista compacta: mobile + tablet (equivalente a `isMobile || isTablet`).
-@mixin compact { @media (max-width: #{v.$bp-tablet-max}) { @content; } }
+@mixin compact {
+  @media (max-width: #{v.$bp-tablet-max}) {
+    @content;
+  }
+}
 
 // ── Glassmorphism panel ───────────────────────────────────────────────────────
 @mixin glass-panel {
@@ -60,11 +84,18 @@
     justify-content: center;
   }
 
-  &:hover { color: var(--c-close-btn-hover); }
+  &:hover {
+    color: var(--c-close-btn-hover);
+  }
 }
 
 // ── Círculo de icono ──────────────────────────────────────────────────────────
-@mixin icon-circle($gradient: v.$gradient-primary, $size: 72px, $icon-size: 36px, $shadow: v.$shadow-icon-primary) {
+@mixin icon-circle(
+  $gradient: v.$gradient-primary,
+  $size: 72px,
+  $icon-size: 36px,
+  $shadow: v.$shadow-icon-primary
+) {
   width: $size;
   height: $size;
   border-radius: 50%;
@@ -95,7 +126,10 @@
     box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
     margin-bottom: v.$space-sm;
     opacity: 0.88;
-    transition: box-shadow 200ms ease, opacity 200ms ease, border-color 200ms ease;
+    transition:
+      box-shadow 200ms ease,
+      opacity 200ms ease,
+      border-color 200ms ease;
 
     &.mat-expanded {
       box-shadow: 0 8px 28px rgba(15, 23, 42, 0.13) !important;
@@ -189,6 +223,10 @@
   transition: background v.$transition-fast;
   border-radius: v.$radius-sm;
 
-  &:last-child { border-bottom: none; }
-  &:hover { background: var(--c-surface-hover); }
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: var(--c-surface-hover);
+  }
 }

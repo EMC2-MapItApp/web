@@ -30,7 +30,12 @@
     @include m.icon-wrap;
   }
 
-  &__icon { color: var(--c-text-secondary); font-size: 20px; width: 20px; height: 20px; }
+  &__icon {
+    color: var(--c-text-secondary);
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
 
   &__text {
     flex: 1;
@@ -39,8 +44,16 @@
     gap: 2px;
   }
 
-  &__title       { font-size: v.$font-md; font-weight: 500; color: var(--c-text-primary); }
-  &__description { font-size: v.$font-sm; color: var(--c-text-muted); line-height: 1.45; }
+  &__title {
+    font-size: v.$font-md;
+    font-weight: 500;
+    color: var(--c-text-primary);
+  }
+  &__description {
+    font-size: v.$font-sm;
+    color: var(--c-text-muted);
+    line-height: 1.45;
+  }
 
   &__meta {
     margin-left: auto;

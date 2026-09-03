@@ -13,8 +13,14 @@ describe('UserService', () => {
   let httpMock: HttpTestingController;
 
   const user: MapItUser = {
-    id: 'u1', name: 'Ana', nick: 'ana', email: 'ana@test.com', userType: 'individual',
-    level: 0, xp: 0, unlockedCapabilities: [],
+    id: 'u1',
+    name: 'Ana',
+    nick: 'ana',
+    email: 'ana@test.com',
+    userType: 'individual',
+    level: 0,
+    xp: 0,
+    unlockedCapabilities: [],
   };
 
   beforeEach(() => {
@@ -30,7 +36,7 @@ describe('UserService', () => {
 
   it('loadMe hace GET /auth/me marcado para saltar el diálogo global de 401, y puebla CurrentUserService', () => {
     let result: MapItUser | undefined;
-    service.loadMe().subscribe(r => (result = r));
+    service.loadMe().subscribe((r) => (result = r));
 
     const req = httpMock.expectOne(`${environment.apiAuthUrl}/me`);
     expect(req.request.method).toBe('GET');
@@ -43,7 +49,7 @@ describe('UserService', () => {
 
   it('getById hace GET /users/{id} sin tocar CurrentUserService', () => {
     let result: MapItUser | undefined;
-    service.getById('u2').subscribe(r => (result = r));
+    service.getById('u2').subscribe((r) => (result = r));
 
     const req = httpMock.expectOne(`${environment.apiUsersUrl}/u2`);
     expect(req.request.method).toBe('GET');
@@ -58,7 +64,7 @@ describe('UserService', () => {
     const payload = { name: 'Ana María' };
 
     let result: MapItUser | undefined;
-    service.updateProfile(payload).subscribe(r => (result = r));
+    service.updateProfile(payload).subscribe((r) => (result = r));
 
     const req = httpMock.expectOne(`${environment.apiUsersUrl}/u1`);
     expect(req.request.method).toBe('PATCH');

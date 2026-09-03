@@ -26,8 +26,12 @@ interface CategoryOption {
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatButtonModule, MatIconModule, MatProgressSpinnerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './feedback-page.html',
   styleUrl: './feedback-page.scss',
@@ -52,8 +56,12 @@ export class FeedbackPageComponent {
 
   readonly sending = signal(false);
 
-  get subjectCtrl() { return this.form.controls['subject']; }
-  get messageCtrl() { return this.form.controls['message']; }
+  get subjectCtrl() {
+    return this.form.controls['subject'];
+  }
+  get messageCtrl() {
+    return this.form.controls['message'];
+  }
 
   constructor() {
     this.titleService.setTitle('MapIt — Enviar feedback');
@@ -67,17 +75,19 @@ export class FeedbackPageComponent {
 
     const { category, subject, message } = this.form.getRawValue();
     this.sending.set(true);
-    this.feedbackService.send({ category, subject: subject.trim(), message: message.trim() }).subscribe({
-      next: () => {
-        this.sending.set(false);
-        this.form.reset({ category: 'BUG', subject: '', message: '' });
-        this.notify('Gracias por tu feedback, lo hemos recibido');
-      },
-      error: () => {
-        this.sending.set(false);
-        this.notify('No se pudo enviar el feedback. Inténtalo de nuevo más tarde.');
-      },
-    });
+    this.feedbackService
+      .send({ category, subject: subject.trim(), message: message.trim() })
+      .subscribe({
+        next: () => {
+          this.sending.set(false);
+          this.form.reset({ category: 'BUG', subject: '', message: '' });
+          this.notify('Gracias por tu feedback, lo hemos recibido');
+        },
+        error: () => {
+          this.sending.set(false);
+          this.notify('No se pudo enviar el feedback. Inténtalo de nuevo más tarde.');
+        },
+      });
   }
 
   private notify(message: string): void {

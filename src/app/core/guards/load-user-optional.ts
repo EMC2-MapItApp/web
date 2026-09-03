@@ -13,7 +13,7 @@ import { UserService } from '../services/user.service';
 import { TOKEN_KEY } from './auth.guard';
 
 export const loadUserOptionalGuard: CanActivateFn = () => {
-  const cu      = inject(CurrentUserService);
+  const cu = inject(CurrentUserService);
   const userSvc = inject(UserService);
 
   // Sin token → guest real, dejar pasar sin llamada
@@ -30,6 +30,6 @@ export const loadUserOptionalGuard: CanActivateFn = () => {
       localStorage.removeItem(TOKEN_KEY);
       cu.clear();
       return of(true);
-    })
+    }),
   );
 };

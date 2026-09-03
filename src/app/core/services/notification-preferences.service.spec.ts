@@ -13,8 +13,14 @@ describe('NotificationPreferencesService', () => {
   let httpMock: HttpTestingController;
 
   const user: MapItUser = {
-    id: 'u1', name: 'Ana', nick: 'ana', email: 'ana@test.com', userType: 'individual',
-    level: 0, xp: 0, unlockedCapabilities: [],
+    id: 'u1',
+    name: 'Ana',
+    nick: 'ana',
+    email: 'ana@test.com',
+    userType: 'individual',
+    level: 0,
+    xp: 0,
+    unlockedCapabilities: [],
   };
   const prefs: NotificationPreference[] = [
     { type: 'GROUP_INVITATION', emailEnabled: true },
@@ -66,8 +72,12 @@ describe('NotificationPreferencesService', () => {
 
     service.toggleEmail('GROUP_INVITATION');
 
-    expect(service.preferences().find(p => p.type === 'GROUP_INVITATION')?.emailEnabled).toBe(false);
-    httpMock.expectOne(`${environment.apiNotificationsUrl}/preferences/GROUP_INVITATION`).flush(null);
+    expect(service.preferences().find((p) => p.type === 'GROUP_INVITATION')?.emailEnabled).toBe(
+      false,
+    );
+    httpMock
+      .expectOne(`${environment.apiNotificationsUrl}/preferences/GROUP_INVITATION`)
+      .flush(null);
   });
 
   it('toggleEmail revierte el cambio optimista si el PATCH falla', () => {
@@ -76,9 +86,12 @@ describe('NotificationPreferencesService', () => {
     httpMock.expectOne(`${environment.apiNotificationsUrl}/preferences`).flush(prefs);
 
     service.toggleEmail('GROUP_INVITATION');
-    httpMock.expectOne(`${environment.apiNotificationsUrl}/preferences/GROUP_INVITATION`)
+    httpMock
+      .expectOne(`${environment.apiNotificationsUrl}/preferences/GROUP_INVITATION`)
       .flush(null, { status: 500, statusText: 'Server Error' });
 
-    expect(service.preferences().find(p => p.type === 'GROUP_INVITATION')?.emailEnabled).toBe(true);
+    expect(service.preferences().find((p) => p.type === 'GROUP_INVITATION')?.emailEnabled).toBe(
+      true,
+    );
   });
 });

@@ -17,7 +17,9 @@
   // atenuado (diálogos) — en esta página, a pantalla completa sobre --c-bg, se funde con el
   // fondo. Se sustituyen por un borde real y una sombra más marcada para que la tarjeta resalte.
   border-color: var(--c-border-light);
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14), 0 2px 8px rgba(15, 23, 42, 0.06);
+  box-shadow:
+    0 16px 40px rgba(15, 23, 42, 0.14),
+    0 2px 8px rgba(15, 23, 42, 0.06);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,8 +32,14 @@
   &__icon {
     @include m.icon-circle(v.$gradient-primary);
 
-    &--success { background: var(--c-success); box-shadow: none; }
-    &--error   { background: var(--c-error);   box-shadow: none; }
+    &--success {
+      background: var(--c-success);
+      box-shadow: none;
+    }
+    &--error {
+      background: var(--c-error);
+      box-shadow: none;
+    }
   }
 
   &__title {
@@ -113,7 +121,11 @@
     gap: 4px;
     padding: 2px 10px;
     border-radius: v.$radius-full;
-    background: color-mix(in srgb, var(--cat-color, var(--c-primary)) 16%, var(--c-surface-primary));
+    background: color-mix(
+      in srgb,
+      var(--cat-color, var(--c-primary)) 16%,
+      var(--c-surface-primary)
+    );
     color: var(--cat-color, var(--c-primary));
     font-size: v.$font-xs;
     font-weight: 700;
@@ -221,12 +233,19 @@ $member-chip-color: var(--c-text-secondary);
   width: 100%;
   margin-top: v.$space-sm;
 
-  mat-form-field { width: 100%; }
+  mat-form-field {
+    width: 100%;
+  }
 
-  .btn-primary { width: 100%; }
+  .btn-primary {
+    width: 100%;
+  }
 }
 
-.error-msg { @include m.error-box; margin: 0; }
+.error-msg {
+  @include m.error-box;
+  margin: 0;
+}
 
 .go-to-app-link {
   margin-top: v.$space-md;

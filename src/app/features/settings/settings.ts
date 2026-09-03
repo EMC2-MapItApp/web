@@ -6,17 +6,17 @@
  *  nuevos `mat-expansion-panel` dentro del mismo `mat-accordion`.
  */
 
-import {Component, inject} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
-import {MatExpansionModule} from '@angular/material/expansion';
-import {MatSlideToggleModule} from '@angular/material/slide-toggle';
-import {MatIconModule} from '@angular/material/icon';
-import {MatButtonModule} from '@angular/material/button';
-import {MatDividerModule} from '@angular/material/divider';
-import {MapSettingsService} from '@core/services/map-settings.service';
-import {ThemeService} from '@core/services/theme.service';
-import {NotificationPreferencesService} from '@core/services/notification-preferences.service';
-import {NOTIFICATION_TYPE_META} from '@core/models/notification.model';
+import { Component, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
+import { MapSettingsService } from '@core/services/map-settings.service';
+import { ThemeService } from '@core/services/theme.service';
+import { NotificationPreferencesService } from '@core/services/notification-preferences.service';
+import { NOTIFICATION_TYPE_META } from '@core/models/notification.model';
 
 /** Componente de la página de Ajustes.
  * @remarks Actúa como contenedor de configuración. Delega toda la lógica de estado

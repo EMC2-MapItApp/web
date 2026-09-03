@@ -11,7 +11,6 @@ import { PushPermissionState, PushProvider, PushSubscriptionData } from './push-
 
 @Injectable({ providedIn: 'root' })
 export class NoopPushProvider implements PushProvider {
-
   isSupported(): boolean {
     return false;
   }

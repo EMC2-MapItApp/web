@@ -1,5 +1,4 @@
 <div class="check-email-dialog" (click)="$event.stopPropagation()">
-
   <button class="close-btn" mat-icon-button (click)="dialogRef.close()" aria-label="Cerrar">
     <mat-icon>close</mat-icon>
   </button>
@@ -12,13 +11,18 @@
 
   <p class="check-email-dialog__subtitle">
     Te hemos enviado un enlace de verificación a<br />
-    <strong>{{ data.email }}</strong>.<br />
+    <strong>{{ data.email }}</strong
+    >.<br />
     Ábrelo para activar tu cuenta.
   </p>
 
   <div class="check-email-dialog__actions">
-    <button mat-stroked-button class="btn-resend" [disabled]="resending() || resendCooldownLeft() > 0"
-            (click)="resend()">
+    <button
+      mat-stroked-button
+      class="btn-resend"
+      [disabled]="resending() || resendCooldownLeft() > 0"
+      (click)="resend()"
+    >
       @if (resending()) {
         <mat-spinner diameter="18" />
       } @else if (resendCooldownLeft() > 0) {
@@ -27,9 +31,7 @@
         Reenviar correo
       }
     </button>
-    <button mat-flat-button class="btn-login" (click)="goToLogin()">
-      Ir a iniciar sesión
-    </button>
+    <button mat-flat-button class="btn-login" (click)="goToLogin()">Ir a iniciar sesión</button>
   </div>
 
   <p class="check-email-dialog__hint">El enlace caduca en 20 minutos</p>

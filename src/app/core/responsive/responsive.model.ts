@@ -14,14 +14,14 @@ export type DeviceClass = 'mobile' | 'tablet' | 'desktop';
  * proyectos sin cambios de API en los consumidores.
  */
 export interface ResponsiveState {
-    deviceClass: DeviceClass;
-    isMobile: boolean;
-    isTablet: boolean;
-    isDesktop: boolean;
-    isPortrait: boolean;
-    isLandscape: boolean;
-    width: number;
-    height: number;
-    hasHover: boolean;
-    pointerCoarse: boolean;
+  deviceClass: DeviceClass;
+  isMobile: boolean;
+  isTablet: boolean;
+  isDesktop: boolean;
+  isPortrait: boolean;
+  isLandscape: boolean;
+  width: number;
+  height: number;
+  hasHover: boolean;
+  pointerCoarse: boolean;
 }

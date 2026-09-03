@@ -95,7 +95,9 @@
   cursor: pointer;
   padding: 4px 10px;
   white-space: nowrap;
-  transition: background v.$transition-fast, border-color v.$transition-fast;
+  transition:
+    background v.$transition-fast,
+    border-color v.$transition-fast;
 
   &:disabled {
     cursor: default;

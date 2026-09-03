@@ -106,5 +106,9 @@
   }
 }
 
-.close-btn   { @include m.close-btn; }
-.btn-accept  { @include m.btn-primary; }
+.close-btn {
+  @include m.close-btn;
+}
+.btn-accept {
+  @include m.btn-primary;
+}

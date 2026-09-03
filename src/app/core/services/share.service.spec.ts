@@ -14,9 +14,7 @@ describe('ShareService', () => {
   function configure(pointerCoarse: boolean): void {
     responsiveState = { pointerCoarse };
     TestBed.configureTestingModule({
-      providers: [
-        { provide: ResponsiveService, useValue: { state: () => responsiveState } },
-      ],
+      providers: [{ provide: ResponsiveService, useValue: { state: () => responsiveState } }],
     });
     service = TestBed.inject(ShareService);
   }
@@ -28,7 +26,11 @@ describe('ShareService', () => {
       // (TypeError: Cannot redefine property) — se sustituye el objeto entero.
       const originalLocation = window.location;
       const fakeLocation = { ...originalLocation, href: originalLocation.href };
-      Object.defineProperty(window, 'location', { value: fakeLocation, writable: true, configurable: true });
+      Object.defineProperty(window, 'location', {
+        value: fakeLocation,
+        writable: true,
+        configurable: true,
+      });
 
       service.shareViaWhatsApp(content);
 
@@ -36,7 +38,11 @@ describe('ShareService', () => {
         `whatsapp://send?text=${encodeURIComponent('Mira esto\n\nhttps://mapit-web.com/x')}`,
       );
 
-      Object.defineProperty(window, 'location', { value: originalLocation, writable: true, configurable: true });
+      Object.defineProperty(window, 'location', {
+        value: originalLocation,
+        writable: true,
+        configurable: true,
+      });
     });
 
     it('en escritorio, abre WhatsApp Web en pestaña nueva', () => {

@@ -17,7 +17,6 @@ import { PUSH_PROVIDER, PushPermissionState } from '../notifications/push-provid
 
 @Injectable({ providedIn: 'root' })
 export class PushNotificationService {
-
   private readonly http = inject(HttpClient);
   private readonly provider = inject(PUSH_PROVIDER);
   private readonly baseUrl = environment.apiNotificationsUrl;
@@ -35,7 +34,7 @@ export class PushNotificationService {
 
   constructor() {
     if (this.provider.isSupported()) {
-      this.provider.hasActiveSubscription().then(active => this._enabled.set(active));
+      this.provider.hasActiveSubscription().then((active) => this._enabled.set(active));
     }
   }
 
@@ -47,7 +46,7 @@ export class PushNotificationService {
     }
 
     const { publicKey } = await firstValueFrom(
-      this.http.get<{ publicKey: string }>(`${this.baseUrl}/push/public-key`)
+      this.http.get<{ publicKey: string }>(`${this.baseUrl}/push/public-key`),
     );
     // Gateado por environment.production, igual que WebPushProvider.subscribe(): es solo
     // depuración de flujo, no un error.
@@ -67,7 +66,9 @@ export class PushNotificationService {
     }
 
     try {
-      await firstValueFrom(this.http.post<void>(`${this.baseUrl}/push/subscriptions`, subscription));
+      await firstValueFrom(
+        this.http.post<void>(`${this.baseUrl}/push/subscriptions`, subscription),
+      );
       if (!environment.production) console.log('[push] suscripción registrada en el backend OK');
     } catch (err) {
       console.error('[push] fallo al registrar la suscripción en el backend', err);
@@ -84,7 +85,9 @@ export class PushNotificationService {
     this._enabled.set(false);
 
     if (endpoint) {
-      await firstValueFrom(this.http.delete<void>(`${this.baseUrl}/push/subscriptions`, { body: { endpoint } }));
+      await firstValueFrom(
+        this.http.delete<void>(`${this.baseUrl}/push/subscriptions`, { body: { endpoint } }),
+      );
     }
   }
 }

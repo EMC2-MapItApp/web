@@ -83,7 +83,9 @@
   background: var(--c-surface-alt);
   color: var(--c-text-primary);
   cursor: pointer;
-  transition: border-color v.$transition-fast, background v.$transition-fast;
+  transition:
+    border-color v.$transition-fast,
+    background v.$transition-fast;
   min-height: 44px; // objetivo táctil mínimo
 
   &:hover {
@@ -362,7 +364,9 @@
     justify-content: center;
     cursor: pointer;
     color: var(--c-text-muted);
-    transition: background v.$transition-fast, color v.$transition-fast;
+    transition:
+      background v.$transition-fast,
+      color v.$transition-fast;
 
     mat-icon {
       font-size: 16px;

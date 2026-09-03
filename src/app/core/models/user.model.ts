@@ -82,15 +82,15 @@ export type UserMeResponse = MapItUser;
 
 /** Campos actualizables mediante PATCH /users/{id}. Todos opcionales. */
 export interface UpdateUserProfileRequest {
-  name?:                   string;
-  nick?:                   string;
-  avatarUrl?:              string;
-  phone?:                  string;
-  city?:                   string;
-  province?:               string;
-  bio?:                    string;
+  name?: string;
+  nick?: string;
+  avatarUrl?: string;
+  phone?: string;
+  city?: string;
+  province?: string;
+  bio?: string;
   /** Formato yyyy-MM-dd */
-  birthDate?:              string;
+  birthDate?: string;
   favoriteLocationTypeIds?: string[];
 }
 

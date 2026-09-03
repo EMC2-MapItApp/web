@@ -4,8 +4,18 @@ import { GoogleMapsService } from './google-maps.service';
 import { environment } from '@env/environment';
 
 /** Stub mínimo de la API real de Google Maps (Size/Point), no cargada en el entorno de test. */
-class FakeSize { constructor(public width: number, public height: number) {} }
-class FakePoint { constructor(public x: number, public y: number) {} }
+class FakeSize {
+  constructor(
+    public width: number,
+    public height: number,
+  ) {}
+}
+class FakePoint {
+  constructor(
+    public x: number,
+    public y: number,
+  ) {}
+}
 
 describe('GoogleMapsService', () => {
   let service: GoogleMapsService;
@@ -21,7 +31,7 @@ describe('GoogleMapsService', () => {
 
   afterEach(() => {
     (window as unknown as { google?: unknown }).google = originalGoogle;
-    document.querySelectorAll('script[src*="maps.googleapis.com"]').forEach(el => el.remove());
+    document.querySelectorAll('script[src*="maps.googleapis.com"]').forEach((el) => el.remove());
   });
 
   describe('load', () => {
@@ -35,7 +45,9 @@ describe('GoogleMapsService', () => {
       Reflect.deleteProperty(window, 'google');
 
       const promise = service.load();
-      const script = document.querySelector<HTMLScriptElement>('script[src*="maps.googleapis.com"]');
+      const script = document.querySelector<HTMLScriptElement>(
+        'script[src*="maps.googleapis.com"]',
+      );
       expect(script).not.toBeNull();
       expect(script?.src).toContain(environment.googleMapsApiKey);
       script?.onload?.(new Event('load'));
@@ -50,7 +62,9 @@ describe('GoogleMapsService', () => {
       const second = service.load();
       expect(document.querySelectorAll('script[src*="maps.googleapis.com"]')).toHaveLength(1);
 
-      document.querySelector<HTMLScriptElement>('script[src*="maps.googleapis.com"]')?.onload?.(new Event('load'));
+      document
+        .querySelector<HTMLScriptElement>('script[src*="maps.googleapis.com"]')
+        ?.onload?.(new Event('load'));
 
       await expect(first).resolves.toBeUndefined();
       await expect(second).resolves.toBeUndefined();
@@ -60,7 +74,9 @@ describe('GoogleMapsService', () => {
       Reflect.deleteProperty(window, 'google');
 
       const promise = service.load();
-      document.querySelector<HTMLScriptElement>('script[src*="maps.googleapis.com"]')?.onerror?.(new Event('error'));
+      document
+        .querySelector<HTMLScriptElement>('script[src*="maps.googleapis.com"]')
+        ?.onerror?.(new Event('error'));
 
       await expect(promise).rejects.toThrow('No se pudo cargar Google Maps API');
     });

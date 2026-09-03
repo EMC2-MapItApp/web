@@ -31,8 +31,12 @@ export interface ContactMembersDialogResult {
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    MatDialogModule, MatFormFieldModule, MatInputModule,
-    MatButtonModule, MatIconModule, MatCheckboxModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCheckboxModule,
   ],
   templateUrl: './contact-members-dialog.html',
   styleUrl: './contact-members-dialog.scss',
@@ -43,7 +47,9 @@ export class ContactMembersDialogComponent {
   private readonly fb = inject(FormBuilder);
 
   // Por defecto se selecciona a todos los miembros ("Contacta con todos").
-  private readonly selectedIds = signal<Set<string>>(new Set(this.data.members.map(m => m.userId)));
+  private readonly selectedIds = signal<Set<string>>(
+    new Set(this.data.members.map((m) => m.userId)),
+  );
   readonly selectedCount = computed(() => this.selectedIds().size);
   readonly allSelected = computed(() => this.selectedCount() === this.data.members.length);
   readonly noneSelected = computed(() => this.selectedCount() === 0);
@@ -53,23 +59,30 @@ export class ContactMembersDialogComponent {
     message: ['', [Validators.required, Validators.maxLength(2000)]],
   });
 
-  get subjectCtrl() { return this.form.controls['subject']; }
-  get messageCtrl() { return this.form.controls['message']; }
+  get subjectCtrl() {
+    return this.form.controls['subject'];
+  }
+  get messageCtrl() {
+    return this.form.controls['message'];
+  }
 
   isSelected(userId: string): boolean {
     return this.selectedIds().has(userId);
   }
 
   toggleMember(userId: string): void {
-    this.selectedIds.update(current => {
+    this.selectedIds.update((current) => {
       const next = new Set(current);
-      if (next.has(userId)) next.delete(userId); else next.add(userId);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
       return next;
     });
   }
 
   toggleAll(): void {
-    this.selectedIds.set(this.allSelected() ? new Set() : new Set(this.data.members.map(m => m.userId)));
+    this.selectedIds.set(
+      this.allSelected() ? new Set() : new Set(this.data.members.map((m) => m.userId)),
+    );
   }
 
   send(): void {

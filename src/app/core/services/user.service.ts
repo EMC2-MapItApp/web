@@ -21,20 +21,19 @@ import { SKIP_UNAUTHORIZED_DIALOG } from '../interceptors/unauthorized.intercept
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
-
   private readonly http = inject(HttpClient);
-  private readonly cu   = inject(CurrentUserService);
+  private readonly cu = inject(CurrentUserService);
   private readonly baseUrlUsers = environment.apiUsersUrl;
-  private readonly baseUrlAuth  = environment.apiAuthUrl;
+  private readonly baseUrlAuth = environment.apiAuthUrl;
 
   loadMe(): Observable<UserMeResponse> {
     // 401 aquí es un token expirado/inválido detectado por los guards de carga de usuario
     // (ver load-user.guard.ts / load-user-optional.ts), que ya lo gestionan (limpian el token y
     // redirigen o degradan a invitado en silencio) — se excluye del diálogo global.
     const context = new HttpContext().set(SKIP_UNAUTHORIZED_DIALOG, true);
-    return this.http.get<UserMeResponse>(`${this.baseUrlAuth}/me`, { context }).pipe(
-      tap(user => this.cu.setUser(user))
-    );
+    return this.http
+      .get<UserMeResponse>(`${this.baseUrlAuth}/me`, { context })
+      .pipe(tap((user) => this.cu.setUser(user)));
   }
 
   /**
@@ -49,12 +48,9 @@ export class UserService {
     const userId = this.cu.user()?.id;
     if (!userId) throw new Error('No hay usuario autenticado');
 
-    return this.http.patch<UpdateUserProfileResponse>(
-      `${this.baseUrlUsers}/${userId}`,
-      payload
-    ).pipe(
-      tap(updated => this.cu.setUser(updated))
-    );
+    return this.http
+      .patch<UpdateUserProfileResponse>(`${this.baseUrlUsers}/${userId}`, payload)
+      .pipe(tap((updated) => this.cu.setUser(updated)));
   }
 
   /**
@@ -67,9 +63,9 @@ export class UserService {
 
     // El backend responde 401 con code WRONG_CURRENT_PASSWORD (no UNAUTHORIZED) para la
     // contraseña actual incorrecta, así que el interceptor global lo ignora solo.
-    return this.http.patch<void>(
-      `${this.baseUrlUsers}/${userId}/password`,
-      { currentPassword, newPassword },
-    );
+    return this.http.patch<void>(`${this.baseUrlUsers}/${userId}/password`, {
+      currentPassword,
+      newPassword,
+    });
   }
 }

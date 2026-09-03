@@ -41,7 +41,7 @@ export class ChangelogPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.titleService.setTitle('MapIt — Novedades');
-    this.changelogService.getAll().subscribe(entries => this.entries.set(entries));
+    this.changelogService.getAll().subscribe((entries) => this.entries.set(entries));
   }
 
   typeIcon(type: ChangelogEntryType): string {

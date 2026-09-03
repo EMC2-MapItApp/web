@@ -45,7 +45,9 @@ export class ForgotPasswordDialogComponent {
     email: ['', [Validators.required, Validators.email]],
   });
 
-  get emailCtrl() { return this.forgotPasswordForm.controls['email']; }
+  get emailCtrl() {
+    return this.forgotPasswordForm.controls['email'];
+  }
 
   submit(): void {
     if (this.forgotPasswordForm.invalid || this.loading()) {
@@ -65,8 +67,9 @@ export class ForgotPasswordDialogComponent {
       error: (err) => {
         this.loading.set(false);
         this.errorMsg.set(
-          err.status === 404 ? 'No existe ninguna cuenta con ese correo electrónico.'
-          : 'Error al solicitar el restablecimiento. Inténtalo de nuevo.'
+          err.status === 404
+            ? 'No existe ninguna cuenta con ese correo electrónico.'
+            : 'Error al solicitar el restablecimiento. Inténtalo de nuevo.',
         );
       },
     });

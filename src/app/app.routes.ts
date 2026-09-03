@@ -18,7 +18,6 @@ import { authDialogGuard } from '@core/guards/auth-dialog.guard';
 import { openRegisterDialogGuard } from '@core/guards/open-register-dialog.guard';
 import { loadUserOptionalGuard } from '@core/guards/load-user-optional';
 
-
 export const routes: Routes = [
   { path: 'login', canActivate: [openLoginDialogGuard], component: HomeShellComponent },
   { path: 'register', canActivate: [openRegisterDialogGuard], component: HomeShellComponent },
@@ -26,76 +25,95 @@ export const routes: Routes = [
   // sin contexto previo de la app.
   {
     path: 'verify-email',
-    loadComponent: () => import('@features/auth/verify-email-page/verify-email-page')
-      .then(m => m.VerifyEmailPageComponent)
+    loadComponent: () =>
+      import('@features/auth/verify-email-page/verify-email-page').then(
+        (m) => m.VerifyEmailPageComponent,
+      ),
   },
   // Idem: se llega aqui desde el enlace del correo de restablecimiento de contraseña.
   {
     path: 'reset-password',
-    loadComponent: () => import('@features/auth/reset-password-page/reset-password-page')
-      .then(m => m.ResetPasswordPageComponent)
+    loadComponent: () =>
+      import('@features/auth/reset-password-page/reset-password-page').then(
+        (m) => m.ResetPasswordPageComponent,
+      ),
   },
   // Idem: se llega aqui desde el enlace del correo de invitacion a un grupo.
   {
     path: 'group-invitation',
-    loadComponent: () => import('@features/groups/group-invitation-page/group-invitation-page')
-      .then(m => m.GroupInvitationPageComponent)
+    loadComponent: () =>
+      import('@features/groups/group-invitation-page/group-invitation-page').then(
+        (m) => m.GroupInvitationPageComponent,
+      ),
   },
   {
-    path: '', component: HomeShellComponent,
+    path: '',
+    component: HomeShellComponent,
     canActivate: [loadUserOptionalGuard],
     children: [
       {
         path: '',
-        loadComponent: () => import('@features/maps/maps').then(m => m.MapsPageComponent)
+        loadComponent: () => import('@features/maps/maps').then((m) => m.MapsPageComponent),
       },
       {
         path: 'profile',
         canActivate: [authDialogGuard],
-        loadComponent: () => import('@features/profile/profile').then(m => m.ProfilePageComponent)
+        loadComponent: () =>
+          import('@features/profile/profile').then((m) => m.ProfilePageComponent),
       },
       {
         path: 'settings',
         canActivate: [authDialogGuard],
-        loadComponent: () => import('@features/settings/settings').then(m => m.SettingsPageComponent)
+        loadComponent: () =>
+          import('@features/settings/settings').then((m) => m.SettingsPageComponent),
       },
       {
         path: 'groups',
         canActivate: [authDialogGuard],
-        loadComponent: () => import('@features/groups/groups-page/groups-page').then(m => m.GroupsPageComponent)
+        loadComponent: () =>
+          import('@features/groups/groups-page/groups-page').then((m) => m.GroupsPageComponent),
       },
       {
         path: 'feedback',
         canActivate: [authDialogGuard],
-        loadComponent: () => import('@features/feedback/feedback-page').then(m => m.FeedbackPageComponent)
+        loadComponent: () =>
+          import('@features/feedback/feedback-page').then((m) => m.FeedbackPageComponent),
       },
       {
         path: 'groups/:id/edit',
         canActivate: [authDialogGuard],
-        loadComponent: () => import('@features/groups/group-form-page/group-form-page').then(m => m.GroupFormPageComponent)
+        loadComponent: () =>
+          import('@features/groups/group-form-page/group-form-page').then(
+            (m) => m.GroupFormPageComponent,
+          ),
       },
       {
         path: 'create-publication',
         canActivate: [authDialogGuard],
-        loadComponent: () => import('@features/publications/create-publication/create-publication')
-          .then(m => m.CreatePublicationPageComponent)
+        loadComponent: () =>
+          import('@features/publications/create-publication/create-publication').then(
+            (m) => m.CreatePublicationPageComponent,
+          ),
       },
       // Paginas informativas ("Acerca de", "Novedades", "Stack tecnico"): se renderizan
       // dentro del shell (mismo marco visual que Ajustes) pero sin guard de login —
       // siguen siendo accesibles sin sesion.
       {
         path: 'about',
-        loadComponent: () => import('@features/info/about/about-page').then(m => m.AboutPageComponent)
+        loadComponent: () =>
+          import('@features/info/about/about-page').then((m) => m.AboutPageComponent),
       },
       {
         path: 'changelog',
-        loadComponent: () => import('@features/info/changelog/changelog-page').then(m => m.ChangelogPageComponent)
+        loadComponent: () =>
+          import('@features/info/changelog/changelog-page').then((m) => m.ChangelogPageComponent),
       },
       {
         path: 'stack',
-        loadComponent: () => import('@features/info/stack/stack-page').then(m => m.StackPageComponent)
+        loadComponent: () =>
+          import('@features/info/stack/stack-page').then((m) => m.StackPageComponent),
       },
-    ]
+    ],
   },
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: '' },
 ];

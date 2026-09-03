@@ -6,8 +6,8 @@ import { MapItUser } from './user.model';
 
 /** Payload para POST /auth/register */
 export interface AuthRegisterRequest {
-  name:     string;
-  email:    string;
+  name: string;
+  email: string;
   password: string;
   /** El backend espera el enum en mayúsculas: PARTICULAR | PROFESSIONAL | ENTITY */
   userType: 'PARTICULAR' | 'PROFESSIONAL' | 'ENTITY';
@@ -19,13 +19,13 @@ export interface AuthRegisterRequest {
  */
 export interface AuthLoginRequest {
   identifier: string;
-  password:   string;
+  password: string;
 }
 
 /** Respuesta del endpoint /auth/login */
 export interface AuthResponse {
   token: string;
-  user:  MapItUser;
+  user: MapItUser;
 }
 
 /**

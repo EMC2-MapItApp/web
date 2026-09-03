@@ -13,15 +13,15 @@ import { loadUserOptionalGuard } from '@core/guards/load-user-optional';
 
 /** Aplana el árbol de rutas (padres + hijas) en una lista. */
 function flatten(rs: Route[]): Route[] {
-  return rs.flatMap(r => [r, ...(r.children ? flatten(r.children) : [])]);
+  return rs.flatMap((r) => [r, ...(r.children ? flatten(r.children) : [])]);
 }
 
 describe('app.routes', () => {
   const all = flatten(routes);
-  const lazy = all.filter(r => r.loadComponent);
+  const lazy = all.filter((r) => r.loadComponent);
 
   it('declara las 13 páginas lazy esperadas', () => {
-    const paths = lazy.map(r => r.path).sort();
+    const paths = lazy.map((r) => r.path).sort();
     expect(paths).toEqual([
       '', // maps (hija por defecto del shell)
       'about',
@@ -49,22 +49,29 @@ describe('app.routes', () => {
   });
 
   it('login y register abren diálogo vía guard sobre el shell', () => {
-    const login = routes.find(r => r.path === 'login')!;
-    const register = routes.find(r => r.path === 'register')!;
+    const login = routes.find((r) => r.path === 'login')!;
+    const register = routes.find((r) => r.path === 'register')!;
     expect(login.canActivate).toContain(openLoginDialogGuard);
     expect(register.canActivate).toContain(openRegisterDialogGuard);
     // Ambas rutas renderizan el shell (el diálogo se abre encima).
-    expect(login.component).toBe(routes.find(r => r.path === '')!.component);
+    expect(login.component).toBe(routes.find((r) => r.path === '')!.component);
   });
 
   it('las rutas privadas llevan authDialogGuard y las informativas no', () => {
-    const shell = routes.find(r => r.path === '')!;
+    const shell = routes.find((r) => r.path === '')!;
     expect(shell.canActivate).toContain(loadUserOptionalGuard);
 
     const guardOf = (path: string) =>
-      shell.children!.find(r => r.path === path)?.canActivate ?? [];
+      shell.children!.find((r) => r.path === path)?.canActivate ?? [];
 
-    for (const priv of ['profile', 'settings', 'create-publication', 'feedback', 'groups', 'groups/:id/edit']) {
+    for (const priv of [
+      'profile',
+      'settings',
+      'create-publication',
+      'feedback',
+      'groups',
+      'groups/:id/edit',
+    ]) {
       expect(guardOf(priv), `ruta privada '${priv}'`).toContain(authDialogGuard);
     }
     for (const open of ['', 'about', 'changelog', 'stack']) {

@@ -66,7 +66,7 @@
     font-size: v.$font-body;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .04em;
+    letter-spacing: 0.04em;
     color: var(--c-text-primary);
     justify-content: flex-start;
     padding: 0 6px;
@@ -80,10 +80,12 @@
     cursor: pointer;
     padding: 2px 7px;
     border-radius: 6px;
-    transition: background v.$transition-fast, color v.$transition-fast;
+    transition:
+      background v.$transition-fast,
+      color v.$transition-fast;
 
     &:hover {
-      background: rgba(0, 0, 0, .06);
+      background: rgba(0, 0, 0, 0.06);
       color: var(--c-text-primary);
     }
   }
@@ -97,7 +99,10 @@
     gap: 10px;
     scrollbar-width: thin;
     scrollbar-color: var(--c-border) transparent;
-    transition: max-height v.$transition-slow, opacity v.$transition-base, padding v.$transition-slow;
+    transition:
+      max-height v.$transition-slow,
+      opacity v.$transition-base,
+      padding v.$transition-slow;
     opacity: 1;
   }
 
@@ -122,7 +127,9 @@
     border-radius: v.$radius-sm;
     cursor: pointer;
     border: 1.5px solid transparent;
-    transition: background v.$transition-fast, border-color v.$transition-fast;
+    transition:
+      background v.$transition-fast,
+      border-color v.$transition-fast;
     display: grid;
     grid-template-columns: auto 1fr;
     grid-template-rows: auto auto;
@@ -130,7 +137,7 @@
     align-items: start;
 
     &:hover {
-      background: rgba(255, 255, 255, .7);
+      background: rgba(255, 255, 255, 0.7);
       border-color: var(--cat-color, var(--c-border));
     }
 

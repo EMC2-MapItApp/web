@@ -1,6 +1,5 @@
 <div class="group-invitation-page">
   <div class="group-invitation-card">
-
     @switch (state()) {
       @case ('loading') {
         <mat-spinner diameter="40" />
@@ -20,10 +19,10 @@
 
         <div class="invited-group" [style.--cat-color]="category()?.color">
           @if (category(); as cat) {
-          <span class="invited-group__badge" [style.--cat-color]="cat.color">
-            <span class="invited-group__badge-icon">{{ cat.icon }}</span>
-            {{ cat.name }}
-          </span>
+            <span class="invited-group__badge" [style.--cat-color]="cat.color">
+              <span class="invited-group__badge-icon">{{ cat.icon }}</span>
+              {{ cat.name }}
+            </span>
           }
           <h3 class="invited-group__name">{{ inv.groupName }}</h3>
           <p class="invited-group__description">{{ inv.groupDescription }}</p>
@@ -33,14 +32,17 @@
           </p>
 
           @if (inv.groupMembers.length > 0) {
-          <div class="invited-group__members">
-            @for (member of inv.groupMembers; track member.userId) {
-            <span class="member-chip" [class.member-chip--organizer]="member.role === 'organizer'">
-              <span class="member-chip__avatar">{{ member.name.charAt(0) }}</span>
-              <span class="member-chip__name">{{ member.name }}</span>
-            </span>
-            }
-          </div>
+            <div class="invited-group__members">
+              @for (member of inv.groupMembers; track member.userId) {
+                <span
+                  class="member-chip"
+                  [class.member-chip--organizer]="member.role === 'organizer'"
+                >
+                  <span class="member-chip__avatar">{{ member.name.charAt(0) }}</span>
+                  <span class="member-chip__name">{{ member.name }}</span>
+                </span>
+              }
+            </div>
           }
         </div>
 
@@ -49,14 +51,20 @@
             <mat-icon>close</mat-icon>
             Rechazar
           </button>
-          <button mat-flat-button type="button" class="btn-primary" [disabled]="processing()" (click)="accept()">
+          <button
+            mat-flat-button
+            type="button"
+            class="btn-primary"
+            [disabled]="processing()"
+            (click)="accept()"
+          >
             @if (processing()) {
-            <mat-spinner diameter="18" />
+              <mat-spinner diameter="18" />
             } @else {
-            <ng-container>
-              <mat-icon class="icon-nudge-check">check</mat-icon>
-              Aceptar y unirme
-            </ng-container>
+              <ng-container>
+                <mat-icon class="icon-nudge-check">check</mat-icon>
+                Aceptar y unirme
+              </ng-container>
             }
           </button>
         </div>
@@ -89,11 +97,21 @@
           Inicia sesión con tu cuenta para aceptar o rechazar la invitación.
         </p>
 
-        <form class="login-inline-form" [formGroup]="loginForm" (ngSubmit)="submitLogin()" novalidate>
+        <form
+          class="login-inline-form"
+          [formGroup]="loginForm"
+          (ngSubmit)="submitLogin()"
+          novalidate
+        >
           <mat-form-field appearance="outline">
             <mat-label>Correo o nombre de usuario</mat-label>
-            <input matInput type="text" formControlName="identifier" autocomplete="username"
-                   placeholder="tu@email.com o @tunick" />
+            <input
+              matInput
+              type="text"
+              formControlName="identifier"
+              autocomplete="username"
+              placeholder="tu@email.com o @tunick"
+            />
             @if (identifierCtrl.hasError('required')) {
               <mat-error>El correo o nombre de usuario es obligatorio</mat-error>
             }
@@ -107,9 +125,13 @@
               formControlName="password"
               autocomplete="current-password"
             />
-            <button mat-icon-button matSuffix type="button"
-                    (click)="hidePassword = !hidePassword"
-                    [attr.aria-label]="'Mostrar u ocultar contraseña'">
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              (click)="hidePassword = !hidePassword"
+              [attr.aria-label]="'Mostrar u ocultar contraseña'"
+            >
               <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
             </button>
             @if (passwordCtrl.hasError('required')) {
@@ -142,7 +164,8 @@
         <h2 class="group-invitation-card__title">Esta invitación es para otra cuenta</h2>
         <p class="group-invitation-card__subtitle">
           @if (wrongAccountIdentifier(); as identifier) {
-            Has iniciado sesión como <strong>{{ identifier }}</strong>, pero esta invitación es para otra cuenta.
+            Has iniciado sesión como <strong>{{ identifier }}</strong
+            >, pero esta invitación es para otra cuenta.
           } @else {
             Has iniciado sesión con una cuenta distinta a la invitada.
           }
@@ -164,6 +187,5 @@
         <button mat-flat-button class="btn-primary" (click)="goToHome()">Ir a MapIt</button>
       }
     }
-
   </div>
 </div>

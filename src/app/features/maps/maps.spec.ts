@@ -205,8 +205,22 @@ const BREADCRUMB: CategoryBreadcrumb = {
 };
 
 const LOCATIONS: MapLocation[] = [
-  { id: 'loc-1', name: 'Ruta en bici', locationTypeId: 'type-1', lat: 40.4, lng: -3.7, visibility: 'PUBLIC' },
-  { id: 'loc-2', name: 'Quedada MTB', locationTypeId: 'type-1', lat: 40.5, lng: -3.8, visibility: 'PUBLIC' },
+  {
+    id: 'loc-1',
+    name: 'Ruta en bici',
+    locationTypeId: 'type-1',
+    lat: 40.4,
+    lng: -3.7,
+    visibility: 'PUBLIC',
+  },
+  {
+    id: 'loc-2',
+    name: 'Quedada MTB',
+    locationTypeId: 'type-1',
+    lat: 40.5,
+    lng: -3.8,
+    visibility: 'PUBLIC',
+  },
 ];
 
 const USER: MapItUser = {
@@ -300,7 +314,14 @@ describe('MapsPageComponent', () => {
     dialog = { open: vi.fn() };
     geoIpService = {
       resolveCenter: vi.fn().mockReturnValue(
-        of({ lat: 40.4, lng: -3.7, city: null, country: null, resolvedIp: '', source: 'fallback' }),
+        of({
+          lat: 40.4,
+          lng: -3.7,
+          city: null,
+          country: null,
+          resolvedIp: '',
+          source: 'fallback',
+        }),
       ),
     };
     snackBar = { open: vi.fn() };
@@ -779,7 +800,13 @@ describe('MapsPageComponent', () => {
       it('éxito actualiza joinedByLocation/joinedByUserAndLocation y recarga enrollments', () => {
         TestBed.inject(CurrentUserService).setUser(USER);
         publicationService.enroll.mockReturnValue(
-          of({ publicationId: 'loc-1', userId: 'u1', occupiedSlots: 1, maxSlots: null, full: false }),
+          of({
+            publicationId: 'loc-1',
+            userId: 'u1',
+            occupiedSlots: 1,
+            maxSlots: null,
+            full: false,
+          }),
         );
         openDetail();
 
@@ -793,7 +820,13 @@ describe('MapsPageComponent', () => {
       it('ya apuntado (hasJoined), aborta sin volver a llamar a enroll', () => {
         TestBed.inject(CurrentUserService).setUser(USER);
         publicationService.enroll.mockReturnValue(
-          of({ publicationId: 'loc-1', userId: 'u1', occupiedSlots: 1, maxSlots: null, full: false }),
+          of({
+            publicationId: 'loc-1',
+            userId: 'u1',
+            occupiedSlots: 1,
+            maxSlots: null,
+            full: false,
+          }),
         );
         openDetail();
         component.joinSelectedLocation();
@@ -810,9 +843,14 @@ describe('MapsPageComponent', () => {
         TestBed.inject(CurrentUserService).setUser(USER);
         publicationService.requestAccess.mockReturnValue(
           of({
-            id: 'req-1', publicationId: 'loc-1', publicationTitle: 'Ruta en bici',
-            requestedByUserId: 'u1', requestedByName: 'Ana', requestedByNick: 'ana',
-            status: 'pending', createdAt: '2026-01-01',
+            id: 'req-1',
+            publicationId: 'loc-1',
+            publicationTitle: 'Ruta en bici',
+            requestedByUserId: 'u1',
+            requestedByName: 'Ana',
+            requestedByNick: 'ana',
+            status: 'pending',
+            createdAt: '2026-01-01',
           }),
         );
         openDetail({ visibility: 'PRIVATE', hasAccess: false });

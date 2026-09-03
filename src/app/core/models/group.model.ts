@@ -125,8 +125,7 @@ export interface CreateGroupRequest {
  * ({@link CreateGroupRequest.inviteUserIds}/`inviteEmails`).
  */
 export type QueuedInvite =
-  | { kind: 'user'; user: GroupSearchUser }
-  | { kind: 'email'; email: string };
+  { kind: 'user'; user: GroupSearchUser } | { kind: 'email'; email: string };
 
 /** Campos editables de un grupo existente. Todos opcionales (PATCH). */
 export interface UpdateGroupRequest {

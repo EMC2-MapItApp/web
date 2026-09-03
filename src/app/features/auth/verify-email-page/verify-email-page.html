@@ -1,6 +1,5 @@
 <div class="verify-email-page">
   <div class="verify-email-card">
-
     @switch (state()) {
       @case ('loading') {
         <mat-spinner diameter="40" />
@@ -22,11 +21,13 @@
         </div>
         <h2 class="verify-email-card__title">Enlace inválido o caducado</h2>
         <p class="verify-email-card__subtitle">
-          Vuelve a intentarlo desde el correo de verificación o solicita uno nuevo al iniciar sesión.
+          Vuelve a intentarlo desde el correo de verificación o solicita uno nuevo al iniciar
+          sesión.
         </p>
-        <button mat-flat-button class="btn-primary" (click)="goToLogin()">Ir a iniciar sesión</button>
+        <button mat-flat-button class="btn-primary" (click)="goToLogin()">
+          Ir a iniciar sesión
+        </button>
       }
     }
-
   </div>
 </div>

@@ -42,8 +42,13 @@ type PendingAction = 'view' | 'accept' | 'decline';
   selector: 'app-group-invitation-page',
   standalone: true,
   imports: [
-    RouterModule, ReactiveFormsModule,
-    MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule,
+    RouterModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './group-invitation-page.html',
   styleUrl: './group-invitation-page.scss',
@@ -71,7 +76,9 @@ export class GroupInvitationPageComponent implements OnInit {
 
   /** El 401/403 de esta página tiene un significado propio (login inline / cuenta equivocada,
    *  ver {@link handleLoadError}) — se excluye del diálogo global de "Acceso restringido". */
-  private readonly skipAuthDialog = { context: new HttpContext().set(SKIP_UNAUTHORIZED_DIALOG, true) };
+  private readonly skipAuthDialog = {
+    context: new HttpContext().set(SKIP_UNAUTHORIZED_DIALOG, true),
+  };
 
   private token: string | null = null;
   /** Por defecto 'view': es lo que hace el propio `ngOnInit`. Solo pasa a 'accept'/'decline' si
@@ -81,8 +88,12 @@ export class GroupInvitationPageComponent implements OnInit {
    *  invitada — se guarda para poder mostrarlo en el estado 'wrong-account'. */
   readonly wrongAccountIdentifier = signal<string | null>(null);
 
-  get identifierCtrl() { return this.loginForm.controls['identifier']; }
-  get passwordCtrl() { return this.loginForm.controls['password']; }
+  get identifierCtrl() {
+    return this.loginForm.controls['identifier'];
+  }
+  get passwordCtrl() {
+    return this.loginForm.controls['password'];
+  }
 
   ngOnInit(): void {
     this.token = this.route.snapshot.queryParamMap.get('token');
@@ -98,7 +109,7 @@ export class GroupInvitationPageComponent implements OnInit {
     const token = this.token!;
     this.state.set('loading');
     this.groupService.getInvitationById(token, this.skipAuthDialog).subscribe({
-      next: invitation => {
+      next: (invitation) => {
         if (!invitation || invitation.status !== 'pending') {
           this.state.set('error');
           return;
@@ -119,7 +130,7 @@ export class GroupInvitationPageComponent implements OnInit {
       // 403: sí hay sesión, pero de una cuenta distinta a la invitada (p. ej. otro usuario
       // seguía logado en ese navegador) — se distingue de "invitación no disponible" para no
       // decirle a alguien con la cuenta equivocada que el enlace ha caducado.
-      error: err => this.handleLoadError(err),
+      error: (err) => this.handleLoadError(err),
     });
   }
 
@@ -127,7 +138,9 @@ export class GroupInvitationPageComponent implements OnInit {
     if (err.status === 401) {
       this.state.set('login-required');
     } else if (err.status === 403) {
-      this.wrongAccountIdentifier.set(this.currentUserService.user()?.nick ?? this.currentUserService.user()?.email ?? null);
+      this.wrongAccountIdentifier.set(
+        this.currentUserService.user()?.nick ?? this.currentUserService.user()?.email ?? null,
+      );
       this.state.set('wrong-account');
     } else {
       this.state.set('error');
@@ -145,7 +158,7 @@ export class GroupInvitationPageComponent implements OnInit {
         this.state.set('accepted');
       },
       // La sesión pudo caducar, o cambiar de cuenta, entre la carga de la página y el click.
-      error: err => {
+      error: (err) => {
         this.processing.set(false);
         this.pendingAction = 'accept';
         this.handleLoadError(err);
@@ -163,7 +176,7 @@ export class GroupInvitationPageComponent implements OnInit {
         this.processing.set(false);
         this.state.set('declined');
       },
-      error: err => {
+      error: (err) => {
         this.processing.set(false);
         this.pendingAction = 'decline';
         this.handleLoadError(err);
@@ -196,13 +209,14 @@ export class GroupInvitationPageComponent implements OnInit {
 
     this.authService.login({ identifier: identifier!, password: password! }).subscribe({
       next: () => this.resolvePendingAction(),
-      error: err => {
+      error: (err) => {
         this.processing.set(false);
         this.loginError.set(
-          err.status === 401 ? 'Correo o contraseña incorrectos.'
-          : err.status === 403 && err.error?.error?.code === 'EMAIL_NOT_VERIFIED'
-            ? 'Debes verificar tu correo antes de iniciar sesión.'
-            : 'Error al iniciar sesión. Inténtalo de nuevo.'
+          err.status === 401
+            ? 'Correo o contraseña incorrectos.'
+            : err.status === 403 && err.error?.error?.code === 'EMAIL_NOT_VERIFIED'
+              ? 'Debes verificar tu correo antes de iniciar sesión.'
+              : 'Error al iniciar sesión. Inténtalo de nuevo.',
         );
       },
     });

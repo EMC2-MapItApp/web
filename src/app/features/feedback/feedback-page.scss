@@ -2,7 +2,8 @@
 @use 'styles/mixins' as m;
 
 // .feedback-page usa .page-main (styles.scss) para el contenedor centrado.
-.feedback-page {}
+.feedback-page {
+}
 
 .feedback-header {
   margin-bottom: v.$space-md;
@@ -13,7 +14,9 @@
   gap: 14px;
   max-width: 480px;
 
-  mat-form-field { width: 100%; }
+  mat-form-field {
+    width: 100%;
+  }
 }
 
 .submit-btn {

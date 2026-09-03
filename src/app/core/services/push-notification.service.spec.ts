@@ -27,7 +27,8 @@ describe('PushNotificationService', () => {
     };
     TestBed.configureTestingModule({
       providers: [
-        provideHttpClient(), provideHttpClientTesting(),
+        provideHttpClient(),
+        provideHttpClientTesting(),
         { provide: PUSH_PROVIDER, useValue: provider as unknown as PushProvider },
       ],
     });
@@ -75,7 +76,9 @@ describe('PushNotificationService', () => {
       service = configure(true);
 
       const promise = service.enable();
-      httpMock.expectOne(`${environment.apiNotificationsUrl}/push/public-key`).flush({ publicKey: '' });
+      httpMock
+        .expectOne(`${environment.apiNotificationsUrl}/push/public-key`)
+        .flush({ publicKey: '' });
       const result = await promise;
 
       expect(result).toBe(false);
@@ -84,10 +87,15 @@ describe('PushNotificationService', () => {
 
     it('con clave VAPID y suscripción del provider, registra en el backend y activa enabled()', async () => {
       service = configure(true);
-      provider.subscribe.mockResolvedValue({ endpoint: 'https://push.example/e1', keys: { p256dh: 'a', auth: 'b' } });
+      provider.subscribe.mockResolvedValue({
+        endpoint: 'https://push.example/e1',
+        keys: { p256dh: 'a', auth: 'b' },
+      });
 
       const promise = service.enable();
-      httpMock.expectOne(`${environment.apiNotificationsUrl}/push/public-key`).flush({ publicKey: 'vapid-key' });
+      httpMock
+        .expectOne(`${environment.apiNotificationsUrl}/push/public-key`)
+        .flush({ publicKey: 'vapid-key' });
       // Deja que provider.subscribe() (async) resuelva antes de esperar la siguiente petición.
       await Promise.resolve();
       await Promise.resolve();
@@ -104,7 +112,9 @@ describe('PushNotificationService', () => {
       provider.subscribe.mockResolvedValue(null);
 
       const promise = service.enable();
-      httpMock.expectOne(`${environment.apiNotificationsUrl}/push/public-key`).flush({ publicKey: 'vapid-key' });
+      httpMock
+        .expectOne(`${environment.apiNotificationsUrl}/push/public-key`)
+        .flush({ publicKey: 'vapid-key' });
       const result = await promise;
 
       expect(result).toBe(false);
@@ -116,10 +126,13 @@ describe('PushNotificationService', () => {
       provider.subscribe.mockResolvedValue({ endpoint: 'e1', keys: { p256dh: 'a', auth: 'b' } });
 
       const promise = service.enable();
-      httpMock.expectOne(`${environment.apiNotificationsUrl}/push/public-key`).flush({ publicKey: 'vapid-key' });
+      httpMock
+        .expectOne(`${environment.apiNotificationsUrl}/push/public-key`)
+        .flush({ publicKey: 'vapid-key' });
       await Promise.resolve();
       await Promise.resolve();
-      httpMock.expectOne(`${environment.apiNotificationsUrl}/push/subscriptions`)
+      httpMock
+        .expectOne(`${environment.apiNotificationsUrl}/push/subscriptions`)
         .flush(null, { status: 500, statusText: 'Server Error' });
 
       await expect(promise).rejects.toBeTruthy();

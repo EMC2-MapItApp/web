@@ -19,8 +19,12 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '@env/environment';
 import {
-  AuthLoginRequest, AuthRegisterRequest, AuthResponse,
-  ForgotPasswordResponse, RegisterResponse, ResendVerificationResponse,
+  AuthLoginRequest,
+  AuthRegisterRequest,
+  AuthResponse,
+  ForgotPasswordResponse,
+  RegisterResponse,
+  ResendVerificationResponse,
 } from '../models/auth.model';
 import { MapItUser } from '../models/user.model';
 import { CurrentUserService } from './current-user.service';
@@ -28,15 +32,14 @@ import { TOKEN_KEY } from '../guards/auth.guard';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-
   private readonly http = inject(HttpClient);
-  private readonly cu   = inject(CurrentUserService);
+  private readonly cu = inject(CurrentUserService);
   private readonly base = environment.apiAuthUrl;
 
   private readonly TYPE_MAP: Record<string, string> = {
-    PARTICULAR:   'individual',
+    PARTICULAR: 'individual',
     PROFESSIONAL: 'professional',
-    ENTITY:       'entity',
+    ENTITY: 'entity',
   };
 
   /**
@@ -55,7 +58,9 @@ export class AuthService {
 
   /** Solicita el reenvio del correo de verificacion. Siempre resuelve igual (anti-enumeración). */
   resendVerification(email: string): Observable<ResendVerificationResponse> {
-    return this.http.post<ResendVerificationResponse>(`${this.base}/resend-verification`, { email });
+    return this.http.post<ResendVerificationResponse>(`${this.base}/resend-verification`, {
+      email,
+    });
   }
 
   /**
@@ -78,9 +83,9 @@ export class AuthService {
   login(payload: AuthLoginRequest): Observable<AuthResponse> {
     // El backend responde 401 con code INVALID_CREDENTIALS (no UNAUTHORIZED) para credenciales
     // incorrectas, así que el interceptor global de "Acceso restringido" lo ignora solo.
-    return this.http.post<AuthResponse>(`${this.base}/login`, payload).pipe(
-      tap(res => this.handleAuthResponse(res))
-    );
+    return this.http
+      .post<AuthResponse>(`${this.base}/login`, payload)
+      .pipe(tap((res) => this.handleAuthResponse(res)));
   }
 
   /** Limpia la sesión local (logout). */
@@ -93,7 +98,8 @@ export class AuthService {
     localStorage.setItem(TOKEN_KEY, res.token);
     const user: MapItUser = {
       ...res.user,
-      userType: (this.TYPE_MAP[res.user.userType as string] ?? res.user.userType) as MapItUser['userType'],
+      userType: (this.TYPE_MAP[res.user.userType as string] ??
+        res.user.userType) as MapItUser['userType'],
     };
     this.cu.setUser(user);
   }

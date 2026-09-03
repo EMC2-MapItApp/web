@@ -29,7 +29,9 @@
     width: 100%;
   }
 
-  mat-form-field { width: 100%; }
+  mat-form-field {
+    width: 100%;
+  }
 }
 
 // ── Selección de destinatarios ────────────────────────────────────────────────
@@ -76,8 +78,12 @@
   border-bottom: 1px solid var(--c-border-light);
   transition: background v.$transition-fast;
 
-  &:last-child { border-bottom: none; }
-  &:hover { background: var(--c-surface-hover); }
+  &:last-child {
+    border-bottom: none;
+  }
+  &:hover {
+    background: var(--c-surface-hover);
+  }
 
   &__avatar {
     width: 28px;
@@ -117,7 +123,9 @@
   }
 }
 
-.close-btn  { @include m.close-btn; }
+.close-btn {
+  @include m.close-btn;
+}
 .submit-btn {
   @include m.btn-primary;
   display: flex;

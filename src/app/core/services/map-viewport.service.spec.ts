@@ -10,7 +10,12 @@ describe('MapViewportService', () => {
   let geoIpService: { resolveCenter: ReturnType<typeof vi.fn> };
 
   const center: GeoIpCenter = {
-    lat: 40.4, lng: -3.7, city: 'Madrid', country: 'ES', resolvedIp: '1.2.3.4', source: 'geoip',
+    lat: 40.4,
+    lng: -3.7,
+    city: 'Madrid',
+    country: 'ES',
+    resolvedIp: '1.2.3.4',
+    source: 'geoip',
   };
 
   beforeEach(() => {
@@ -23,7 +28,7 @@ describe('MapViewportService', () => {
 
   it('primera llamada: resuelve por IP y aplica el zoom por defecto (12)', () => {
     let result: unknown;
-    service.resolveInitialViewport().subscribe(v => (result = v));
+    service.resolveInitialViewport().subscribe((v) => (result = v));
 
     expect(geoIpService.resolveCenter).toHaveBeenCalledTimes(1);
     expect(result).toEqual({ lat: 40.4, lng: -3.7, zoom: 12 });
@@ -40,7 +45,7 @@ describe('MapViewportService', () => {
     service.setViewport({ lat: 41.0, lng: 2.0 }, 15);
 
     let result: unknown;
-    service.resolveInitialViewport().subscribe(v => (result = v));
+    service.resolveInitialViewport().subscribe((v) => (result = v));
 
     expect(geoIpService.resolveCenter).not.toHaveBeenCalled();
     expect(result).toEqual({ lat: 41.0, lng: 2.0, zoom: 15 });

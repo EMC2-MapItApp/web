@@ -29,10 +29,14 @@
     width: 100%;
   }
 
-  mat-form-field { width: 100%; }
+  mat-form-field {
+    width: 100%;
+  }
 }
 
-.close-btn  { @include m.close-btn; }
+.close-btn {
+  @include m.close-btn;
+}
 .submit-btn {
   @include m.btn-primary;
   display: flex;

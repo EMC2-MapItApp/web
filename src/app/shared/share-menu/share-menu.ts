@@ -13,7 +13,16 @@
  * ShareMenuComponent.nativeOnly}, en cuyo caso no hay submenú de fallback: el botón se
  * deshabilita directamente si no hay soporte nativo.
  */
-import { Component, ElementRef, HostListener, computed, inject, input, model, output } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  computed,
+  inject,
+  input,
+  model,
+  output,
+} from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ShareService } from '@core/services/share.service';
@@ -77,8 +86,12 @@ export class ShareMenuComponent {
 
   protected readonly effectiveAriaLabel = computed(() => this.ariaLabel() ?? this.label());
 
-  private readonly nativeUnsupported = computed(() => this.nativeOnly() && !this.shareService.isNativeShareSupported());
-  protected readonly effectiveDisabled = computed(() => this.disabled() || this.nativeUnsupported());
+  private readonly nativeUnsupported = computed(
+    () => this.nativeOnly() && !this.shareService.isNativeShareSupported(),
+  );
+  protected readonly effectiveDisabled = computed(
+    () => this.disabled() || this.nativeUnsupported(),
+  );
   protected readonly effectiveTitle = computed(() => {
     if (this.nativeUnsupported()) return 'No soportado';
     return this.disabled() ? this.disabledReason() : undefined;
@@ -91,7 +104,7 @@ export class ShareMenuComponent {
       this.dispatchNative();
       return;
     }
-    this.open.update(v => !v);
+    this.open.update((v) => !v);
   }
 
   private async dispatchNative(): Promise<void> {

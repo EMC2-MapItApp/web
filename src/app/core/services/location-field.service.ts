@@ -27,9 +27,9 @@ interface LegacyLocationFieldSchema {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const DIFFICULTY_COLORS: Record<string, string> = {
-  'Fácil': '#10b981',
-  'Medio': '#f59e0b',
-  'Difícil': '#ef4444',
+  Fácil: '#10b981',
+  Medio: '#f59e0b',
+  Difícil: '#ef4444',
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -37,7 +37,6 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
-
   // ── DEPORTES / CICLISMO ───────────────────────────────────────────────────
 
   {
@@ -427,11 +426,17 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
     fields: [
       { key: 'language', label: 'Idioma', type: 'text' },
       {
-        key: 'level', label: 'Nivel', type: 'badge',
+        key: 'level',
+        label: 'Nivel',
+        type: 'badge',
         badgeColors: {
-          'A1': '#10b981', 'A2': '#34d399', 'B1': '#f59e0b',
-          'B2': '#f97316', 'C1': '#ef4444', 'C2': '#7c3aed'
-        }
+          A1: '#10b981',
+          A2: '#34d399',
+          B1: '#f59e0b',
+          B2: '#f97316',
+          C1: '#ef4444',
+          C2: '#7c3aed',
+        },
       },
       { key: 'slots', label: 'Plazas libres', type: 'number', unit: 'plazas' },
       { key: 'isOnline', label: 'Online', type: 'boolean' },
@@ -469,7 +474,6 @@ const FIELD_SCHEMAS: LegacyLocationFieldSchema[] = [
 
 @Injectable({ providedIn: 'root' })
 export class LocationFieldService {
-
   private readonly categoryService = inject(CategoryService);
 
   /**
@@ -477,7 +481,7 @@ export class LocationFieldService {
    * Se construye una sola vez al instanciar el servicio.
    */
   private readonly registry = new Map<string, LegacyLocationFieldSchema>(
-    FIELD_SCHEMAS.map(s => [`${s.locationTypeId}::${s.context}`, s])
+    FIELD_SCHEMAS.map((s) => [`${s.locationTypeId}::${s.context}`, s]),
   );
 
   /**
@@ -498,7 +502,7 @@ export class LocationFieldService {
    */
   getFields(locationTypeId: string, context: FieldContext): LocationFieldDef[] {
     const key = this.resolveSchemaKey(locationTypeId, context);
-    return key ? this.registry.get(key)?.fields ?? [] : [];
+    return key ? (this.registry.get(key)?.fields ?? []) : [];
   }
 
   /**

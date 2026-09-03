@@ -24,10 +24,19 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GroupService } from '@core/services/group.service';
 import { CategoryService } from '@core/services/category.service';
-import { Group, GroupInvitation, GroupMember, GroupSearchUser, QueuedInvite } from '@core/models/group.model';
+import {
+  Group,
+  GroupInvitation,
+  GroupMember,
+  GroupSearchUser,
+  QueuedInvite,
+} from '@core/models/group.model';
 import { MainCategory } from '@core/models/category.model';
 import { ResponsiveService } from '@core/responsive/responsive.service';
-import { CONFIRM_DIALOG_CONFIG, withResponsiveDialogLayout } from '@core/constants/dialog.constants';
+import {
+  CONFIRM_DIALOG_CONFIG,
+  withResponsiveDialogLayout,
+} from '@core/constants/dialog.constants';
 import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/confirm-dialog/confirm-dialog';
 
 type FormMode = 'create' | 'edit';
@@ -36,16 +45,18 @@ type FormMode = 'create' | 'edit';
   selector: 'app-group-form-page',
   standalone: true,
   imports: [
-    ReactiveFormsModule, SlicePipe,
-    MatIconModule, MatButtonModule,
-    MatFormFieldModule, MatInputModule,
+    ReactiveFormsModule,
+    SlicePipe,
+    MatIconModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatProgressSpinnerModule,
   ],
   templateUrl: './group-form-page.html',
   styleUrl: './group-form-page.scss',
 })
 export class GroupFormPageComponent {
-
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -87,10 +98,10 @@ export class GroupFormPageComponent {
   private group: Group | null = null;
 
   constructor() {
-    this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
+    this.categoryService.getAll().subscribe((cats) => this.categories.set(cats));
 
     if (this.groupId) {
-      this.groupService.getGroupById(this.groupId).subscribe(group => {
+      this.groupService.getGroupById(this.groupId).subscribe((group) => {
         this.loadingGroup.set(false);
         if (!group) return;
         this.group = group;
@@ -103,25 +114,33 @@ export class GroupFormPageComponent {
       });
     }
 
-    this.searchCtrl.valueChanges.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap(query => {
-        this.searching.set(true);
-        return this.groupService.searchUsers(query ?? '');
-      }),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(results => {
-      this.searching.set(false);
-      this.searchResults.set(results);
-    });
+    this.searchCtrl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((query) => {
+          this.searching.set(true);
+          return this.groupService.searchUsers(query ?? '');
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((results) => {
+        this.searching.set(false);
+        this.searchResults.set(results);
+      });
   }
 
-  readonly pageTitle = computed(() => this.mode() === 'create' ? 'Crear grupo' : 'Editar grupo');
+  readonly pageTitle = computed(() => (this.mode() === 'create' ? 'Crear grupo' : 'Editar grupo'));
 
-  get nameCtrl() { return this.form.controls['name']; }
-  get descriptionCtrl() { return this.form.controls['description']; }
-  get categoryIdCtrl() { return this.form.controls['categoryId']; }
+  get nameCtrl() {
+    return this.form.controls['name'];
+  }
+  get descriptionCtrl() {
+    return this.form.controls['description'];
+  }
+  get categoryIdCtrl() {
+    return this.form.controls['categoryId'];
+  }
 
   selectCategory(categoryId: string): void {
     this.categoryIdCtrl.setValue(categoryId);
@@ -134,24 +153,27 @@ export class GroupFormPageComponent {
 
   /** Ya invitado (en cola o, en edición, ya enviado) o ya miembro del grupo. */
   isAlreadyLinked(user: GroupSearchUser): boolean {
-    if (this.currentMembers().some(m => m.userId === user.id)) return true;
-    if (this.mode() === 'create') return this.queuedInvites().some(q => q.kind === 'user' && q.user.id === user.id);
-    return this.sentInvites().some(i => i.invitedUserId === user.id);
+    if (this.currentMembers().some((m) => m.userId === user.id)) return true;
+    if (this.mode() === 'create')
+      return this.queuedInvites().some((q) => q.kind === 'user' && q.user.id === user.id);
+    return this.sentInvites().some((i) => i.invitedUserId === user.id);
   }
 
   isEmailAlreadyLinked(email: string): boolean {
     const normalized = email.toLowerCase();
     if (this.mode() === 'create') {
-      return this.queuedInvites().some(q => q.kind === 'email' && q.email.toLowerCase() === normalized);
+      return this.queuedInvites().some(
+        (q) => q.kind === 'email' && q.email.toLowerCase() === normalized,
+      );
     }
-    return this.sentInvites().some(i => i.invitedEmail?.toLowerCase() === normalized);
+    return this.sentInvites().some((i) => i.invitedEmail?.toLowerCase() === normalized);
   }
 
   invite(user: GroupSearchUser): void {
     if (this.isAlreadyLinked(user)) return;
 
     if (this.mode() === 'create') {
-      this.queuedInvites.update(list => [...list, { kind: 'user', user }]);
+      this.queuedInvites.update((list) => [...list, { kind: 'user', user }]);
       return;
     }
 
@@ -160,7 +182,7 @@ export class GroupFormPageComponent {
     this.groupService.inviteUser(this.group, user).subscribe({
       next: (invitation) => {
         this.invitingUserId.set(null);
-        this.sentInvites.update(list => [...list, invitation]);
+        this.sentInvites.update((list) => [...list, invitation]);
         this.notify(`Invitación enviada a ${user.name}`);
       },
       error: (err) => {
@@ -176,7 +198,7 @@ export class GroupFormPageComponent {
     if (this.emailInviteCtrl.invalid || !email || this.isEmailAlreadyLinked(email)) return;
 
     if (this.mode() === 'create') {
-      this.queuedInvites.update(list => [...list, { kind: 'email', email }]);
+      this.queuedInvites.update((list) => [...list, { kind: 'email', email }]);
       this.emailInviteCtrl.reset();
       return;
     }
@@ -187,7 +209,7 @@ export class GroupFormPageComponent {
       next: (invitation) => {
         this.sendingEmailInvite.set(false);
         this.emailInviteCtrl.reset();
-        this.sentInvites.update(list => [...list, invitation]);
+        this.sentInvites.update((list) => [...list, invitation]);
         this.notify(`Invitación enviada a ${email}`);
       },
       error: (err) => {
@@ -198,7 +220,7 @@ export class GroupFormPageComponent {
   }
 
   removeQueuedInvite(invite: QueuedInvite): void {
-    this.queuedInvites.update(list => list.filter(q => !this.isSameQueuedInvite(q, invite)));
+    this.queuedInvites.update((list) => list.filter((q) => !this.isSameQueuedInvite(q, invite)));
   }
 
   private isSameQueuedInvite(a: QueuedInvite, b: QueuedInvite): boolean {
@@ -227,24 +249,28 @@ export class GroupFormPageComponent {
    * al aceptar ({@link GroupService.createGroup}), así que se confirma antes de disparar ambos. */
   private confirmCreateWithInvites(invitesCount: number, name: string, description: string): void {
     const compactViewport = this.responsive.isMobile() || this.responsive.isTablet();
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, withResponsiveDialogLayout(
-      {
-        ...CONFIRM_DIALOG_CONFIG,
-        data: {
-          title: 'Crear grupo',
-          message: invitesCount === 1
-            ? 'Se creará el grupo y se enviará 1 invitación.'
-            : `Se creará el grupo y se enviarán ${invitesCount} invitaciones.`,
-          preview: { title: name, description },
-          icon: 'group_add',
-          acceptText: 'Crear grupo',
-          acceptIcon: 'check',
-        } satisfies ConfirmDialogData,
-      },
-      compactViewport,
-    ));
+    const dialogRef = this.dialog.open(
+      ConfirmDialogComponent,
+      withResponsiveDialogLayout(
+        {
+          ...CONFIRM_DIALOG_CONFIG,
+          data: {
+            title: 'Crear grupo',
+            message:
+              invitesCount === 1
+                ? 'Se creará el grupo y se enviará 1 invitación.'
+                : `Se creará el grupo y se enviarán ${invitesCount} invitaciones.`,
+            preview: { title: name, description },
+            icon: 'group_add',
+            acceptText: 'Crear grupo',
+            acceptIcon: 'check',
+          } satisfies ConfirmDialogData,
+        },
+        compactViewport,
+      ),
+    );
 
-    dialogRef.afterClosed().subscribe(confirmed => {
+    dialogRef.afterClosed().subscribe((confirmed) => {
       if (confirmed) this.submit();
     });
   }
@@ -254,24 +280,27 @@ export class GroupFormPageComponent {
     this.saving.set(true);
 
     const queue = this.queuedInvites();
-    const request$ = this.mode() === 'create'
-      ? this.groupService.createGroup({
-          name: name!,
-          description: description!,
-          categoryId: categoryId!,
-          inviteUserIds: queue.filter(q => q.kind === 'user').map(q => q.user.id),
-          inviteEmails: queue.filter(q => q.kind === 'email').map(q => q.email),
-        })
-      : this.groupService.updateGroup(this.groupId!, {
-          name: name!,
-          description: description!,
-          categoryId: categoryId!,
-        });
+    const request$ =
+      this.mode() === 'create'
+        ? this.groupService.createGroup({
+            name: name!,
+            description: description!,
+            categoryId: categoryId!,
+            inviteUserIds: queue.filter((q) => q.kind === 'user').map((q) => q.user.id),
+            inviteEmails: queue.filter((q) => q.kind === 'email').map((q) => q.email),
+          })
+        : this.groupService.updateGroup(this.groupId!, {
+            name: name!,
+            description: description!,
+            categoryId: categoryId!,
+          });
 
     request$.subscribe({
       next: (group) => {
         this.saving.set(false);
-        this.notify(this.mode() === 'create' ? `Grupo "${group.name}" creado` : 'Cambios guardados');
+        this.notify(
+          this.mode() === 'create' ? `Grupo "${group.name}" creado` : 'Cambios guardados',
+        );
         this.router.navigate(['/groups']);
       },
       error: () => {

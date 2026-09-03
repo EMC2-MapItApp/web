@@ -19,12 +19,17 @@ import { UserService } from '@core/services/user.service';
 import { CategoryService } from '@core/services/category.service';
 import { MainCategory, SubCategory } from '@core/models/category.model';
 import { DatePipe, SlicePipe } from '@angular/common';
-import { Publication, PublicationAccessRequest, PublicationVisibility } from '@core/models/publication.model';
+import {
+  Publication,
+  PublicationAccessRequest,
+  PublicationVisibility,
+} from '@core/models/publication.model';
 import { PublicationService } from '@core/services/publication.service';
 import { ResponsiveService } from '@core/responsive/responsive.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
-  PasswordStrengthMeterComponent, PasswordStrengthScore,
+  PasswordStrengthMeterComponent,
+  PasswordStrengthScore,
 } from '../auth/password-strength-meter/password-strength-meter';
 import type { ZxcvbnFactory as ZxcvbnFactoryType } from '@zxcvbn-ts/core';
 
@@ -47,17 +52,19 @@ const USER_TYPE_EMOJIS: Record<string, string> = {
     DatePipe,
     SlicePipe,
     ReactiveFormsModule,
-    MatIconModule, MatButtonModule,
-    MatFormFieldModule, MatInputModule,
+    MatIconModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatProgressSpinnerModule,
-    MatExpansionModule, MatDividerModule,
+    MatExpansionModule,
+    MatDividerModule,
     PasswordStrengthMeterComponent,
   ],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
 export class ProfilePageComponent {
-
   readonly cu = inject(CurrentUserService);
   private userService = inject(UserService);
   private categoryService = inject(CategoryService);
@@ -104,7 +111,7 @@ export class ProfilePageComponent {
   publicationsError = signal<string | null>(null);
 
   /** Indica si alguna publicación del usuario está caducada, para mostrar el aviso de borrado automático. */
-  hasFinishedPublications = computed(() => this.myPublications().some(p => this.isFinished(p)));
+  hasFinishedPublications = computed(() => this.myPublications().some((p) => this.isFinished(p)));
 
   // ── Solicitudes de acceso a publicaciones privadas ──────────────────────────
 
@@ -140,20 +147,22 @@ export class ProfilePageComponent {
   expandedSub = signal<string | null>(null);
 
   constructor() {
-    this.categoryService.getAll().subscribe(cats => this.categories.set(cats));
+    this.categoryService.getAll().subscribe((cats) => this.categories.set(cats));
     this.loadMyPublications();
   }
 
   /**
-  * Recarga la lista de publicaciones del usuario autenticado.
+   * Recarga la lista de publicaciones del usuario autenticado.
    */
   loadMyPublications(): void {
     this.loadingPublications.set(true);
     this.publicationsError.set(null);
 
     this.publicationService.getMine(false).subscribe({
-      next: pubs => {
-        const sorted = [...pubs].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+      next: (pubs) => {
+        const sorted = [...pubs].sort(
+          (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+        );
         this.myPublications.set(sorted);
         this.loadingPublications.set(false);
         this.loadPendingAccessRequestCounts(sorted);
@@ -161,17 +170,20 @@ export class ProfilePageComponent {
       error: () => {
         this.loadingPublications.set(false);
         this.publicationsError.set('No se pudieron cargar tus publicaciones.');
-      }
+      },
     });
   }
 
   /** Carga, para cada publicación privada, cuántas solicitudes de acceso tiene pendientes. */
   private loadPendingAccessRequestCounts(pubs: Publication[]): void {
     pubs
-      .filter(p => p.visibility === 'PRIVATE')
-      .forEach(pub => {
-        this.publicationService.getPendingAccessRequests(pub.id).subscribe(requests => {
-          this.pendingAccessRequestCountByPublication.update(prev => ({ ...prev, [pub.id]: requests.length }));
+      .filter((p) => p.visibility === 'PRIVATE')
+      .forEach((pub) => {
+        this.publicationService.getPendingAccessRequests(pub.id).subscribe((requests) => {
+          this.pendingAccessRequestCountByPublication.update((prev) => ({
+            ...prev,
+            [pub.id]: requests.length,
+          }));
         });
       });
   }
@@ -186,7 +198,7 @@ export class ProfilePageComponent {
     this.accessRequestsPanelId.set(publication.id);
     this.loadingAccessRequests.set(true);
     this.publicationService.getPendingAccessRequests(publication.id).subscribe({
-      next: requests => {
+      next: (requests) => {
         this.openAccessRequests.set(requests);
         this.loadingAccessRequests.set(false);
       },
@@ -201,7 +213,7 @@ export class ProfilePageComponent {
     this.accessRequestActionInProgressId.set(request.id);
     this.publicationService.acceptAccessRequest(request.id).subscribe({
       next: () => {
-        this.openAccessRequests.update(list => list.filter(r => r.id !== request.id));
+        this.openAccessRequests.update((list) => list.filter((r) => r.id !== request.id));
         this.decrementPendingAccessRequestCount(publication.id);
         this.accessRequestActionInProgressId.set(null);
         this.notify(`${request.requestedByName} ya puede apuntarse`);
@@ -218,7 +230,7 @@ export class ProfilePageComponent {
     this.accessRequestActionInProgressId.set(request.id);
     this.publicationService.rejectAccessRequest(request.id).subscribe({
       next: () => {
-        this.openAccessRequests.update(list => list.filter(r => r.id !== request.id));
+        this.openAccessRequests.update((list) => list.filter((r) => r.id !== request.id));
         this.decrementPendingAccessRequestCount(publication.id);
         this.accessRequestActionInProgressId.set(null);
         this.notify(`Solicitud de ${request.requestedByName} rechazada`);
@@ -231,7 +243,7 @@ export class ProfilePageComponent {
   }
 
   private decrementPendingAccessRequestCount(publicationId: string): void {
-    this.pendingAccessRequestCountByPublication.update(prev => ({
+    this.pendingAccessRequestCountByPublication.update((prev) => ({
       ...prev,
       [publicationId]: Math.max(0, (prev[publicationId] ?? 1) - 1),
     }));
@@ -246,7 +258,7 @@ export class ProfilePageComponent {
   }
 
   /**
-  * Determina si una publicación está finalizada.
+   * Determina si una publicación está finalizada.
    *
    * Se considera finalizada si ya no está activa o si su fecha de fin ya venció.
    */
@@ -257,12 +269,12 @@ export class ProfilePageComponent {
   }
 
   /**
-  * Elimina de forma definitiva una publicación del usuario.
+   * Elimina de forma definitiva una publicación del usuario.
    */
   deletePublication(publication: Publication): void {
     this.publicationService.remove(publication.id).subscribe({
       next: () => {
-        this.myPublications.update(list => list.filter(item => item.id !== publication.id));
+        this.myPublications.update((list) => list.filter((item) => item.id !== publication.id));
         this.snackBar.open('Publicación eliminada definitivamente', 'Cerrar', {
           duration: 3000,
           horizontalPosition: 'center',
@@ -275,15 +287,15 @@ export class ProfilePageComponent {
           horizontalPosition: 'center',
           verticalPosition: 'top',
         });
-      }
+      },
     });
   }
 
   /**
-  * Inicia el flujo de editar/repetir publicación (según {@link isFinished}).
+   * Inicia el flujo de editar/repetir publicación (según {@link isFinished}).
    *
-  * Navega a crear publicación indicando el id origen para precargar los datos
-  * (salvo la fecha); el mapa resalta la ubicación de esa publicación.
+   * Navega a crear publicación indicando el id origen para precargar los datos
+   * (salvo la fecha); el mapa resalta la ubicación de esa publicación.
    */
   repeatPublication(publication: Publication): void {
     this.router.navigate(['/create-publication'], {
@@ -316,26 +328,34 @@ export class ProfilePageComponent {
   private applyVisibilityChange(publication: Publication, visibility: PublicationVisibility): void {
     this.changingVisibilityId.set(publication.id);
     this.publicationService.changeVisibility(publication.id, visibility).subscribe({
-      next: updated => {
-        this.myPublications.update(list => list.map(p => p.id === updated.id ? updated : p));
+      next: (updated) => {
+        this.myPublications.update((list) => list.map((p) => (p.id === updated.id ? updated : p)));
         this.changingVisibilityId.set(null);
         this.visibilityEditId.set(null);
         this.snackBar.open(
-          visibility === 'PUBLIC' ? 'Publicación ahora abierta a todos' : 'Publicación ahora es privada',
-          'Cerrar', { duration: 3000, horizontalPosition: 'center', verticalPosition: 'top' },
+          visibility === 'PUBLIC'
+            ? 'Publicación ahora abierta a todos'
+            : 'Publicación ahora es privada',
+          'Cerrar',
+          { duration: 3000, horizontalPosition: 'center', verticalPosition: 'top' },
         );
       },
       error: (error: HttpErrorResponse) => {
         this.changingVisibilityId.set(null);
         const code = error?.error?.error?.code;
-        const message = code === 'FOREIGN_ENROLLMENTS'
-          ? (error.error?.error?.message ?? 'No puedes hacer privada esta publicación: hay personas apuntadas sin invitación.')
-          : 'No se pudo cambiar la visibilidad. Inténtalo de nuevo.';
-        this.snackBar.open(message, 'Cerrar', { duration: 6000, horizontalPosition: 'center', verticalPosition: 'top' });
+        const message =
+          code === 'FOREIGN_ENROLLMENTS'
+            ? (error.error?.error?.message ??
+              'No puedes hacer privada esta publicación: hay personas apuntadas sin invitación.')
+            : 'No se pudo cambiar la visibilidad. Inténtalo de nuevo.';
+        this.snackBar.open(message, 'Cerrar', {
+          duration: 6000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+        });
       },
     });
   }
-
 
   // ── Resetear Contraseña ────────────────────────────────────────────────────────────
 
@@ -360,11 +380,15 @@ export class ProfilePageComponent {
       newPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(72)]],
       confirmPassword: ['', [Validators.required]],
     },
-    { validators: this._passwordsMatch }
+    { validators: this._passwordsMatch },
   );
 
-  get newPasswordCtrl() { return this.resetPasswordForm.controls['newPassword']; }
-  get confirmPasswordCtrl() { return this.resetPasswordForm.controls['confirmPassword']; }
+  get newPasswordCtrl() {
+    return this.resetPasswordForm.controls['newPassword'];
+  }
+  get confirmPasswordCtrl() {
+    return this.resetPasswordForm.controls['confirmPassword'];
+  }
 
   private _passwordsMatch(group: import('@angular/forms').AbstractControl) {
     const np = group.get('newPassword')?.value;
@@ -396,8 +420,11 @@ export class ProfilePageComponent {
   }
 
   saveResetPassword(): void {
-    if (this.resetPasswordForm.invalid || this.resetPasswordSaving()
-        || (this.passwordScore() ?? -1) < 3) {
+    if (
+      this.resetPasswordForm.invalid ||
+      this.resetPasswordSaving() ||
+      (this.passwordScore() ?? -1) < 3
+    ) {
       this.resetPasswordForm.markAllAsTouched();
       return;
     }
@@ -423,14 +450,17 @@ export class ProfilePageComponent {
         if (err.status === 401) {
           this.resetPasswordError.set('La contraseña actual no es correcta.');
         } else if (code === 'WEAK_PASSWORD') {
-          this.resetPasswordError.set('La contraseña es demasiado débil. Prueba a alargarla o añadir más variedad.');
+          this.resetPasswordError.set(
+            'La contraseña es demasiado débil. Prueba a alargarla o añadir más variedad.',
+          );
         } else if (code === 'PASSWORD_POLICY_VIOLATION') {
           this.resetPasswordError.set(
-            err.error?.error?.message ?? 'La nueva contraseña no cumple los requisitos de seguridad.'
+            err.error?.error?.message ??
+              'La nueva contraseña no cumple los requisitos de seguridad.',
           );
         } else if (err.status === 422) {
           this.resetPasswordError.set(
-            err.error?.error?.message ?? 'La nueva contraseña no cumple los requisitos.'
+            err.error?.error?.message ?? 'La nueva contraseña no cumple los requisitos.',
           );
         } else {
           this.resetPasswordError.set('Error al cambiar la contraseña. Inténtalo de nuevo.');
@@ -444,7 +474,7 @@ export class ProfilePageComponent {
       // Ya cargada; solo reconectar el listener al control actual
       this.newPasswordCtrl.valueChanges
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(value => this.scorePassword(value));
+        .subscribe((value) => this.scorePassword(value));
       this.scorePassword(this.newPasswordCtrl.value);
       return;
     }
@@ -463,7 +493,7 @@ export class ProfilePageComponent {
 
     this.newPasswordCtrl.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(value => this.scorePassword(value));
+      .subscribe((value) => this.scorePassword(value));
     this.scorePassword(this.newPasswordCtrl.value);
   }
 
@@ -490,7 +520,15 @@ export class ProfilePageComponent {
   /** Formulario de edición del perfil */
   editForm = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
-    nick: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(30), Validators.pattern(/^[A-Za-z0-9._-]+$/)]],
+    nick: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(30),
+        Validators.pattern(/^[A-Za-z0-9._-]+$/),
+      ],
+    ],
     avatarUrl: [''],
     phone: ['', Validators.maxLength(25)],
     city: ['', Validators.maxLength(100)],
@@ -527,41 +565,46 @@ export class ProfilePageComponent {
     this.saving.set(true);
     this.saveError.set(null);
 
-    this.userService.updateProfile({
-      name: v.name || undefined,
-      nick: v.nick || undefined,
-      avatarUrl: v.avatarUrl || undefined,
-      phone: v.phone || undefined,
-      city: v.city || undefined,
-      province: v.province || undefined,
-      bio: v.bio || undefined,
-      birthDate: v.birthDate || undefined,
-    }).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.editMode.set(false);
-      },
-      error: (err) => {
-        this.saving.set(false);
-        this.saveError.set(
-          err.status === 409 ? 'Ese nombre de usuario ya está en uso.'
-          : 'Error al guardar. Inténtalo de nuevo.'
-        );
-      },
-    });
+    this.userService
+      .updateProfile({
+        name: v.name || undefined,
+        nick: v.nick || undefined,
+        avatarUrl: v.avatarUrl || undefined,
+        phone: v.phone || undefined,
+        city: v.city || undefined,
+        province: v.province || undefined,
+        bio: v.bio || undefined,
+        birthDate: v.birthDate || undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.editMode.set(false);
+        },
+        error: (err) => {
+          this.saving.set(false);
+          this.saveError.set(
+            err.status === 409
+              ? 'Ese nombre de usuario ya está en uso.'
+              : 'Error al guardar. Inténtalo de nuevo.',
+          );
+        },
+      });
   }
 
   /**
- * Set de ids de secciones actualmente abiertas.
- * Por defecto la primera sección relevante de cada tipo arranca abierta.
- */
-  openSections = signal<Set<string>>(new Set([
-    'level',        // individual: abierto por defecto
-    'account',      // todos: abierto por defecto
-  ]));
+   * Set de ids de secciones actualmente abiertas.
+   * Por defecto la primera sección relevante de cada tipo arranca abierta.
+   */
+  openSections = signal<Set<string>>(
+    new Set([
+      'level', // individual: abierto por defecto
+      'account', // todos: abierto por defecto
+    ]),
+  );
 
   toggleSection(id: string): void {
-    this.openSections.update(s => {
+    this.openSections.update((s) => {
       const next = new Set(s);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
@@ -569,11 +612,15 @@ export class ProfilePageComponent {
   }
 
   openSection(id: string): void {
-    this.openSections.update(s => new Set([...s, id]));
+    this.openSections.update((s) => new Set([...s, id]));
   }
 
   closeSection(id: string): void {
-    this.openSections.update(s => { const n = new Set(s); n.delete(id); return n; });
+    this.openSections.update((s) => {
+      const n = new Set(s);
+      n.delete(id);
+      return n;
+    });
   }
 
   isSectionOpen(id: string): boolean {
@@ -582,20 +629,24 @@ export class ProfilePageComponent {
 
   // ── Helpers de tipo ────────────────────────────────────────────────────────
 
-  get typeLabel(): string { return USER_TYPE_LABELS[this.cu.userType()!] ?? this.cu.userType(); }
-  get typeEmoji(): string { return USER_TYPE_EMOJIS[this.cu.userType()!] ?? '👤'; }
+  get typeLabel(): string {
+    return USER_TYPE_LABELS[this.cu.userType()!] ?? this.cu.userType();
+  }
+  get typeEmoji(): string {
+    return USER_TYPE_EMOJIS[this.cu.userType()!] ?? '👤';
+  }
 
   // ── Favoritos ──────────────────────────────────────────────────────────────
 
   /** Alterna expansión de una categoría principal. */
   toggleMain(catId: string): void {
-    this.expandedMain.update(v => v === catId ? null : catId);
+    this.expandedMain.update((v) => (v === catId ? null : catId));
     this.expandedSub.set(null);
   }
 
   /** Alterna expansión de una subcategoría. */
   toggleSub(subId: string): void {
-    this.expandedSub.update(v => v === subId ? null : subId);
+    this.expandedSub.update((v) => (v === subId ? null : subId));
   }
 
   /** Comprueba si un locationTypeId está en favoritos. */
@@ -610,11 +661,11 @@ export class ProfilePageComponent {
    *  'none' → ninguno es favorito
    */
   mainSelectionState(cat: MainCategory): 'all' | 'some' | 'none' {
-    const subStates = cat.subcategories.map(s => this.subSelectionState(s));
-    const withSelection = subStates.filter(s => s !== 'none').length;
+    const subStates = cat.subcategories.map((s) => this.subSelectionState(s));
+    const withSelection = subStates.filter((s) => s !== 'none').length;
 
     if (withSelection === 0) return 'none';
-    if (withSelection === subStates.length) return 'all';   // todas las subcats tienen algo
+    if (withSelection === subStates.length) return 'all'; // todas las subcats tienen algo
     return 'some';
   }
 
@@ -625,8 +676,8 @@ export class ProfilePageComponent {
    *  'none' → ninguno
    */
   subSelectionState(sub: SubCategory): 'all' | 'some' | 'none' {
-    const typeIds = sub.locationTypes.map(t => t.id);
-    const favCount = typeIds.filter(id => this.isFavorite(id)).length;
+    const typeIds = sub.locationTypes.map((t) => t.id);
+    const favCount = typeIds.filter((id) => this.isFavorite(id)).length;
     if (favCount === 0) return 'none';
     if (favCount === typeIds.length) return 'all';
     return 'some';
@@ -646,16 +697,16 @@ export class ProfilePageComponent {
    * Si todos están marcados → los desmarca. Si no → los marca todos.
    */
   toggleSubFavorites(sub: SubCategory): void {
-    const typeIds = sub.locationTypes.map(t => t.id);
-    const allFav = typeIds.every(id => this.isFavorite(id));
+    const typeIds = sub.locationTypes.map((t) => t.id);
+    const allFav = typeIds.every((id) => this.isFavorite(id));
     const current = [...this.cu.favoriteTypeIds()];
 
     if (allFav) {
       // Desmarcar todos
-      this.cu.patch({ favoriteLocationTypeIds: current.filter(id => !typeIds.includes(id)) });
+      this.cu.patch({ favoriteLocationTypeIds: current.filter((id) => !typeIds.includes(id)) });
     } else {
       // Marcar los que faltan
-      const toAdd = typeIds.filter(id => !current.includes(id));
+      const toAdd = typeIds.filter((id) => !current.includes(id));
       this.cu.patch({ favoriteLocationTypeIds: [...current, ...toAdd] });
     }
   }
@@ -664,14 +715,14 @@ export class ProfilePageComponent {
    * Marca/desmarca todos los tipos de una categoría principal.
    */
   toggleMainFavorites(cat: MainCategory): void {
-    const typeIds = cat.subcategories.flatMap(s => s.locationTypes.map(t => t.id));
-    const allFav = typeIds.every(id => this.isFavorite(id));
+    const typeIds = cat.subcategories.flatMap((s) => s.locationTypes.map((t) => t.id));
+    const allFav = typeIds.every((id) => this.isFavorite(id));
     const current = [...this.cu.favoriteTypeIds()];
 
     if (allFav) {
-      this.cu.patch({ favoriteLocationTypeIds: current.filter(id => !typeIds.includes(id)) });
+      this.cu.patch({ favoriteLocationTypeIds: current.filter((id) => !typeIds.includes(id)) });
     } else {
-      const toAdd = typeIds.filter(id => !current.includes(id));
+      const toAdd = typeIds.filter((id) => !current.includes(id));
       this.cu.patch({ favoriteLocationTypeIds: [...current, ...toAdd] });
     }
   }

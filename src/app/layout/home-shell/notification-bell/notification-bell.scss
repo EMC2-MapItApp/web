@@ -28,8 +28,8 @@
   height: 16px;
   padding: 0 4px;
   border-radius: v.$radius-full;
-  background: var(--c-error, #dc2626);
-  color: #fff;
+  background: var(--c-error);
+  color: var(--c-on-accent);
   font-size: 10px;
   font-weight: 700;
   pointer-events: none;
@@ -120,12 +120,12 @@
 }
 
 .delete-all-btn {
-  color: var(--c-error, #dc2626);
-  background: color-mix(in srgb, var(--c-error, #dc2626) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--c-error, #dc2626) 35%, transparent);
+  color: var(--c-error);
+  background: color-mix(in srgb, var(--c-error) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-error) 35%, transparent);
 
   &:hover {
-    background: color-mix(in srgb, var(--c-error, #dc2626) 18%, transparent);
+    background: color-mix(in srgb, var(--c-error) 18%, transparent);
   }
 }
 
@@ -233,7 +233,7 @@
     }
 
     .action-btn--delete {
-      color: var(--c-error, #dc2626);
+      color: var(--c-error);
     }
   }
 

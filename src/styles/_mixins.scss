@@ -110,7 +110,7 @@
     font-size: $icon-size;
     width: $icon-size;
     height: $icon-size;
-    color: #fff;
+    color: var(--c-on-accent);
   }
 }
 
@@ -123,7 +123,7 @@
   mat-expansion-panel {
     border-radius: v.$radius-lg !important;
     border: 1px solid color-mix(in srgb, var(--c-border-light) 80%, transparent);
-    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04) !important;
+    box-shadow: v.$shadow-accordion !important;
     margin-bottom: v.$space-sm;
     opacity: 0.88;
     transition:
@@ -132,7 +132,7 @@
       border-color 200ms ease;
 
     &.mat-expanded {
-      box-shadow: 0 8px 28px rgba(15, 23, 42, 0.13) !important;
+      box-shadow: v.$shadow-accordion-expanded !important;
       border-color: color-mix(in srgb, var(--c-primary) 30%, var(--c-border-light));
       opacity: 1;
     }
@@ -145,7 +145,7 @@
     padding: 0 v.$space-xl !important;
 
     &.mat-expanded {
-      background: color-mix(in srgb, var(--c-primary) 7%, var(--c-surface-primary)) !important;
+      background: color-mix(in srgb, var(--c-primary) 7%, var(--c-surface)) !important;
     }
   }
 
@@ -183,7 +183,7 @@
 // ── Botón primario ────────────────────────────────────────────────────────────
 @mixin btn-primary {
   background: var(--c-primary) !important;
-  color: #fff !important;
+  color: var(--c-on-accent) !important;
 }
 
 // ── Caja de error ─────────────────────────────────────────────────────────────

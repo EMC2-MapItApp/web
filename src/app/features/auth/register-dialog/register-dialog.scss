@@ -171,8 +171,8 @@
   text-align: center;
 
   &:hover {
-    border-color: #a5b4fc;
-    background: #f5f3ff;
+    border-color: var(--c-primary-light);
+    background: var(--c-primary-hover-bg);
     transform: translateY(-2px);
   }
 
@@ -204,8 +204,7 @@
     grid-template-columns: 44px 1fr auto;
     grid-template-rows: auto auto;
     align-items: center;
-    column-gap: v.$space-md;
-    row-gap: 2px;
+    gap: 2px v.$space-md;
     text-align: left;
     padding: v.$space-md;
   }
@@ -271,9 +270,9 @@
   align-items: center;
   gap: v.$space-md;
   padding: v.$space-xl v.$space-lg;
-  background: #f0fdf4;
+  background: var(--c-success-bg);
   border-radius: v.$radius-lg;
-  border: 1.5px solid #bbf7d0;
+  border: 1.5px solid var(--c-success-border);
   text-align: center;
 
   &__emoji {
@@ -282,7 +281,7 @@
   &__text {
     margin: 0;
     font-size: v.$font-body;
-    color: #166534;
+    color: var(--c-success-text);
     line-height: 1.5;
   }
 }

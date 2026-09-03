@@ -44,6 +44,13 @@ $shadow-btn-primary: 0 2px 8px rgba(63, 81, 181, 0.35);
 $shadow-btn-primary-hover: 0 4px 14px rgba(63, 81, 181, 0.45);
 $shadow-location-btn: 0 2px 8px rgba(0, 0, 0, 0.4);
 $shadow-image: 0 2px 8px rgba(0, 0, 0, 0.1);
+$shadow-accordion: 0 1px 4px rgba(15, 23, 42, 0.04);
+$shadow-accordion-expanded: 0 8px 28px rgba(15, 23, 42, 0.13);
+$shadow-sidenav: 0 8px 24px rgba(0, 0, 0, 0.18);
+$shadow-invitation-card:
+  0 16px 40px rgba(15, 23, 42, 0.14),
+  0 2px 8px rgba(15, 23, 42, 0.06);
+$shadow-invited-group: 0 1px 12px rgba(15, 23, 42, 0.3);
 
 // ── Gradientes (fijos, sin cambio con el tema) ────────────────────────────────
 $gradient-primary: linear-gradient(135deg, #3f51b5, #5c6bc0);

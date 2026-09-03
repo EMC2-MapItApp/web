@@ -31,7 +31,7 @@
   padding: v.$space-lg;
   border: 1px solid color-mix(in srgb, var(--c-border-light) 78%, transparent);
   border-radius: v.$radius-lg;
-  background: var(--c-surface-primary);
+  background: var(--c-surface);
 }
 
 .group-form__section-title {
@@ -125,7 +125,7 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #e0e7ff;
+    background: var(--c-info-bg);
     color: var(--c-primary);
     font-weight: 800;
     text-transform: uppercase;
@@ -150,8 +150,8 @@
     color: var(--c-text-secondary);
 
     &--organizer {
-      background: #e0e7ff;
-      color: #3730a3;
+      background: var(--c-info-bg);
+      color: var(--c-info-text);
     }
   }
 }
@@ -342,9 +342,9 @@
 
   // Persona sin cuenta todavía: mismo ámbar que "Pendiente" en groups-page.
   &--pending-signup {
-    background: #fef3c7;
-    border: 1px dashed #fde68a;
-    color: #92400e;
+    background: var(--c-warning-bg);
+    border: 1px dashed var(--c-warning-border);
+    color: var(--c-warning-text);
   }
 
   &__icon {

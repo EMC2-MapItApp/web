@@ -85,7 +85,7 @@
       color v.$transition-fast;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.06);
+      background: var(--c-surface-hover);
       color: var(--c-text-primary);
     }
   }
@@ -137,16 +137,16 @@
     align-items: start;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.7);
+      background: color-mix(in srgb, var(--c-surface) 70%, transparent);
       border-color: var(--cat-color, var(--c-border));
     }
 
     &--active {
-      background: color-mix(in srgb, var(--cat-color, #3b82f6) 14%, white);
-      border-color: var(--cat-color, #3b82f6);
+      background: color-mix(in srgb, var(--cat-color, var(--c-primary)) 14%, var(--c-surface));
+      border-color: var(--cat-color, var(--c-primary));
 
       .filter-list__name {
-        color: var(--cat-color, #3b82f6);
+        color: var(--cat-color, var(--c-primary));
         font-weight: 600;
       }
     }
@@ -154,7 +154,7 @@
     &--sub {
       margin-left: 14px;
       padding-left: 10px;
-      border-left: 3px solid color-mix(in srgb, var(--cat-color, #3b82f6) 40%, transparent);
+      border-left: 3px solid color-mix(in srgb, var(--cat-color, var(--c-primary)) 40%, transparent);
       border-radius: 0 v.$radius-sm v.$radius-sm 0;
       font-size: v.$font-sm;
     }
@@ -162,7 +162,7 @@
     &--type {
       margin-left: 26px;
       padding-left: 10px;
-      border-left: 2px solid color-mix(in srgb, var(--cat-color, #3b82f6) 25%, transparent);
+      border-left: 2px solid color-mix(in srgb, var(--cat-color, var(--c-primary)) 25%, transparent);
       border-radius: 0 v.$radius-sm v.$radius-sm 0;
     }
   }

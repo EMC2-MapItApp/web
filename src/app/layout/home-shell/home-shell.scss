@@ -147,12 +147,12 @@
   border-radius: 50%;
   overflow: hidden;
   text-decoration: none;
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  border: 2px solid color-mix(in srgb, var(--c-header-text) 40%, transparent);
   transition: border-color v.$transition-base;
   flex-shrink: 0;
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.9);
+    border-color: color-mix(in srgb, var(--c-header-text) 90%, transparent);
   }
 
   img {
@@ -167,8 +167,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.25);
-    color: #fff;
+    background: color-mix(in srgb, var(--c-header-text) 25%, transparent);
+    color: var(--c-header-text);
     font-size: v.$font-md;
     font-weight: 700;
     text-transform: uppercase;
@@ -179,7 +179,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #fff !important;
+  color: var(--c-header-text) !important;
   font-weight: 600;
   letter-spacing: 0.3px;
 }
@@ -198,8 +198,8 @@
   height: 18px;
   padding: 0 5px;
   border-radius: v.$radius-full;
-  background: var(--c-error, #dc2626);
-  color: #fff;
+  background: var(--c-error);
+  color: var(--c-on-accent);
   font-size: 10px;
   font-weight: 700;
   margin-left: auto;
@@ -224,7 +224,7 @@
     overflow-y: auto;
     border-right: none;
     z-index: 1300;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    box-shadow: v.$shadow-sidenav;
     background: color-mix(in srgb, var(--c-surface) 4%, transparent);
     backdrop-filter: blur(22px);
     -webkit-backdrop-filter: blur(22px);

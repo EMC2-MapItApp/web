@@ -93,5 +93,13 @@ module.exports = defineConfig([
       angular.configs.templateAccessibility,
     ],
     rules: {},
+  },
+  {
+    // Mocks de test tipo `{ close: () => {} }` (p. ej. MatDialogRef) son arrow functions
+    // vacías a propósito, no lógica olvidada — solo se relaja aquí, no en código de producción.
+    files: ["**/*.spec.ts"],
+    rules: {
+      "@typescript-eslint/no-empty-function": ["error", { allow: ["arrowFunctions"] }],
+    },
   }
 ]);

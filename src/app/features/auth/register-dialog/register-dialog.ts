@@ -99,7 +99,7 @@ export class RegisterDialogComponent {
   step3ProfessionalForm = this.fb.group({
     businessName: ['', [Validators.required, Validators.minLength(2)]],
     cif: ['', [Validators.required, Validators.pattern(/^[A-Z]\d{7}[0-9A-J]$/)]],
-    phone: ['', [Validators.required, Validators.pattern(/^\+?[0-9\s\-]{7,15}$/)]],
+    phone: ['', [Validators.required, Validators.pattern(/^\+?[0-9\s-]{7,15}$/)]],
     web: ['', Validators.pattern(/^https?:\/\/.+/)],
     address: ['', Validators.required],
   });
@@ -107,7 +107,7 @@ export class RegisterDialogComponent {
   step3EntityForm = this.fb.group({
     entityName: ['', [Validators.required, Validators.minLength(2)]],
     entityType: ['', Validators.required],
-    phone: ['', [Validators.required, Validators.pattern(/^\+?[0-9\s\-]{7,15}$/)]],
+    phone: ['', [Validators.required, Validators.pattern(/^\+?[0-9\s-]{7,15}$/)]],
     web: ['', Validators.pattern(/^https?:\/\/.+/)],
     address: ['', Validators.required],
   });

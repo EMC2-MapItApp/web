@@ -606,7 +606,11 @@ export class ProfilePageComponent {
   toggleSection(id: string): void {
     this.openSections.update((s) => {
       const next = new Set(s);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       return next;
     });
   }

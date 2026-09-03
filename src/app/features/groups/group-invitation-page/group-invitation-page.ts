@@ -13,6 +13,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { EMPTY, map, switchMap } from 'rxjs';
 import { HttpContext } from '@angular/common/http';
 import { SKIP_UNAUTHORIZED_DIALOG } from '@core/interceptors/unauthorized.interceptor';
 import { MatButtonModule } from '@angular/material/button';
@@ -108,30 +109,35 @@ export class GroupInvitationPageComponent implements OnInit {
   private loadInvitation(): void {
     const token = this.token!;
     this.state.set('loading');
-    this.groupService.getInvitationById(token, this.skipAuthDialog).subscribe({
-      next: (invitation) => {
-        if (!invitation || invitation.status !== 'pending') {
-          this.state.set('error');
-          return;
-        }
-        this.invitation.set(invitation);
-        this.state.set('invite');
+    this.groupService
+      .getInvitationById(token, this.skipAuthDialog)
+      .pipe(
+        switchMap((invitation) => {
+          if (!invitation || invitation.status !== 'pending') {
+            this.state.set('error');
+            return EMPTY;
+          }
+          this.invitation.set(invitation);
+          this.state.set('invite');
 
-        // El árbol de categorías se carga bajo demanda (esta página, a diferencia del resto de
-        // páginas de Grupos, es standalone y puede ser la primera en cargar, sin cache previa).
-        this.categoryService.getAll().subscribe(() => {
-          this.category.set(this.categoryService.getMainCategoryById(invitation.groupCategoryId));
-        });
-      },
-      // 401: el enlace del correo se abrió sin sesión iniciada en este navegador (caso
-      // habitual, la página es accesible sin login previo). Como quien recibe una invitación
-      // ya tiene cuenta por definición (se invita por nick/email existente), se pide login
-      // directamente en la propia página en vez de mandar a crear una cuenta.
-      // 403: sí hay sesión, pero de una cuenta distinta a la invitada (p. ej. otro usuario
-      // seguía logado en ese navegador) — se distingue de "invitación no disponible" para no
-      // decirle a alguien con la cuenta equivocada que el enlace ha caducado.
-      error: (err) => this.handleLoadError(err),
-    });
+          // El árbol de categorías se carga bajo demanda (esta página, a diferencia del resto de
+          // páginas de Grupos, es standalone y puede ser la primera en cargar, sin cache previa).
+          return this.categoryService
+            .getAll()
+            .pipe(map(() => this.categoryService.getMainCategoryById(invitation.groupCategoryId)));
+        }),
+      )
+      .subscribe({
+        next: (category) => this.category.set(category),
+        // 401: el enlace del correo se abrió sin sesión iniciada en este navegador (caso
+        // habitual, la página es accesible sin login previo). Como quien recibe una invitación
+        // ya tiene cuenta por definición (se invita por nick/email existente), se pide login
+        // directamente en la propia página en vez de mandar a crear una cuenta.
+        // 403: sí hay sesión, pero de una cuenta distinta a la invitada (p. ej. otro usuario
+        // seguía logado en ese navegador) — se distingue de "invitación no disponible" para no
+        // decirle a alguien con la cuenta equivocada que el enlace ha caducado.
+        error: (err) => this.handleLoadError(err),
+      });
   }
 
   private handleLoadError(err: { status?: number }): void {

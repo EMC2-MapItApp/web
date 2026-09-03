@@ -40,8 +40,6 @@ const USER_TYPE_EMOJIS: Record<string, string> = {
   entity: '🏛️',
 };
 
-const XP_PER_LEVEL = [0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200, 4000];
-
 @Component({
   selector: 'app-profile-page',
   standalone: true,
@@ -587,27 +585,6 @@ export class ProfilePageComponent {
   get typeLabel(): string { return USER_TYPE_LABELS[this.cu.userType()!] ?? this.cu.userType(); }
   get typeEmoji(): string { return USER_TYPE_EMOJIS[this.cu.userType()!] ?? '👤'; }
 
-  // ── Nivel / XP ─────────────────────────────────────────────────────────────
-
-  get xpForNextLevel(): number {
-    const level = this.cu.userLevel() ?? 0;
-    return XP_PER_LEVEL[level + 1] ?? XP_PER_LEVEL[XP_PER_LEVEL.length - 1];
-  }
-
-  get xpForCurrentLevel(): number {
-    return XP_PER_LEVEL[this.cu.userLevel() ?? 0] ?? 0;
-  }
-
-  get levelProgress(): number {
-    const xp = this.cu.userXp() ?? 0;
-    const base = this.xpForCurrentLevel;
-    const target = this.xpForNextLevel;
-    if (target === base) return 100;
-    return Math.min(100, Math.round(((xp - base) / (target - base)) * 100));
-  }
-
-  get isMaxLevel(): boolean { return (this.cu.userLevel() ?? 0) >= 10; }
-
   // ── Favoritos ──────────────────────────────────────────────────────────────
 
   /** Alterna expansión de una categoría principal. */
@@ -662,81 +639,6 @@ export class ProfilePageComponent {
     if (idx >= 0) current.splice(idx, 1);
     else current.push(typeId);
     this.cu.patch({ favoriteLocationTypeIds: current });
-  }
-
-  /**
- * Nivel mínimo requerido para marcar como favorito un tipo profesional.
- * Se define aquí de forma centralizada para cambiarlo fácilmente.
- */
-  private readonly PROFESSIONAL_TYPE_REQUIRED_LEVEL = 10;
-
-  /**
-   * Comprueba si un locationTypeId corresponde a un tipo profesional.
-   * Por convención todos los tipos profesionales terminan en '-profesional'.
-   */
-  isProfessionalType(typeId: string): boolean {
-    const type = this.categoryService.getLocationTypeById(typeId);
-    return type?.name.toLowerCase() === 'profesional';
-  }
-
-  /**
-   * Comprueba si el usuario puede interactuar con un tipo de localización.
-   * Los tipos profesionales requieren nivel 10.
-   * El resto están siempre disponibles.
-   */
-  canToggleFavorite(typeId: string): boolean {
-    if (!this.isProfessionalType(typeId)) return true;
-    return (this.cu.userLevel() ?? 0) >= this.PROFESSIONAL_TYPE_REQUIRED_LEVEL;
-  }
-
-  /**
-   * Versión protegida de toggleFavorite: ignora la acción si no tiene nivel.
-   */
-  toggleFavoriteIfAllowed(typeId: string): void {
-    if (this.canToggleFavorite(typeId)) this.toggleFavorite(typeId);
-  }
-
-  /**
-   * Versión protegida de toggleSubFavorites: filtra los tipos bloqueados.
-   */
-  toggleSubFavoritesIfAllowed(sub: SubCategory): void {
-    const allowedIds = sub.locationTypes
-      .filter(t => this.canToggleFavorite(t.id))
-      .map(t => t.id);
-
-    if (allowedIds.length === 0) return;
-
-    const allFav = allowedIds.every(id => this.isFavorite(id));
-    const current = [...this.cu.favoriteTypeIds()];
-
-    if (allFav) {
-      this.cu.patch({ favoriteLocationTypeIds: current.filter(id => !allowedIds.includes(id)) });
-    } else {
-      const toAdd = allowedIds.filter(id => !current.includes(id));
-      this.cu.patch({ favoriteLocationTypeIds: [...current, ...toAdd] });
-    }
-  }
-
-  /**
-   * Versión protegida de toggleMainFavorites: filtra los tipos bloqueados.
-   */
-  toggleMainFavoritesIfAllowed(cat: MainCategory): void {
-    const allowedIds = cat.subcategories
-      .flatMap(s => s.locationTypes)
-      .filter(t => this.canToggleFavorite(t.id))
-      .map(t => t.id);
-
-    if (allowedIds.length === 0) return;
-
-    const allFav = allowedIds.every(id => this.isFavorite(id));
-    const current = [...this.cu.favoriteTypeIds()];
-
-    if (allFav) {
-      this.cu.patch({ favoriteLocationTypeIds: current.filter(id => !allowedIds.includes(id)) });
-    } else {
-      const toAdd = allowedIds.filter(id => !current.includes(id));
-      this.cu.patch({ favoriteLocationTypeIds: [...current, ...toAdd] });
-    }
   }
 
   /**

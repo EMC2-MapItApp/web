@@ -1,10 +1,13 @@
 apply plugin: 'com.android.application'
 
 // key.properties vive fuera del repo junto al keystore de upload (ver docs/CAPACITOR.md).
-// Si no existe (máquina sin acceso al secreto, CI sin configurar todavía), el build de
-// release simplemente sale sin firmar en vez de fallar — igual que ya hace este fichero
-// con google-services.json más abajo.
-def keystorePropertiesFile = new File('G:/Mi unidad/MapItApp/keystores/key.properties')
+// La ruta se lee de la variable de entorno MAPIT_KEYSTORE_PROPERTIES; si no está definida
+// se usa un fallback relativo fuera del repo para desarrollo local. Si el fichero no existe
+// (máquina sin acceso al secreto, CI sin configurar todavía), el build de release simplemente
+// sale sin firmar en vez de fallar — igual que ya hace este fichero con google-services.json
+// más abajo.
+def keystorePropertiesPath = System.getenv('MAPIT_KEYSTORE_PROPERTIES') ?: '../mapit-keystores/key.properties'
+def keystorePropertiesFile = new File(keystorePropertiesPath)
 def keystoreProperties = new Properties()
 def hasReleaseSigning = keystorePropertiesFile.exists()
 if (hasReleaseSigning) {

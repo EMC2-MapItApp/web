@@ -1,6 +1,15 @@
 {
   "name": "mapit-app",
   "version": "0.0.0",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": {
+    "name": "Eusebio Montero",
+    "url": "https://github.com/EMC2-MapItApp"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EMC2-MapItApp/web"
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

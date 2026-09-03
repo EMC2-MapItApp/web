@@ -1,6 +1,18 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { HomeShellComponent } from './home-shell';
+import { PUSH_PROVIDER, PushProvider } from '@core/notifications/push-provider';
+
+// PushNotificationService (inyectado por HomeShellComponent) requiere el token PUSH_PROVIDER
+// en runtime real (ver app.config.ts) — sin él, TestBed falla con NG0201. No hace falta un
+// provider funcional para este test, solo que resuelva la inyección.
+const fakePushProvider: PushProvider = {
+  isSupported: () => false,
+  permissionState: () => 'unsupported',
+  hasActiveSubscription: () => Promise.resolve(false),
+  subscribe: () => Promise.resolve(null),
+  unsubscribe: () => Promise.resolve(null),
+};
 
 describe('HomeShellComponent', () => {
   beforeEach(async () => {
@@ -8,7 +20,7 @@ describe('HomeShellComponent', () => {
     sessionStorage.setItem('welcome-dialog-shown', '1');
     await TestBed.configureTestingModule({
       imports: [HomeShellComponent],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), { provide: PUSH_PROVIDER, useValue: fakePushProvider }],
     }).compileComponents();
   });
 

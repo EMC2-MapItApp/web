@@ -28,8 +28,8 @@
   alias `mapitapp-upload`, validez 10000 días) para completar el registro del package
   `com.emc.mapitapp` en **Android Developer Verification** de Play Console (funcionalidad nueva
   de Google que exige subir el certificado público antes de poder publicar nada, independiente
-  de Play App Signing). Keystore guardado **fuera del repo**, en
-  `G:\Mi unidad\MapItApp\keystores\` (Google Drive del usuario) — ver `README.txt` en esa carpeta
+  de Play App Signing). Keystore guardado **fuera del repo**, en `<ruta-a-tu-keystore>/`
+  (carpeta privada del desarrollador, fuera de control de versiones) — ver `README.txt` en esa carpeta
   para alias, huellas SHA1/SHA256 y contraseña (entregada una única vez por chat, no persistida
   en ningún fichero). El mismo keystore sirve también para el paso 10 de "Próximos pasos" más
   abajo (firma de release), así que ese punto queda completado por adelantado.
@@ -46,7 +46,7 @@
   Confirmado en Play Console: `com.emc.mapitapp` aparece como **Registrada**, con 1 clave.
   **Nota (ver iteración 6): esa clave quedó huérfana**, el keystore que la generó se
   regeneró por un error de contraseña y ya no existe.
-- **Iteración 5 (2026-08-03)**: creado `G:\Mi unidad\MapItApp\keystores\key.properties` (fuera
+- **Iteración 5 (2026-08-03)**: creado `<ruta-a-tu-keystore>/key.properties` (fuera
   del repo, junto al keystore) con `storeFile`/`storePassword`/`keyAlias`/`keyPassword`
   apuntando a `mapitapp-upload.jks`. Es el primer medio paso hacia el punto 11 de "Próximos
   pasos" (firma de release en Gradle) — **falta todavía** modificar
@@ -175,8 +175,8 @@
     ha publicado nada) — el incremento antes de cada subida real a Play Store sigue siendo
     manual.
 - **Iteración 10 (2026-09-01)**: sustituido el placeholder de la Iteración 8 por el logo oficial
-  de MapIt (diseño final del usuario, fuente en `D:\MapIt\imagenes\logo\Logo design from
-  image\brand\mapit-web.svg` — pin de mapa con plano de calles, fuera de este repo).
+  de MapIt (diseño final del usuario, fuente en un directorio local de diseño fuera de este
+  repo — pin de mapa con plano de calles).
   - `assets/logo.svg` reemplazado con el SVG oficial (mismo rol que antes: única fuente que lee
     `@capacitor/assets`, ver Iteración 8).
   - Regenerado con el mismo comando y colores de marca ya usados en la Iteración 8 (sin cambios,
@@ -419,11 +419,12 @@ ignoran — no son "generadas y descartables" como `node_modules`.
    Material sobre el color primario del tema), pendiente de sustituir por diseño real y de
    verificación visual en emulador.
 10. ~~Generar keystore de release (`keytool`) y guardarlo **fuera** del repo.~~ Hecho
-    (iteración 4) — `G:\Mi unidad\MapItApp\keystores\mapitapp-upload.jks`, provocado por el
+    (iteración 4) — `<ruta-a-tu-keystore>/mapitapp-upload.jks`, provocado por el
     registro en Android Developer Verification, no por necesidad inmediata de publicar.
-11. Configurar firma de release en Gradle. `key.properties` ya creado (iteración 5,
-    `G:\Mi unidad\MapItApp\keystores\key.properties`) — falta editar
-    `android/app/build.gradle` para leerlo y usarlo en `signingConfigs`/`buildTypes.release`.
+11. ~~Configurar firma de release en Gradle.~~ Hecho — `key.properties` (iteración 5,
+    `<ruta-a-tu-keystore>/key.properties`) leído desde `android/app/build.gradle` vía la
+    variable de entorno `MAPIT_KEYSTORE_PROPERTIES` (con fallback relativo para desarrollo
+    local) en `signingConfigs`/`buildTypes.release`.
 12. Build de release (`.aab`) automatizado en `npm run android:release` (iteración 9) — genera
     el `.aab` firmado y lo verifica en emulador vía bundletool. Falta el incremento de
     `versionCode`/`versionName` (manual, fuera de alcance del script) y la subida real.

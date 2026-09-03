@@ -11,11 +11,17 @@ Frontend Angular 22 (standalone components, signals) de MapIt — consume la API
 hermano en `../BACK` (Spring Boot + MongoDB). El mapa (Google Maps) es el elemento central de la
 app; el resto de la UI (login, registro, publicaciones, dashboard, perfil) gira en torno a él.
 
-Aún no hay tests escritos (están pendientes de implementar). El runner configurado es Vitest vía
-`@angular/build:unit-test` (`ng test`), pero no lo des por hecho como cobertura real todavía.
+Tests reales desde 2026-09-01 (221 tests, 32 suites, todas verdes — detalle en el registro
+interno de deuda de tests del proyecto). El runner es Vitest vía `@angular/build:unit-test` (`ng test`).
+Cobertura garantizada por `test-coverage-reviewer` (ver más abajo): todo `*.service.ts` y guard
+funcional tocado por un diff tiene `.spec.ts` no trivial — no así componentes/pipes/
+interceptors/directivas, cuya cobertura es todavía parcial y voluntaria (p. ej. `maps.spec.ts`,
+reescrito ese mismo día de un smoke test a 40 tests reales con stub propio de `google.maps`).
 
-Tareas de auth pendientes/en curso están documentadas en `docs/TareasLogin.md` — consúltalo antes
-de tocar login/registro para no duplicar trabajo ya planificado.
+`docs/TareasLogin.md` (nota local no versionada, `.gitignore`) documentaba tareas de auth
+pendientes/en curso — consúltalo si existe en tu checkout antes de tocar login/registro; no
+está presente en todos los clones (se borró del repo el 2026-07-15, commit `a1e2ad3`), así que
+su ausencia no implica que no queden tareas pendientes.
 
 ## Despliegue
 
@@ -89,12 +95,14 @@ fichero.
   `"lint-staged"` de `package.json`). Solo actúa sobre archivos en stage, no sobre todo
   el repo.
 - **CI** (`.github/workflows/ci.yml`): `build` es gate real (bloquea el merge). `lint`
-  (ESLint + Stylelint + `format:check`) y `test` corren con `continue-on-error: true` —
-  **informativos, no bloqueantes** — porque a fecha 2026-08-16 el repo arranca con deuda
-  preexistente (~75 avisos de `ng lint`, ~246 de `stylelint`, 125 archivos sin formatear,
-  2 suites de test en rojo — ver `docs/TareasLogin.md`/`src/app/app.routes.spec.ts` y
-  `home-shell.spec.ts` para el detalle de estas últimas). Quitar `continue-on-error`
-  rule por rule según se vaya limpiando la deuda, no todo de golpe.
+  (ESLint + Stylelint + `format:check`) corre con `continue-on-error: true` —
+  **informativo, no bloqueante** — porque a fecha 2026-08-16 el repo arrancó con deuda
+  preexistente (~75 avisos de `ng lint`, ~246 de `stylelint`, 125 archivos sin formatear;
+  `D-006-W` en el registro interno de deuda técnica, sigue abierta). `test` **es gate real desde
+  2026-09-01**: las 2 suites en rojo se cerraron ese día (`TP-001-W`/`TP-002-W`, ver el registro
+  interno de deuda de tests), la suite completa de WEB quedó verde y se quitó su
+  `continue-on-error` — un test roto ahora bloquea el merge. Quitar el de `lint` cuando se
+  limpie esa deuda, rule por rule, no todo de golpe.
 
 `angular-conventions-reviewer` y `style-nav-reviewer` ejecutan ESLint/Stylelint sobre los
 archivos tocados como primer paso mecánico de su revisión (ver sus checklists) — no
@@ -176,18 +184,25 @@ modelos ni directivas, ni exige cobertura exhaustiva de casos límite o porcenta
 cobertura — solo existencia y no-trivialidad de test para lo que el diff toca. Se invoca de
 forma **proactiva** cada vez que se crea o modifica un `.service.ts` o un guard funcional.
 
-Estado conocido a fecha 2026-08-26: de 21 servicios, 2 tienen spec
-(`publication.service.spec.ts` ya existía; `auth.service.spec.ts` se añadió hoy mismo,
-primer test escrito con este agente aplicado de forma retroactiva); de los 4 archivos
-`*.guard.ts`, 3 son guards funcionales reales sin spec y el 4º (`auth.guard.ts`) no es un
-guard — solo exporta la constante `TOKEN_KEY`, queda fuera del alcance del agente por
-definición. Este gap (22 archivos pendientes de crear, más las 2 suites existentes en rojo
-documentadas más abajo) ya no vive solo en este párrafo: se trackea en
-`../audit/tests/web/TESTS-DEBT.md`, no en `audit/AUDIT-DEBT.md` — la deuda de tests tiene su
+Estado a fecha 2026-09-01: el barrido retroactivo detectado el 2026-08-26 (21 servicios, 2 con
+spec; 3 guards funcionales sin spec) está **cerrado por completo** — los 21 servicios y los 3
+guards funcionales tienen `.spec.ts` no trivial. El 4º archivo `*.guard.ts` (`auth.guard.ts`)
+sigue fuera de alcance por definición: no es un guard funcional, solo exporta la constante
+`TOKEN_KEY`. El detalle fichero a fichero (con commit de resolución) vive en el registro interno
+de deuda de tests, separado del registro general de deuda técnica — la deuda de tests tiene su
 propio registro desde 2026-08-26, separado del resto de hallazgos de auditoría. Por eso, a
 diferencia de los otros 5, `test-coverage-reviewer` no se ha añadido a
-`docs/SUBAGENT-VALIDATION.md`: se aplica solo hacia delante, sobre diffs nuevos, mientras el
-barrido del backlog existente avanza vía `TESTS-DEBT.md`.
+`docs/SUBAGENT-VALIDATION.md`: se aplica solo hacia delante, sobre diffs nuevos — el barrido del
+backlog ya no está en curso, pero `TESTS-DEBT.md` sigue siendo el registro de referencia si
+aparece deuda nueva.
+
+Ese mismo día, y sin que lo exija este subagente (fuera de su alcance por ser un componente),
+`maps.spec.ts` (`MapsPageComponent`, el mayor de los 4 candidatos a `D-003-W`/`D-004-W` y el
+único que toca `google.maps.*` nativo) pasó de smoke test (1 test, sin `detectChanges()`) a 40
+tests reales con un stub propio de `google.maps` — iniciativa voluntaria para poder retomar con
+seguridad ese refactor, documentada igualmente en el registro interno de deuda de tests aunque no
+sea un `TC-`/`TR-` formal. No implica que el resto de componentes tengan cobertura equivalente
+— sigue siendo caso a caso.
 
 ### Barrido retroactivo de los 5 subagentes sobre código ya existente
 
@@ -196,8 +211,8 @@ de una tarea, así que nunca habían pasado por el código ya escrito antes de q
 existieran. `docs/SUBAGENT-VALIDATION.md` registra, bloque a bloque (poco a poco, no en
 una sola sesión), qué zona del código ya se validó con qué subagentes y con qué
 resultado; los hallazgos no triviales que se difieren en vez de arreglarse al momento se
-registran como entradas normales en `audit/AUDIT-DEBT.md` (mismo fichero de deuda que usa
-el proceso `/audit` cross-repo, para no mantener dos listas de deuda distintas).
+registran como entradas normales en el registro interno de deuda técnica del proyecto (el mismo
+que usa el proceso de auditoría cross-repo, para no mantener dos listas de deuda distintas).
 
 La API local que consume el frontend en dev es el backend en `http://localhost:8081` (perfil
 `dev` de `../BACK`, ver `src/environments/environment.ts`).
@@ -301,8 +316,9 @@ versiones de about/changelog/stack y hubo que rehacerlas):
 ### Responsive — arquitectura obligatoria para toda UI nueva
 
 Implementación técnica del principio mobile-first de la sección anterior. Documento de
-referencia completo: `docs/responsive-architecture-portable.md`. Resumen de las reglas que hay
-que respetar siempre:
+referencia completo (si existe en tu checkout — nota local no versionada, `.gitignore`, borrada
+del repo el 2026-07-15 en `a1e2ad3`): `docs/responsive-architecture-portable.md`. El resumen de
+reglas de abajo es la fuente de verdad cuando ese documento no está presente:
 
 - **Fuente única de verdad**: `core/responsive/responsive.service.ts` (signal `state` +
   `state$`), construido sobre `BreakpointObserver` de Angular CDK y los breakpoints centralizados

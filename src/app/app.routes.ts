@@ -50,11 +50,6 @@ export const routes: Routes = [
         loadComponent: () => import('@features/maps/maps').then(m => m.MapsPageComponent)
       },
       {
-        path: 'dashboard',
-        canActivate: [authDialogGuard],
-        loadComponent: () => import('@features/dashboard/dashboard').then(m => m.DashboardPageComponent)
-      },
-      {
         path: 'profile',
         canActivate: [authDialogGuard],
         loadComponent: () => import('@features/profile/profile').then(m => m.ProfilePageComponent)

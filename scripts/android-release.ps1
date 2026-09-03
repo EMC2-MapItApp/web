@@ -20,8 +20,10 @@ param(
 
 # --- Cargar credenciales de firma desde key.properties (fuera del repo, en Drive) ---
 # El fichero no viaja con el proyecto porque contiene contraseñas del keystore de upload;
-# solo existe en las maquinas autorizadas a generar releases (ver docs/CAPACITOR.md).
-$keyPropertiesPath = 'G:\Mi unidad\MapItApp\keystores\key.properties'
+# solo existe en las maquinas autorizadas a generar releases (ver docs/CAPACITOR.md). La ruta
+# se lee de la variable de entorno MAPIT_KEYSTORE_PROPERTIES (mismo criterio que build.gradle).
+$keyPropertiesPath = $env:MAPIT_KEYSTORE_PROPERTIES
+if (-not $keyPropertiesPath) { $keyPropertiesPath = '..\mapit-keystores\key.properties' }
 if (-not (Test-Path $keyPropertiesPath)) {
     throw "No se encuentra '$keyPropertiesPath' - la firma de release no esta disponible en esta maquina (ver docs/CAPACITOR.md)"
 }

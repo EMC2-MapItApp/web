@@ -11,8 +11,8 @@ Frontend Angular 22 (standalone components, signals) de MapIt — consume la API
 hermano en `../BACK` (Spring Boot + MongoDB). El mapa (Google Maps) es el elemento central de la
 app; el resto de la UI (login, registro, publicaciones, dashboard, perfil) gira en torno a él.
 
-Tests reales desde 2026-09-01 (221 tests, 32 suites, todas verdes — ver `../audit/tests/web/
-TESTS-DEBT.md` para el detalle). El runner es Vitest vía `@angular/build:unit-test` (`ng test`).
+Tests reales desde 2026-09-01 (221 tests, 32 suites, todas verdes — detalle en el registro
+interno de deuda de tests del proyecto). El runner es Vitest vía `@angular/build:unit-test` (`ng test`).
 Cobertura garantizada por `test-coverage-reviewer` (ver más abajo): todo `*.service.ts` y guard
 funcional tocado por un diff tiene `.spec.ts` no trivial — no así componentes/pipes/
 interceptors/directivas, cuya cobertura es todavía parcial y voluntaria (p. ej. `maps.spec.ts`,
@@ -98,9 +98,9 @@ fichero.
   (ESLint + Stylelint + `format:check`) corre con `continue-on-error: true` —
   **informativo, no bloqueante** — porque a fecha 2026-08-16 el repo arrancó con deuda
   preexistente (~75 avisos de `ng lint`, ~246 de `stylelint`, 125 archivos sin formatear;
-  `D-006-W` en `audit/AUDIT-DEBT.md`, sigue abierta). `test` **es gate real desde
-  2026-09-01**: las 2 suites en rojo se cerraron ese día (`TP-001-W`/`TP-002-W`, ver
-  `audit/tests/web/TESTS-DEBT.md`), la suite completa de WEB quedó verde y se quitó su
+  `D-006-W` en el registro interno de deuda técnica, sigue abierta). `test` **es gate real desde
+  2026-09-01**: las 2 suites en rojo se cerraron ese día (`TP-001-W`/`TP-002-W`, ver el registro
+  interno de deuda de tests), la suite completa de WEB quedó verde y se quitó su
   `continue-on-error` — un test roto ahora bloquea el merge. Quitar el de `lint` cuando se
   limpie esa deuda, rule por rule, no todo de golpe.
 
@@ -188,8 +188,8 @@ Estado a fecha 2026-09-01: el barrido retroactivo detectado el 2026-08-26 (21 se
 spec; 3 guards funcionales sin spec) está **cerrado por completo** — los 21 servicios y los 3
 guards funcionales tienen `.spec.ts` no trivial. El 4º archivo `*.guard.ts` (`auth.guard.ts`)
 sigue fuera de alcance por definición: no es un guard funcional, solo exporta la constante
-`TOKEN_KEY`. El detalle fichero a fichero (con commit de resolución) vive en
-`../audit/tests/web/TESTS-DEBT.md`, no en `audit/AUDIT-DEBT.md` — la deuda de tests tiene su
+`TOKEN_KEY`. El detalle fichero a fichero (con commit de resolución) vive en el registro interno
+de deuda de tests, separado del registro general de deuda técnica — la deuda de tests tiene su
 propio registro desde 2026-08-26, separado del resto de hallazgos de auditoría. Por eso, a
 diferencia de los otros 5, `test-coverage-reviewer` no se ha añadido a
 `docs/SUBAGENT-VALIDATION.md`: se aplica solo hacia delante, sobre diffs nuevos — el barrido del
@@ -200,7 +200,7 @@ Ese mismo día, y sin que lo exija este subagente (fuera de su alcance por ser u
 `maps.spec.ts` (`MapsPageComponent`, el mayor de los 4 candidatos a `D-003-W`/`D-004-W` y el
 único que toca `google.maps.*` nativo) pasó de smoke test (1 test, sin `detectChanges()`) a 40
 tests reales con un stub propio de `google.maps` — iniciativa voluntaria para poder retomar con
-seguridad ese refactor, documentada en `../audit/tests/web/TESTS-DEBT.md` igualmente aunque no
+seguridad ese refactor, documentada igualmente en el registro interno de deuda de tests aunque no
 sea un `TC-`/`TR-` formal. No implica que el resto de componentes tengan cobertura equivalente
 — sigue siendo caso a caso.
 
@@ -211,8 +211,8 @@ de una tarea, así que nunca habían pasado por el código ya escrito antes de q
 existieran. `docs/SUBAGENT-VALIDATION.md` registra, bloque a bloque (poco a poco, no en
 una sola sesión), qué zona del código ya se validó con qué subagentes y con qué
 resultado; los hallazgos no triviales que se difieren en vez de arreglarse al momento se
-registran como entradas normales en `audit/AUDIT-DEBT.md` (mismo fichero de deuda que usa
-el proceso `/audit` cross-repo, para no mantener dos listas de deuda distintas).
+registran como entradas normales en el registro interno de deuda técnica del proyecto (el mismo
+que usa el proceso de auditoría cross-repo, para no mantener dos listas de deuda distintas).
 
 La API local que consume el frontend en dev es el backend en `http://localhost:8081` (perfil
 `dev` de `../BACK`, ver `src/environments/environment.ts`).

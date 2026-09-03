@@ -22,7 +22,7 @@ resolvió al momento).
 3. **`MapItUser`/`UserMeResponse` no distingue perfil propio (completo) de perfil ajeno**
    — el backend enmascara `email`/`phone`/`city`/`province`/`birthDate` a `null` para
    `GET /users/{id}` cuando el viewer no es self/ADMIN, pero el tipo los declara como
-   `string` no opcional → **Diferido** (`D-003-W` en `audit/AUDIT-DEBT.md`, revisar antes
+   `string` no opcional → **Diferido** (`D-003-W` en el registro interno de deuda técnica, revisar antes
    de 2026-11-17). No es una fuga activa hoy: `userService.getById()` no tiene ningún
    consumidor real en el repo todavía, así que el riesgo es para la próxima pantalla que
    se construya sobre él. Corrección requiere separar el tipo, no es un arreglo puntual.

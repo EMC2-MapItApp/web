@@ -17,8 +17,8 @@ ver el plan `los-subagentes-no-validan-refactored-cascade.md`. Resumen del crite
   refuerzo especial en auth/guards/interceptors).
 - `capacitor-android-reviewer`: solo el bloque `android/`.
 
-**Antes de registrar un hallazgo como nuevo**, comprobar `audit/AUDIT-DEBT.md` — si ya
-está diferido/aceptado/descartado allí, no se duplica.
+**Antes de registrar un hallazgo como nuevo**, comprobar el registro interno de deuda técnica —
+si ya está diferido/aceptado/descartado allí, no se duplica.
 
 Detalle breve de cada hallazgo (problema → resolución) en
 `docs/SUBAGENT-VALIDATION-FINDINGS.md` — este fichero solo lleva el estado de progreso
@@ -52,7 +52,7 @@ Leyenda: ⬜ pendiente · ✅ validado (sin hallazgos nuevos, o hallazgos ya tra
 ## Detalle por bloque
 
 _(se completa según se valida cada bloque: fecha, resumen de hallazgos por subagente,
-IDs de `audit/AUDIT-DEBT.md` si algo se difiere)_
+IDs del registro interno de deuda técnica si algo se difiere)_
 
 ### Bloque 1 — `core/constants` + `core/models` (2026-08-17)
 
@@ -64,7 +64,7 @@ IDs de `audit/AUDIT-DEBT.md` si algo se difiere)_
   aplica).
 - **security**: 1 hallazgo real, diferido — `MapItUser`/`UserMeResponse` no distingue
   perfil propio (completo) de perfil ajeno (campos enmascarados a `null` por el backend
-  pero tipados como `string`). Registrado como `D-003-W` en `audit/AUDIT-DEBT.md`
+  pero tipados como `string`). Registrado como `D-003-W` en el registro interno de deuda técnica
   (revisar antes de 2026-11-17).
 
 ### Bloque 2 — `core/guards` + `core/interceptors` + `app.routes.ts`/`app.config.ts`/`app.ts` (2026-08-17)

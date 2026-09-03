@@ -45,6 +45,13 @@
   --c-info: #4f46e5;
   --c-info-bg: #eef2ff;
   --c-info-border: #c7d2fe;
+  --c-info-text: #3730a3;
+
+  // Texto/iconos que se apoyan siempre sobre una superficie de acento saturada
+  // (fondo de --c-primary, badges de color, el pomo de un switch) — se mantiene
+  // fijo en vez de tokenizarse por tema porque la superficie sobre la que se
+  // apoya ya es la que cambia; no representa contenido de la app.
+  --c-on-accent: #fff;
 
   --c-close-btn: #cbd5e1;
   --c-close-btn-hover: #64748b;
@@ -94,6 +101,9 @@
   --c-info: #a5b4fc;
   --c-info-bg: #312e81;
   --c-info-border: #4338ca;
+  --c-info-text: #a5b4fc;
+
+  --c-on-accent: #fff;
 
   --c-close-btn: #475569;
   --c-close-btn-hover: #94a3b8;

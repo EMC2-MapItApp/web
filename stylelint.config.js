@@ -20,7 +20,10 @@ module.exports = {
     'color-no-hex': true,
     'declaration-property-value-disallowed-list': [
       { '/./': [/rgba?\(\s*\d/] },
-      { message: 'No literal rgb()/rgba() colors — use a var(--c-*) token instead (see src/styles/_themes.scss).' },
+      {
+        message:
+          'No literal rgb()/rgba() colors — use a var(--c-*) token instead (see src/styles/_themes.scss).',
+      },
     ],
 
     // El resto de "stylelint-config-standard-scss" es modernización de sintaxis
@@ -46,6 +49,10 @@ module.exports = {
     // `-webkit-backdrop-filter` sigue haciendo falta para Safari junto al
     // `backdrop-filter` estándar (glassmorphism de overlays, ver CLAUDE.md).
     'property-no-vendor-prefix': null,
+    // `::ng-deep` está deprecado por Angular pero sigue siendo la única vía para
+    // penetrar el encapsulamiento de estilos de Angular Material (create-publication,
+    // home-shell, register-dialog) - no es un selector CSS desconocido por error.
+    'selector-pseudo-element-no-unknown': [true, { ignorePseudoElements: ['ng-deep'] }],
     // Naming de clases (BEM en la práctica, `__`/`--`) no está cubierto por el patrón
     // kebab-case por defecto de esta regla — desactivada para no generar falsos
     // positivos masivos sobre una convención ya consistente en el proyecto.

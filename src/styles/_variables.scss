@@ -31,10 +31,19 @@ $shadow-panel:
   0 1px 4px rgba(0, 0, 0, 0.08);
 $shadow-icon-primary: 0 4px 16px rgba(63, 81, 181, 0.35);
 $shadow-icon-auth: 0 4px 16px rgba(71, 85, 105, 0.3);
+$shadow-subtle: 0 2px 12px rgba(0, 0, 0, 0.06);
+$shadow-hint: 0 2px 8px rgba(0, 0, 0, 0.12);
+$shadow-float: 0 8px 20px rgba(0, 0, 0, 0.2);
+$shadow-fab: 0 10px 24px rgba(0, 0, 0, 0.25);
+$shadow-tab: 3px 0 14px rgba(0, 0, 0, 0.25);
+$shadow-thumb: 0 1px 3px rgba(0, 0, 0, 0.25);
 
 // ── Gradientes (fijos, sin cambio con el tema) ────────────────────────────────
 $gradient-primary: linear-gradient(135deg, #3f51b5, #5c6bc0);
 $gradient-auth: linear-gradient(135deg, #475569, #64748b);
+
+// ── Efectos fijos (no dependen del tema — se dibujan sobre imagenes/mapas) ─────
+$route-glow: rgba(255, 255, 255, 0.85);
 
 // ── Transiciones ──────────────────────────────────────────────────────────────
 $transition-fast: 0.12s ease;

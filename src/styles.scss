@@ -5,6 +5,7 @@
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 @use 'styles/themes'; // ← carga :root y [data-theme="dark"]
+@use 'styles/variables' as v;
 
 html {
   height: 100%;
@@ -98,7 +99,7 @@ input[type='password']::-ms-clear {
   padding: 0 6px;
   border-radius: 10px; // $radius-md
   background: var(--c-primary);
-  color: #fff;
+  color: var(--c-on-accent);
   font-size: 11px; // $font-xs
   font-weight: 700;
 }
@@ -127,12 +128,12 @@ input[type='password']::-ms-clear {
 // ── Backdrop difuminado (dialogs) ─────────────────────────────────────────────
 .blurred-backdrop {
   backdrop-filter: blur(6px);
-  background: rgba(15, 23, 42, 0.45) !important;
+  background: v.$backdrop-overlay !important;
 }
 
 .welcome-panel .mat-mdc-dialog-container {
   border-radius: 20px !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18) !important;
+  box-shadow: v.$shadow-dialog !important;
 }
 
 // ── Control nativo "Usar mi ubicación" (Google Maps) ──────────────────────────
@@ -147,8 +148,8 @@ input[type='password']::-ms-clear {
   margin: 12px;
   border: none;
   border-radius: 6px;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  background: var(--c-surface);
+  box-shadow: v.$shadow-location-btn;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -158,11 +159,11 @@ input[type='password']::-ms-clear {
 
   .material-icons {
     font-size: 28px;
-    color: #555;
+    color: var(--c-text-secondary);
   }
 
   &:hover .material-icons {
-    color: #1e293b;
+    color: var(--c-text-primary);
   }
 
   &:disabled {
@@ -171,14 +172,16 @@ input[type='password']::-ms-clear {
 
   // Más visible que un simple giro de icono: anillo de acento pulsante + color destacado,
   // además de girar más rápido — tiene que notarse claramente que se está trabajando.
+  // El anillo usa --c-primary (color-mix) en vez de un azul propio: se adapta solo al
+  // tema, así que ya no hace falta un bloque [data-theme='dark'] aparte para este control.
   &.is-locating {
     box-shadow:
-      0 0 0 6px rgba(37, 99, 235, 0.25),
-      0 2px 8px rgba(0, 0, 0, 0.4);
+      0 0 0 6px color-mix(in srgb, var(--c-primary) 25%, transparent),
+      v.$shadow-location-btn;
     animation: gmaps-locating-pulse 1.2s ease-in-out infinite;
 
     .material-icons {
-      color: #2563eb;
+      color: var(--c-primary);
       animation: gmaps-locating-spin 0.7s linear infinite;
     }
   }
@@ -197,36 +200,13 @@ input[type='password']::-ms-clear {
   0%,
   100% {
     box-shadow:
-      0 0 0 6px rgba(37, 99, 235, 0.25),
-      0 2px 8px rgba(0, 0, 0, 0.4);
+      0 0 0 6px color-mix(in srgb, var(--c-primary) 25%, transparent),
+      v.$shadow-location-btn;
   }
   50% {
     box-shadow:
-      0 0 0 10px rgba(37, 99, 235, 0.12),
-      0 2px 8px rgba(0, 0, 0, 0.4);
-  }
-}
-
-[data-theme='dark'] .gmaps-my-location-control {
-  background: #1e293b;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
-
-  .material-icons {
-    color: #cbd5e1;
-  }
-
-  &:hover .material-icons {
-    color: #f1f5f9;
-  }
-
-  &.is-locating {
-    box-shadow:
-      0 0 0 6px rgba(96, 165, 250, 0.3),
-      0 2px 8px rgba(0, 0, 0, 0.7);
-
-    .material-icons {
-      color: #60a5fa;
-    }
+      0 0 0 10px color-mix(in srgb, var(--c-primary) 12%, transparent),
+      v.$shadow-location-btn;
   }
 }
 
@@ -249,21 +229,19 @@ input[type='password']::-ms-clear {
   .gm-style .gm-style-iw-d > div,
   .gm-style .gm-style-iw-d > div > div,
   .gm-style .gm-style-iw-d > div > div > div {
-    background: #1e293b !important;
-    background-color: #1e293b !important;
+    background: var(--c-surface) !important;
   }
 
   // Flecha inferior
   .gm-style .gm-style-iw-tc::after,
   .gm-style .gm-style-iw-t::after {
-    background: #1e293b !important;
+    background: var(--c-surface) !important;
   }
 
   // Cabecera del botón cerrar y contenedor de la cola (versión moderna del InfoWindow)
   .gm-style .gm-style-iw-chr,
   .gm-style .gm-style-iw-tc {
-    background: #1e293b !important;
-    background-color: #1e293b !important;
+    background: var(--c-surface) !important;
   }
 
   // Textos
@@ -272,12 +250,12 @@ input[type='password']::-ms-clear {
   .gm-style .gm-style-iw-d div,
   .gm-style .gm-style-iw-d h2,
   .gm-style .gm-style-iw-d h3 {
-    color: #f1f5f9 !important;
+    color: var(--c-text-primary) !important;
   }
 
   // Links (ej. "Ver en Google Maps")
   .gm-style .gm-style-iw-d a {
-    color: #818cf8 !important;
+    color: var(--c-primary) !important;
   }
 
   // Botón cerrar
@@ -296,14 +274,14 @@ input[type='password']::-ms-clear {
     color-scheme: dark;
   }
   .gm-style .gm-style-iw-d {
-    scrollbar-color: #475569 #1e293b;
+    scrollbar-color: var(--c-close-btn) var(--c-surface);
   }
   .gm-style .gm-style-iw-d::-webkit-scrollbar,
   .gm-style .gm-style-iw-d::-webkit-scrollbar-track,
   .gm-style .gm-style-iw-d::-webkit-scrollbar-corner {
-    background: #1e293b !important;
+    background: var(--c-surface) !important;
   }
   .gm-style .gm-style-iw-d::-webkit-scrollbar-thumb {
-    background: #475569 !important;
+    background: var(--c-close-btn) !important;
   }
 }

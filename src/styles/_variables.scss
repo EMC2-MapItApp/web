@@ -42,6 +42,7 @@ $shadow-card-hover: 0 12px 28px rgba(15, 23, 42, 0.14);
 $shadow-dropdown: 0 6px 18px rgba(15, 23, 42, 0.11);
 $shadow-btn-primary: 0 2px 8px rgba(63, 81, 181, 0.35);
 $shadow-btn-primary-hover: 0 4px 14px rgba(63, 81, 181, 0.45);
+$shadow-location-btn: 0 2px 8px rgba(0, 0, 0, 0.4);
 
 // ── Gradientes (fijos, sin cambio con el tema) ────────────────────────────────
 $gradient-primary: linear-gradient(135deg, #3f51b5, #5c6bc0);
@@ -49,6 +50,7 @@ $gradient-auth: linear-gradient(135deg, #475569, #64748b);
 
 // ── Efectos fijos (no dependen del tema — se dibujan sobre imagenes/mapas) ─────
 $route-glow: rgba(255, 255, 255, 0.85);
+$backdrop-overlay: rgba(15, 23, 42, 0.45);
 
 // ── Transiciones ──────────────────────────────────────────────────────────────
 $transition-fast: 0.12s ease;

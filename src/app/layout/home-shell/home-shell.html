@@ -29,11 +29,13 @@
     }
   </header>
 
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- solo detecta clicks fuera del sidenav para colapsarlo, no es un control interactivo -->
   <section
     class="app-body"
     [class.collapsed]="collapsed()"
     (click)="handleOutsideMenuClick($event)"
   >
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- solo detiene la propagacion del click para no colapsarse al pulsar dentro, no es un control interactivo -->
     <aside class="app-sidenav" (click)="$event.stopPropagation()">
       <div class="brand">
         <img src="/brand/mapit-logo.svg" alt="MapIt" class="brand-logo" />
@@ -42,6 +44,7 @@
         }
       </div>
 
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- delega en los enlaces internos (ya nativamente accesibles); solo escucha el bubbling para colapsar el menu tras la navegacion -->
       <nav class="menu" (click)="handleMenuActionClick($event)">
         <!-- Mapa: siempre visible -->
         <a

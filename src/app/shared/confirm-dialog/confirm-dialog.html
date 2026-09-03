@@ -1,3 +1,4 @@
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- panel del dialogo: solo detiene la propagacion del click para no cerrarse al pulsar dentro, no es un control interactivo -->
 <div class="confirm-dialog" (click)="$event.stopPropagation()">
   <button class="close-btn" mat-icon-button (click)="cancel()" aria-label="Cerrar">
     <mat-icon>close</mat-icon>

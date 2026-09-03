@@ -39,7 +39,11 @@
             <li
               class="notification-item"
               [class.notification-item--unread]="!notification.read"
+              role="button"
+              tabindex="0"
               (click)="select(notification)"
+              (keydown.enter)="select(notification)"
+              (keydown.space)="select(notification); $event.preventDefault()"
             >
               <div class="notification-item__main">
                 <span class="notification-item__title">{{ notification.title }}</span>

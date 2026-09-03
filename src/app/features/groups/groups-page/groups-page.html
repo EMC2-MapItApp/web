@@ -254,7 +254,14 @@
                           <li
                             class="user-search__option"
                             [class.user-search__option--added]="isAlreadyQueued(user)"
+                            role="button"
+                            tabindex="0"
                             (click)="!isAlreadyQueued(user) && addToCreateQueue(user)"
+                            (keydown.enter)="!isAlreadyQueued(user) && addToCreateQueue(user)"
+                            (keydown.space)="
+                              !isAlreadyQueued(user) && addToCreateQueue(user);
+                              $event.preventDefault()
+                            "
                           >
                             <span class="user-search__avatar">{{ user.name.charAt(0) }}</span>
                             <div class="user-search__info">
@@ -571,7 +578,13 @@
                                     editUserStatus(user, group) !== 'none' ||
                                     editInvitingUserId() === user.id
                                   "
+                                  role="button"
+                                  tabindex="0"
                                   (click)="inviteUserInEdit(user, group)"
+                                  (keydown.enter)="inviteUserInEdit(user, group)"
+                                  (keydown.space)="
+                                    inviteUserInEdit(user, group); $event.preventDefault()
+                                  "
                                 >
                                   <span class="user-search__avatar">{{ user.name.charAt(0) }}</span>
                                   <div class="user-search__info">

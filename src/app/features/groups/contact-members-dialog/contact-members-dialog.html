@@ -1,3 +1,4 @@
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- panel del dialogo: solo detiene la propagacion del click para no cerrarse al pulsar dentro, no es un control interactivo -->
 <div class="contact-members-dialog" (click)="$event.stopPropagation()">
   <button class="close-btn" mat-icon-button (click)="dialogRef.close()" aria-label="Cerrar">
     <mat-icon>close</mat-icon>
@@ -24,7 +25,14 @@
 
     <div class="member-select__list">
       @for (member of data.members; track member.userId) {
-        <div class="member-row" (click)="toggleMember(member.userId)">
+        <div
+          class="member-row"
+          role="button"
+          tabindex="0"
+          (click)="toggleMember(member.userId)"
+          (keydown.enter)="toggleMember(member.userId)"
+          (keydown.space)="toggleMember(member.userId); $event.preventDefault()"
+        >
           <mat-checkbox
             [checked]="isSelected(member.userId)"
             (click)="$event.stopPropagation()"

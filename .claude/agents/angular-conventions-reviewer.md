@@ -7,8 +7,9 @@ description: >
   logging de desarrollo (aislamiento flujo/info vs errores, gating de producción, sin
   datos sensibles) y ubicación/reuso de servicios, modelos y utilidades entre
   `core`/`features`/`shared` (incluyendo alias de import `@core/*`, `@shared/*`,
-  `@features/*`, `@layout/*`, `@env/*`). Ejecuta ESLint (`eslint.config.js`) sobre los
-  `.ts` tocados como primer paso mecánico. No revisa CSS/SCSS, rutas, guards de
+  `@features/*`, `@layout/*`, `@env/*`). Ejecuta ESLint (`eslint.config.js`) y Prettier
+  (`format:check`) sobre los `.ts` tocados como primer paso mecánico — ambos son gate real
+  en CI, sin deuda base que descontar. No revisa CSS/SCSS, rutas, guards de
   navegación ni patrón de shell/lazy-loading de páginas — eso es exclusivo de
   `style-nav-reviewer`. Tampoco revisa lógica de negocio, corrección funcional,
   rendimiento, tests, ni hace sugerencias generales de simplificación — eso es
@@ -79,25 +80,28 @@ medida, 2026-08-16, ver `eslint.config.js` y la sección "Calidad automatizada" 
 `CLAUDE.md`). Tres reglas cubren ya mecánicamente parte de los checklists manuales de
 abajo — antes de revisarlos a mano, corre esto:
 
+La deuda base de TS (`D-006-W`, 75 avisos a 2026-08-16) se pagó por completo el
+2026-09-03 — `npm run lint` da 0 en todo el repo, así que **cualquier error en un `.ts`
+tocado por el diff es nuevo y se reporta**, sin necesidad de cruzarlo con `git diff` línea
+a línea.
+
 1. `npx eslint <archivo1.ts> <archivo2.ts> ...` sobre los `.ts` realmente tocados por el
-   diff (no `.html`) — nunca `npm run lint`/`ng lint` sobre todo el repo: a fecha
-   2026-08-16 el repo arrancó con una base de 75 avisos preexistentes (documentados en
-   `CLAUDE.md`) que no son responsabilidad del diff actual y no debes reportar.
+   diff (no `.html`) — sigue sin ser necesario `npm run lint`/`ng lint` sobre todo el repo,
+   es una cuestión de alcance de la revisión (solo el diff), no de descontar deuda ajena.
 2. Ignora cualquier error de regla `@angular-eslint/template/*` — son de plantilla HTML
    y las revisa `style-nav-reviewer`, no tú.
-3. Para cada error/warning restante, confirma con `git diff` que la línea que señala
-   ESLint cae dentro de una línea añadida/modificada por el diff (o que el archivo es de
-   nueva creación) — si el error vive en una línea que el diff no tocó, es deuda
-   preexistente y no se reporta. Presta especial atención a estas tres, que sustituyen
-   directamente checks manuales de este documento:
+3. Para cada error/warning restante, repórtalo — presta especial atención a estas tres,
+   que sustituyen directamente checks manuales de este documento:
    - `@angular-eslint/prefer-inject` → sustituye la comprobación manual de "Inyección de
      dependencias vía `inject()`" de más abajo.
    - `boundaries/dependencies` → sustituye la comprobación manual de capas
      `core`/`shared`/`layout`/feature de "Ubicación y reuso de código" más abajo. Ya
-     encontró una violación real preexistente: `features/profile/profile.ts` importa
-     `PasswordStrengthMeterComponent` desde `features/auth/` por ruta relativa — dos
-     problemas a la vez (cruce de feature + relativo entre features). Si el diff toca
-     `profile.ts`, repórtalo (no es deuda ajena una vez que el archivo está en el diff).
+     encontró una violación real antes de cerrarse `D-006-W`:
+     `features/profile/profile.ts` importaba `PasswordStrengthMeterComponent` desde
+     `features/auth/` por ruta relativa (cruce de feature + relativo entre features) — se
+     resolvió moviendo el componente a `shared/password-strength-meter/` el 2026-09-03,
+     que es el patrón a exigir si aparece un caso nuevo: promocionar a `shared/`, no
+     silenciar la regla.
    - `rxjs-x/no-nested-subscribe` → un `.subscribe()` anidado dentro de otro es error
      directo, no hace falta juicio manual.
    - El resto (`@typescript-eslint/*`, `@angular-eslint/component-selector`,
@@ -110,6 +114,14 @@ abajo — antes de revisarlos a mano, corre esto:
 Esto no sustituye el resto de checklists manuales de abajo — el resto (signals vs. RxJS
 fuera de nested-subscribe, JSDoc, logging, "no duplicar lógica ya resuelta") no tiene
 regla de lint y sigue dependiendo de tu revisión manual.
+
+## Checklist — Formato automatizado (Prettier)
+
+`npm run format:check` es gate real en CI desde que el `npm run format` global se aplicó
+el 2026-09-03 (mismo cierre de `D-006-W`) — cero deuda de formato. `npx prettier --check
+<archivo1.ts> <archivo2.ts> ...` sobre los `.ts` realmente tocados (el `.html`/`.scss` lo
+cubre `style-nav-reviewer`, no lo dupliques); cualquier archivo que no pase es un finding
+con `category: 'eslint-ts'`, citando el archivo.
 
 ## Checklist — Arquitectura standalone + signals
 
@@ -223,10 +235,12 @@ revisaste y que no encontraste problemas de convención de código.
 Grounded contra el código el 2026-08-16 (`responsive.service.ts`, `auth.service.ts`,
 `geo-ip.service.ts`, `push-notification.service.ts`, `create-publication.ts`,
 `groups-page.ts`, `profile.ts`, cabeceras JSDoc de los 19 servicios de `core/services/`,
-`eslint.config.js` incluyendo `eslint-plugin-boundaries`/`eslint-plugin-rxjs-x`, y los 75
-avisos base de `npm run lint` en la misma fecha). Este
-checklist cita archivos y patrones concretos a propósito — es lo que lo hace verificable
-en vez de genérico. Si al revisar notas que una cita ya no corresponde con el código
-(patrón sustituido, servicio renombrado/eliminado), no lo ignores en silencio: repórtalo
-igual que un finding de CLAUDE.md desactualizado ("Antes de empezar") y, si el usuario te
-pide actualizar este archivo, hazlo ahí mismo.
+`eslint.config.js` incluyendo `eslint-plugin-boundaries`/`eslint-plugin-rxjs-x`) y
+actualizado el 2026-09-03 al cerrarse `D-006-W`: los 75 avisos base de `npm run lint` (y
+`format:check`, sin gate hasta entonces) pasan de deuda descontable a gate real sin
+excepciones — cualquier aviso en un `.ts` tocado por el diff es ya responsabilidad del
+diff. Este checklist cita archivos y patrones concretos a propósito — es lo que lo hace
+verificable en vez de genérico. Si al revisar notas que una cita ya no corresponde con el
+código (patrón sustituido, servicio renombrado/eliminado), no lo ignores en silencio:
+repórtalo igual que un finding de CLAUDE.md desactualizado ("Antes de empezar") y, si el
+usuario te pide actualizar este archivo, hazlo ahí mismo.

@@ -18,15 +18,12 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-  # El repo aún tiene deuda preexistente de lint (ver CLAUDE.md / D-006-W en el registro
-  # interno de deuda técnica — ~75 avisos de `ng lint`, ~246 de `stylelint`, 125 archivos sin
-  # formatear). Este job corre e informa en el PR para que la deuda sea visible, pero no
-  # bloquea el merge (`continue-on-error: true`) hasta que se limpie la base; en ese
-  # momento, quitar `continue-on-error` para que pase a ser gate real.
+  # Gate real desde 2026-09-03: la deuda preexistente de lint/stylelint/formato (D-006-W en el
+  # registro interno de deuda técnica) se pagó por completo — 0 avisos de `ng lint`, 0 de
+  # `stylelint`, 0 archivos sin formatear. Un aviso nuevo ahora bloquea el merge.
   lint:
-    name: Lint (informativo)
+    name: Lint
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

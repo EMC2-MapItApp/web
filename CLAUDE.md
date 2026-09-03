@@ -84,25 +84,23 @@ fichero.
   queries, espaciado/líneas en blanco, `selector-class-pattern` sin soporte BEM) están
   desactivadas explícitamente en `stylelint.config.js` — no son una convención del
   proyecto y generaban ruido ajeno al objetivo real.
-- **Prettier**: ya estaba como dependencia con `.prettierrc` pero sin script ni uso real.
-  **`format:check` falla hoy en 125 archivos** — el repo nunca se pasó por Prettier de
-  forma sistemática. No se ha aplicado un `npm run format` global todavía (es un diff
-  enorme y merece su propio commit aislado, no un efecto colateral de instalar la
-  herramienta) — pregunta antes de lanzarlo.
+- **Prettier**: `npm run format` global aplicado el 2026-09-03 (commit aislado, ver
+  historial) — todo `.ts`/`.html`/`.scss` pasa `format:check` desde entonces. Antes de esa
+  fecha el repo nunca se había pasado por Prettier de forma sistemática (125 archivos sin
+  formatear).
 - **Husky + lint-staged**: hook `pre-commit` (`.husky/pre-commit`) que corre
   `npx lint-staged` — `eslint --fix` + `prettier --write` en `.ts`/`.html` tocados,
   `stylelint --fix` + `prettier --write` en `.scss` tocados (config en
   `"lint-staged"` de `package.json`). Solo actúa sobre archivos en stage, no sobre todo
   el repo.
-- **CI** (`.github/workflows/ci.yml`): `build` es gate real (bloquea el merge). `lint`
-  (ESLint + Stylelint + `format:check`) corre con `continue-on-error: true` —
-  **informativo, no bloqueante** — porque a fecha 2026-08-16 el repo arrancó con deuda
-  preexistente (~75 avisos de `ng lint`, ~246 de `stylelint`, 125 archivos sin formatear;
-  `D-006-W` en el registro interno de deuda técnica, sigue abierta). `test` **es gate real desde
+- **CI** (`.github/workflows/ci.yml`): los tres jobs son gate real (bloquean el merge). `lint`
+  (ESLint + Stylelint + `format:check`) lo es **desde 2026-09-03**: la deuda preexistente desde
+  2026-08-16 (~75 avisos de `ng lint`, ~246 de `stylelint`, 125 archivos sin formatear;
+  `D-006-W` en el registro interno de deuda técnica) se pagó por completo y se quitó su
+  `continue-on-error` — un aviso nuevo ahora bloquea el merge, igual que `test` **desde
   2026-09-01**: las 2 suites en rojo se cerraron ese día (`TP-001-W`/`TP-002-W`, ver el registro
   interno de deuda de tests), la suite completa de WEB quedó verde y se quitó su
-  `continue-on-error` — un test roto ahora bloquea el merge. Quitar el de `lint` cuando se
-  limpie esa deuda, rule por rule, no todo de golpe.
+  `continue-on-error` también.
 
 `angular-conventions-reviewer` y `style-nav-reviewer` ejecutan ESLint/Stylelint sobre los
 archivos tocados como primer paso mecánico de su revisión (ver sus checklists) — no

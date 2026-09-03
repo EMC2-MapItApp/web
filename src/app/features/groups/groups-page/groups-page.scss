@@ -53,9 +53,9 @@
 // la cabecera de la tarjeta (.group-card__member-count / __pending) — mismo valor en ambos
 // sitios para que el contador se lea como un resumen de esos mismos chips, no como texto suelto.
 $member-chip-color: var(--c-text-secondary);
-$pending-chip-bg: #fef3c7;
-$pending-chip-border: #fde68a;
-$pending-chip-color: #92400e;
+$pending-chip-bg: var(--c-warning-bg);
+$pending-chip-border: var(--c-warning-border);
+$pending-chip-color: var(--c-warning-text);
 
 // Mismo patrón visual que .activity-item en profile.scss:
 // tarjeta con acento izquierdo de color, cabecera en fila título/badge,
@@ -67,7 +67,7 @@ $pending-chip-color: #92400e;
   border-radius: v.$radius-lg;
   padding: v.$space-lg;
   background: var(--c-surface);
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  box-shadow: v.$shadow-card;
   transition:
     transform v.$transition-fast,
     box-shadow v.$transition-fast,
@@ -200,8 +200,8 @@ $pending-chip-color: #92400e;
     border-style: dashed;
 
     .member-chip__avatar {
-      background: #fde68a;
-      color: #b45309;
+      background: var(--c-warning-border);
+      color: var(--c-warning);
     }
   }
 }
@@ -222,7 +222,7 @@ $pending-chip-color: #92400e;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+    box-shadow: v.$shadow-card-hover;
     border-color: color-mix(in srgb, var(--cat-color, var(--c-primary)) 55%, var(--c-border-light));
   }
 
@@ -233,7 +233,7 @@ $pending-chip-color: #92400e;
 
     &:hover {
       transform: none;
-      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+      box-shadow: v.$shadow-card;
       border-color: color-mix(in srgb, var(--c-primary) 40%, var(--c-border-light));
     }
 
@@ -291,7 +291,7 @@ $pending-chip-color: #92400e;
     gap: 6px;
     font-size: v.$font-body;
     font-weight: 600;
-    color: var(--c-error, #b91c1c);
+    color: var(--c-error);
 
     mat-icon {
       font-size: 18px;
@@ -332,11 +332,11 @@ $pending-chip-color: #92400e;
 }
 
 .btn-delete-group {
-  color: #b91c1c;
-  border-color: #fecaca;
+  color: var(--c-error);
+  border-color: var(--c-error-border);
 
   &:hover {
-    background: color-mix(in srgb, #fee2e2 85%, transparent);
+    background: color-mix(in srgb, var(--c-error-bg) 85%, transparent);
   }
 }
 
@@ -401,8 +401,8 @@ $pending-chip-color: #92400e;
   cursor: pointer;
   border: none;
   background: var(--c-primary);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(63, 81, 181, 0.35);
+  color: var(--c-on-accent);
+  box-shadow: v.$shadow-btn-primary;
   transition:
     opacity v.$transition-fast,
     box-shadow v.$transition-fast;
@@ -416,7 +416,7 @@ $pending-chip-color: #92400e;
 
   &:hover {
     opacity: 0.88;
-    box-shadow: 0 4px 14px rgba(63, 81, 181, 0.45);
+    box-shadow: v.$shadow-btn-primary-hover;
   }
 }
 
@@ -478,7 +478,7 @@ $pending-chip-color: #92400e;
   }
 
   &__required {
-    color: #ef4444;
+    color: var(--c-error);
   }
 
   &__optional {
@@ -505,7 +505,7 @@ $pending-chip-color: #92400e;
     box-sizing: border-box;
 
     &:focus {
-      border-color: #818cf8;
+      border-color: var(--c-primary);
       background: var(--c-surface);
     }
 
@@ -618,13 +618,13 @@ $pending-chip-color: #92400e;
 
   &--primary {
     background: var(--c-primary);
-    color: #fff;
+    color: var(--c-on-accent);
     &:hover {
       opacity: 0.9;
     }
     &:disabled {
-      background: #c7d2fe;
-      color: #818cf8;
+      background: var(--c-info-border);
+      color: var(--c-primary);
       cursor: not-allowed;
     }
   }
@@ -645,7 +645,7 @@ $pending-chip-color: #92400e;
     border: 1.5px solid var(--c-border);
     border-top: none; // se pega al input visualmente
     border-radius: 0 0 9px 9px;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.11);
+    box-shadow: v.$shadow-dropdown;
     overflow: hidden;
     max-height: 220px;
     overflow-y: auto;
@@ -821,7 +821,7 @@ $pending-chip-color: #92400e;
 
   // Pendiente: fondo tintado
   &--pending {
-    background: color-mix(in srgb, #f59e0b 5%, var(--c-surface));
+    background: color-mix(in srgb, var(--c-warning) 5%, var(--c-surface));
   }
 
   // Organizador: fila a ancho completo en desktop + separador inferior entre él y los miembros
@@ -848,8 +848,8 @@ $pending-chip-color: #92400e;
   }
 
   &--pending &__avatar {
-    background: color-mix(in srgb, #f59e0b 12%, var(--c-surface-alt));
-    color: #b45309;
+    background: color-mix(in srgb, var(--c-warning) 12%, var(--c-surface-alt));
+    color: var(--c-warning);
   }
 
   &__info {
@@ -895,13 +895,13 @@ $pending-chip-color: #92400e;
     white-space: nowrap;
 
     &--organizer {
-      background: #e0e7ff;
-      color: #3730a3;
+      background: var(--c-info-bg);
+      color: var(--c-info-text);
     }
 
     &--pending {
-      background: #fef3c7;
-      color: #92400e;
+      background: var(--c-warning-bg);
+      color: var(--c-warning-text);
     }
   }
 
@@ -930,8 +930,8 @@ $pending-chip-color: #92400e;
     }
 
     &:hover:not(:disabled) {
-      background: color-mix(in srgb, #fee2e2 80%, transparent);
-      color: #b91c1c;
+      background: color-mix(in srgb, var(--c-error-bg) 80%, transparent);
+      color: var(--c-error);
     }
 
     &:disabled {
@@ -941,18 +941,18 @@ $pending-chip-color: #92400e;
 
     // Retirar invitación: ámbar
     &--cancel:hover:not(:disabled) {
-      background: color-mix(in srgb, #fef3c7 80%, transparent);
-      color: #92400e;
+      background: color-mix(in srgb, var(--c-warning-bg) 80%, transparent);
+      color: var(--c-warning-text);
     }
 
     // Expulsar miembro: rojo visible por defecto, no solo al pasar el ratón
     &--danger {
-      color: #b91c1c;
-      background: color-mix(in srgb, #fee2e2 55%, transparent);
+      color: var(--c-error);
+      background: color-mix(in srgb, var(--c-error-bg) 55%, transparent);
 
       &:hover:not(:disabled) {
-        background: #fecaca;
-        color: #991b1b;
+        background: var(--c-error-border);
+        color: var(--c-error);
       }
     }
 

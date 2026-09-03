@@ -18,7 +18,7 @@ import { AuthRegisterRequest } from '@core/models/auth.model';
 import {
   PasswordStrengthMeterComponent,
   PasswordStrengthScore,
-} from '../password-strength-meter/password-strength-meter';
+} from '@shared/password-strength-meter/password-strength-meter';
 import { CheckEmailDialogComponent } from '../check-email-dialog/check-email-dialog';
 import { CHECK_EMAIL_DIALOG_CONFIG } from '@core/constants/dialog.constants';
 import type { ZxcvbnFactory as ZxcvbnFactoryType } from '@zxcvbn-ts/core';

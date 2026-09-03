@@ -27,7 +27,7 @@ describe('ResetPasswordPageComponent', () => {
     expect(fixture.componentInstance).toBeTruthy();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('form')).toBeTruthy();
-    // Valida que password-strength-meter resuelve tras moverse a features/auth.
+    // Valida que password-strength-meter resuelve tras moverse a shared/.
     expect(compiled.querySelector('app-password-strength-meter')).toBeTruthy();
   });
 });

@@ -30,7 +30,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import {
   PasswordStrengthMeterComponent,
   PasswordStrengthScore,
-} from '../auth/password-strength-meter/password-strength-meter';
+} from '@shared/password-strength-meter/password-strength-meter';
 import type { ZxcvbnFactory as ZxcvbnFactoryType } from '@zxcvbn-ts/core';
 
 const USER_TYPE_LABELS: Record<string, string> = {

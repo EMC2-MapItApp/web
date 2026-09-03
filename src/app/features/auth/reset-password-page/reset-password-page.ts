@@ -18,7 +18,7 @@ import { AuthService } from '@core/services/auth.service';
 import {
   PasswordStrengthMeterComponent,
   PasswordStrengthScore,
-} from '../password-strength-meter/password-strength-meter';
+} from '@shared/password-strength-meter/password-strength-meter';
 import type { ZxcvbnFactory as ZxcvbnFactoryType } from '@zxcvbn-ts/core';
 
 type ResetPasswordState = 'form' | 'success' | 'error';
